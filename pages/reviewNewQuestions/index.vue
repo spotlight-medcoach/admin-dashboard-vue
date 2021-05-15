@@ -1,12 +1,17 @@
 <template>
     <div>
+        <Navigation />
         <h1>Revisión de preguntas nuevas</h1>
     </div>
 </template>
 
 <script>
-export default {
+import Navigation from '../../components/Navigation';
 
+export default {
+    components: {
+        Navigation
+    }
 }
 </script>
 

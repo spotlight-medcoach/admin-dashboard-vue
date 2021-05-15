@@ -1,7 +1,7 @@
 <template>
     <div>
         <Navigation />
-        <h1>Busqueda de casos</h1>
+        <h1>Profile</h1>
     </div>
 </template>
 
