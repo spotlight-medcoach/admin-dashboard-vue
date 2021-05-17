@@ -1,5 +1,5 @@
 # dashboard-admin-spotlight
-
+# Este es el dashboard para administradores de Spotlight y Spotlighters
 ## Build Setup
 
 ```bash
