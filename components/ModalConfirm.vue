@@ -5,16 +5,12 @@
                 <div class="modal-container">
                     <div class="modal-header">
                         <h5 class="modal-title">Modal title</h5>
-                        <!-- <button type="button" class="close bg-danger" data-dismiss="modal" aria-label="Close" @click="$emit('close')">
-                        <span aria-hidden="true">&times;</span>
-                        </button> -->
                     </div>
                     <div class="modal-body">
-                        <p>Modal body text goes here.</p>
+                        <p>{{ text }}</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="$emit('close')">Close</button>
-                        <button type="button" class="btn btn-success">Save changes</button>
                     </div>
                 </div>
             </div>
@@ -24,7 +20,7 @@
 
 <script>
 export default {
-
+    props: ['text']
 };
 </script>
 

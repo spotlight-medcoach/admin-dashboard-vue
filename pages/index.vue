@@ -1,9 +1,10 @@
 <template>
 	<div>
-		<Navigation />
+		<Login />
+		<!-- <Navigation /> -->
 		<!-- Estas dos cosas son necesarias para el modal -->
-		<button @click="toggleModal" class="btn btn-danger">Modal</button>
-		<ModalConfirm v-if="isShowModal" @close="toggleModal" />
+		<!-- <button @click="toggleModal" class="btn btn-danger">Modal</button>
+		<ModalConfirm v-if="isShowModal" @close="toggleModal" /> -->
 		
 	</div>
 </template>
@@ -18,17 +19,17 @@ export default {
 		ModalConfirm
 	},
 	// data() y mmethods necesarios para el modal
-	data() {
-		return {
-			isShowModal: false
-		}
-	},
-	methods: {
-		toggleModal() {
-			this.isShowModal = !this.isShowModal;
-			console.log('yes')
-		}
-	}
+	// data() {
+	// 	return {
+	// 		isShowModal: false
+	// 	}
+	// },
+	// methods: {
+		// toggleModal() {
+			// this.isShowModal = !this.isShowModal;
+			// console.log('yes')
+		// }
+	// }
 }
 </script>
 
