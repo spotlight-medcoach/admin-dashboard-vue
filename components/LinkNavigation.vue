@@ -15,20 +15,21 @@ export default {
         border-color: #afc7dd;
     }
 
-    /* .link {
-        padding-left: .5rem;
-        padding-right: .5rem;
-        padding-top: .5rem;
-        padding-bottom: .5rem;
-        border-radius: 50%;
-        border: 1px solid #929292;
-        text-decoration: none;
+    .link {
+        left: 20%;
+		right: 20%;
+		top: 20%;
+		bottom: 20%;
+		text-decoration: none;
+		font-size: 20px;
+		background: #5F5F5F;
+		color: #FFFFFF;
 
-        margin: 1rem;
-		font-weight: bold;
-		color: #FFF;
-        background: #929292;
-    } */
+		padding: 10px;
+        border-radius: 50%;
+        border: 1px solid #5F5F5F;
+        text-decoration: none;
+    }
 
     /* .nuxt-link-exact-active {
         color:#fff;

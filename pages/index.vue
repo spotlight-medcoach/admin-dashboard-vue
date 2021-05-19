@@ -1,5 +1,6 @@
 <template>
 	<div>
+		<LoginNav />
 		<Login />
 		<!-- <Navigation /> -->
 		<!-- Estas dos cosas son necesarias para el modal -->
@@ -10,13 +11,17 @@
 </template>
 
 <script>
-import Navigation from '../components/Navigation';
-import ModalConfirm from '../components/ModalConfirm';
+import LoginNav from '../components/LoginNav';
+import Login from '../components/Login';
+// import Navigation from '../components/Navigation';
+// import ModalConfirm from '../components/ModalConfirm';
 
 export default {
 	components: {
-		Navigation,
-		ModalConfirm
+		LoginNav,
+		Login,
+		// Navigation,
+		// ModalConfirm
 	},
 	// data() y mmethods necesarios para el modal
 	// data() {
