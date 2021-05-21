@@ -4,19 +4,23 @@
             <h2 class="login-title">Iniciar sesión</h2>
 
             <div class="input-container">
-                <div class="input-title">
-                    <i class="fas fa-user-circle"></i>
-                    <h3>Correo electrónico</h3>
-                </div>
-                <input type="text" class="mail-input" placeholder="example@hotmail.com" v-model="email">
+                <InputTitle 
+                    icon="fas fa-user-circle"
+                    title="Correo electrónico" />
+                <Input
+                    type="text"
+                    placeholder="example@hotmail.com"
+                    v-model="email" />
             </div>
 
             <div class="input-container">
-                <div class="input-title">
-                    <i class="fas fa-lock"></i>
-                    <h3>Contraseña</h3>
-                </div>
-                <input type="password" class="email-input" placeholder="• • • • • • • •" v-model="password">
+                <InputTitle 
+                    icon="fas fa-lock"
+                    title="Contraseña" />
+                <Input
+                    type="password"
+                    placeholder="• • • • • • • •"
+                    v-model="password" />
             </div>
 
             <div class="check">
@@ -40,11 +44,15 @@
 </template>
 
 <script>
-import ModalConfirm from './ModalConfirm';
+import ModalConfirm from './modals/ModalConfirm';
+import InputTitle from './inputs/InputTitle';
+import Input from './inputs/Input';
 
 export default {
     components: {
-        ModalConfirm
+        ModalConfirm,
+        InputTitle,
+        Input
     },
     data() {
         return {
@@ -58,20 +66,6 @@ export default {
     methods: {
         login() {
             this.busy = true
-            
-            // if (this.email == '') {
-            //     alert('Ingresa correo');
-            //     this.busy = false
-            //     return
-            // } else if (this.password == '') {
-            //     alert('Ingresa contraseña');
-            //     this.busy = false
-            //     return
-            // } else if (this.email == '' || this.password == '') {
-            //     alert('Ingresa correo y contraseña');
-            //     this.busy = false
-            //     return
-            // }
 
             this.$axios
             .post('/userLogin', {
@@ -114,14 +108,14 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
     .cont {
         display: flex;
         align-items: center;
         justify-content: center;
         background: linear-gradient(#1D2B48, #85A5DB);
-        /* height: 100%; */
-        padding-bottom: 3%;
+        height: 100%;
+        /* padding-bottom: 3%; */
     }
 
     .frame-container {
@@ -154,7 +148,7 @@ export default {
         padding: 20px, 0px;
     }
 
-    .input-title {
+    /* .input-title {
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -187,7 +181,7 @@ export default {
 
     input:focus {
         outline: none;
-    }
+    } */
 
     .check {
         display: flex;

@@ -8,7 +8,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
     a:hover {
         color:#fff;
         background-color:#FF9300;
