@@ -14,7 +14,7 @@
 
             <div class="search-active-container">
                 <!-- <div class="input-icon"> -->
-                <input type="text" placeholder="Buscar">
+                <input type="searchText" placeholder="Buscar">
                     <!-- <i class="fas fa-search"></i> -->
                     <!-- <span class="fa fa-info-circle"></span> -->
                 <!-- </div> -->
@@ -44,7 +44,7 @@
                             <td>{{ admin.name }} {{ admin.last_name }}</td>
                             <td>{{ admin.email }}</td>
                             <td>
-                                <button class="fas fa-ellipsis-v btn"></button>
+                                <button class="fas fa-ellipsis-v btn" @click="showModal = true"></button>
                                 <!-- <button class="fas fa-edit" @click="updateAdministrator(admin)"></button>
                                 <button class="fas fa-trash" @click="setInactive(admin._id)"></button> -->
                             </td>
@@ -52,6 +52,8 @@
                     </tbody>
                 </table>
             </div>
+                                <ActionsModal :show="showModal" @close="showModal = false" />
+                                <!-- <OptionsModal :show="showModal" @close="showModal = false" /> -->
 
             <div class="pagination-container">
                 <div class="dropdown drop">
@@ -93,16 +95,21 @@
 <script>
 import Navigation from '../../components/navs/Navigation';
 import SuccessButton from '../../components/buttons/SuccessButton';
+import ActionsModal from '../../components/modals/ActionsModal';
+import OptionsModal from '../../components/modals/OptionsModal';
 
 export default {
     components: {
         Navigation,
-        SuccessButton
+        SuccessButton,
+        ActionsModal,
+        OptionsModal
     },
     data() {
         return {
-            text: '',
-            administrators: []
+            showModal: false,
+            searchText: '',
+            administrators: [],
         }
     },
     created() {
@@ -155,7 +162,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
     .admin-container {
         display: flex;
         flex-direction: column;
