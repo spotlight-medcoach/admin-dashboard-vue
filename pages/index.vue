@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import LoginNav from '../components/LoginNav';
+import LoginNav from '../components/navs/LoginNav';
 import Login from '../components/Login';
 // import Navigation from '../components/Navigation';
 // import ModalConfirm from '../components/ModalConfirm';
@@ -38,8 +38,8 @@ export default {
 }
 </script>
 
-<style>
-	.modal-overlay {
+<style scoped>
+	/* .modal-overlay {
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -47,6 +47,6 @@ export default {
 		right: 0;
 		z-index: 100;
 		background: rgba(0, 0, 0, 0.4);
-	}
+	} */
 
 </style>

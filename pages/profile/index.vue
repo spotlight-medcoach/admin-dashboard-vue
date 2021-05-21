@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import Navigation from '../../components/Navigation';
+import Navigation from '../../components/navs/Navigation';
 // import ModalConfirm from '../../components/ModalConfirm';
 
 export default {
@@ -42,6 +42,6 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
 </style>

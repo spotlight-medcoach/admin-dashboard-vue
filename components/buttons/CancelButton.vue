@@ -10,7 +10,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
     .cancel button {
         color: whitesmoke;
     }

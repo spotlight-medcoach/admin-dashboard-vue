@@ -1,6 +1,6 @@
 <template>
 	<header class="head-navigation">
-		<img src="../assets/images/logo.svg" alt="">
+		<img src="../../assets/images/logo.svg" alt="">
 
 		<nav class="nav">
 			<div>
@@ -45,15 +45,17 @@
 			</div>
 		</nav>
 		
-		<button type="button" class="fas fa-bars profile" @click="showOptions"></button>
+		<div class="profile">
+			<OptionsModal :show="showModal" @close="showModal = false" />
+			<button class="fas fa-bars btn" @click="showModal = true"></button>
+		</div>
 
-		<OptionsModal v-if="isShowOptions" @close="closeModal" />
 	</header>
 </template>
 
 <script>
-import LinkNavigation from './LinkNavigation';
-import OptionsModal from './OptionsModal';
+import LinkNavigation from '../LinkNavigation';
+import OptionsModal from '../modals/OptionsModal';
 
 export default {
 	components: {
@@ -62,7 +64,7 @@ export default {
 	},
 	data() {
 		return {
-			isShowOptions: false
+			showModal: false
 		}
 	},
 	methods: {
@@ -76,13 +78,14 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 	.head-navigation {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		height: 80px;
 		background: #FFF;
+		border-bottom: 1px solid #D4D5D7;
     }
 
     .head-navigation img {
@@ -92,15 +95,15 @@ export default {
     }
 
     .profile {
-        position: absolute;
-		font-size: 36px;
-		right: 40px;
-		text-decoration: none;
+		margin-left: auto;
+		margin-right: 3%;
 		color: #5F5F5F;
 		background-color: #FFF;
-		outline: none;
-		border: none;
     }
+
+	.profile button {
+		font-size: 30px;
+	}
 
 	.nav {
 		display: flex;
@@ -124,4 +127,12 @@ export default {
         background-color:#FF9300;
         border-color: #FF9300;
     }
+
+	.options {
+		display: flex;
+		align-items: flex-end;
+		justify-content: flex-end;
+		background: red;
+		/* top: 5%; */
+	}
 </style>

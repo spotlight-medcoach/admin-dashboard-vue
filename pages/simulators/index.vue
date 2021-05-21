@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import Navigation from '../../components/Navigation';
+import Navigation from '../../components/navs/Navigation';
 
 export default {
     components: {
@@ -15,6 +15,6 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
 </style>
