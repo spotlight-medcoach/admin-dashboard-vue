@@ -68,12 +68,7 @@ export default {
 		}
 	},
 	methods: {
-		showOptions() {
-			this.isShowOptions = !this.isShowOptions;
-		},
-		closeModal() {
-			this.isShowOptions = !this.isShowOptions;
-		}
+		
 	}
 }
 </script>

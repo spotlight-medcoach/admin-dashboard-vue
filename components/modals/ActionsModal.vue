@@ -15,12 +15,6 @@
                             Configuración
                         </button>
                     </div>
-                    <div class="logout">
-                        <button type="button" class="btn" @click="logout">
-                            <i class="fas fa-sign-in-alt"></i>
-                            Cerrar sesión
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -39,24 +33,6 @@ export default {
         close() {
             this.$emit('close');
         },
-        notf() {
-            alert('Notificaciones');
-        },
-        conf() {
-            alert('Configuración');
-        },
-        logout() {
-            this.isShowModal = !this.isShowModal;
-            this.textModal = 'Cerrando sesión...'
-
-            setTimeout(() => {
-                this.$router.push({ path: '/' });
-
-                this.$store.dispatch('killSession')
-                localStorage.clear();
-                this.isShowModal = !this.isShowModal
-            }, 1000)
-        }
     }
 }
 </script>
@@ -91,18 +67,4 @@ export default {
     .modal-container i {
         margin-right: .5rem;
     }
-
-    /* .modal-enter {
-        opacity: 0;
-    }
-
-    .modal-leave-active {
-        opacity: 0;
-    }
-
-    .modal-enter .modal-container,
-    .modal-leave-active .modal-container {
-        -webkit-transform: scale(1.1);
-        transform: scale(1.1);
-    } */
 </style>
