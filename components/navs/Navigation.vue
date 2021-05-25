@@ -13,11 +13,11 @@
 					to="/findCase"
 					new_class="fas fa-search link" />
 			</div>
-			<div>
+			<!-- <div>
 				<LinkNavigation 
 					to="/"
 					new_class="fas fa-folder link nuxt-link-active" />
-			</div>
+			</div> -->
 			<div>
 				<LinkNavigation 
 					to="/reports"
@@ -25,14 +25,14 @@
 			</div>
 			<div>
 				<LinkNavigation 
-					to="/"
+					to="/requestedCases"
 					new_class="fas fa-list-alt link nuxt-link-active" />
 			</div>
-			<div>
+			<!-- <div>
 				<LinkNavigation 
 					to="/"
 					new_class="fas fa-book-open link nuxt-link-active" />
-			</div>
+			</div> -->
 			<div>
 				<LinkNavigation 
 					to="/spotlighters"

@@ -1,12 +1,17 @@
 <template>
     <div>
+        <Navigation />
         <h1>Reportes</h1>
     </div>
 </template>
 
 <script>
-export default {
+import Navigation from '../../components/navs/Navigation';
 
+export default {
+    components: {
+        Navigation
+    }
 }
 </script>
 

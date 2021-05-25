@@ -4,15 +4,15 @@
             <div class="modal-container" @click.stop>
                 <div class="modal-body">
                     <div class="notifications">
-                        <button type="button" class="btn" @click="notf">
-                            <i class="fas fa-bell"></i>
-                            Notificaciones
+                        <button type="button" class="btn" @click="update">
+                            <i class="fas fa-pencil-alt"></i>
+                            Editar usuario
                         </button>
                     </div>
                     <div class="configuration">
-                        <button type="button" class="btn" @click="conf">
-                            <i class="fas fa-cog"></i>
-                            Configuración
+                        <button type="button" class="btn" @click="setInactive">
+                            <i class="fas fa-trash"></i>
+                            Eliminar usuario
                         </button>
                     </div>
                 </div>
@@ -23,7 +23,7 @@
 
 <script>
 export default {
-    props: ['show'],
+    props: ['show', 'user'],
     data() {
         return {
 
@@ -33,6 +33,12 @@ export default {
         close() {
             this.$emit('close');
         },
+        async update() {
+            console.log(this.user);
+        },
+        async setInactive() {
+            console.log(this.user)
+        }
     }
 }
 </script>
@@ -52,9 +58,11 @@ export default {
 
     .modal-container {
         display: flex;
-        position: absolute;
-        width: 16%;
+        position: relative;
+        /* width: 16%; */
+        height: 16%;
         margin: 5%;
+        top: auto;
         justify-content: space-evenly;
         background-color: #fff;
         border-radius: 2px;
@@ -64,7 +72,7 @@ export default {
         border-radius: 10px;
     }
 
-    .modal-container i {
+    /* .modal-container i {
         margin-right: .5rem;
-    }
+    } */
 </style>

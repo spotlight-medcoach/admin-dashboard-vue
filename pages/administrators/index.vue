@@ -13,15 +13,7 @@
             </div>
 
             <div class="search-active-container">
-                <!-- <div class="input-icon"> -->
                 <input type="searchText" placeholder="Buscar">
-                    <!-- <i class="fas fa-search"></i> -->
-                    <!-- <span class="fa fa-info-circle"></span> -->
-                <!-- </div> -->
-                    <!-- <select class="" name="" id="">
-                        <option value="1" selected>Activos</option>
-                        <option value="2">Inactivos</option>
-                    </select> -->
                 
                 <select class="options">
                     <option value="1">Activos</option>
@@ -29,31 +21,45 @@
                 </select>
             </div>
 
-
             <div class="table-container">
-                <table class="table table-bordered">
+                <Loading v-if="loading" />
+
+                <table v-else class="table table-bordered">
                     <thead class="thead-admin">
                         <tr>
                             <th scope="col">Nombre completo</th>
                             <th scope="col">Correo electrónico</th>
                             <th scope="col" class="actions">Acciones</th>
+
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="admin in administrators" :key="admin._id">
+                        <tr v-for="(admin, index) in administrators" :key="admin._id">
                             <td>{{ admin.name }} {{ admin.last_name }}</td>
                             <td>{{ admin.email }}</td>
                             <td>
-                                <button class="fas fa-ellipsis-v btn" @click="showModal = true"></button>
-                                <!-- <button class="fas fa-edit" @click="updateAdministrator(admin)"></button>
-                                <button class="fas fa-trash" @click="setInactive(admin._id)"></button> -->
+                                <div class="dropleft">
+                                    <button class="btn fas fa-ellipsis-v" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <div class="notifications">
+                                            <button type="button" class="btn" @click="update(administrators[index])">
+                                                <i class="fas fa-pencil-alt"></i>
+                                                Editar usuario
+                                            </button>
+                                        </div>
+                                        <div class="configuration">
+                                            <button type="button" class="btn" @click="confirmModal(administrators[index])">
+                                                <i class="fas fa-trash"></i>
+                                                Eliminar usuario
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-                                <ActionsModal :show="showModal" @close="showModal = false" />
-                                <!-- <OptionsModal :show="showModal" @close="showModal = false" /> -->
 
             <div class="pagination-container">
                 <div class="dropdown drop">
@@ -71,23 +77,28 @@
                     <ul class="pagination">
                         <div class="loco">
                             1 - 10 of n items
-                            <!-- <span class="align-middle">middle</span> -->
                         </div>
                         <li class="page-item p-2">
                             <a class="page-link arrow" href="#" aria-label="Previous">
-                                <!-- <span aria-hidden="true">&laquo;</span> -->
                                 <span class="fas fa-chevron-left"></span>
                             </a>
                         </li>
                         <li class="page-item p-2">
                             <a class="page-link arrow" href="#" aria-label="Next">
-                                <!-- <span aria-hidden="true">&raquo;</span> -->
                                 <span class="fas fa-chevron-right"></span>
                             </a>
                         </li>
                     </ul>
                 </nav>
             </div>
+
+            <ModalConfirm 
+                v-if="isShowModal"
+                @close="closeModal"
+                :textTitle="titleModal"
+                :textBody="bodyModal"
+                :deleteUser="deleteUser" />
+
         </div>
     </div>
 </template>
@@ -95,51 +106,42 @@
 <script>
 import Navigation from '../../components/navs/Navigation';
 import SuccessButton from '../../components/buttons/SuccessButton';
-import ActionsModal from '../../components/modals/ActionsModal';
-import OptionsModal from '../../components/modals/OptionsModal';
+import ModalConfirm from '../../components/modals/ModalConfirm';
+import Loading from '../../components/modals/Loading';
 
 export default {
     components: {
         Navigation,
         SuccessButton,
-        ActionsModal,
-        OptionsModal
+        ModalConfirm,
+        Loading
     },
     data() {
         return {
-            showModal: false,
+            loading: true,
+            isShowModal: false,
             searchText: '',
             administrators: [],
+            userIdToDelete: ''
         }
     },
-    created() {
-        this.getAdministrators()
+    async created() {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
+        await this.getAdministrators()
+        this.loading = !this.loading
     },
     methods: {
-        getAdministrators() {
-            if (process.browser) {
-                this.$axios
-                .get('/getAllAdminnistrator?status=true', {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('user_token')}`
-                    }
-                })
-                .then(admins => {
-                    this.administrators = admins.data.administrators;
-                })
-                .catch(err => {
-                    console.log(err);
-                })
+        async getAdministrators() {
+            try {
+                let administrators_response = await this.$axios.get('/getAllAdminnistrator?status=true')
+                this.administrators = administrators_response.data.administrators
+            } catch (err) {
+                console.log(err);
             }
         },
-        addAdministrator() {
-            alert('Logica para agregar administrador')
-        },
-        setInactive(admin_id) {
+        async setInactive(admin_id) {
             if (process.browser) {
-                // alert(admin_id)
                 this.$axios
                 .put('/setInactiveUser', {
                     user_id: admin_id
@@ -153,10 +155,30 @@ export default {
                     alert('Error: ', JSON.stringify(err));
                 });
             }
-        }, //, query: { id: admin_data._id}
-        updateAdministrator(admin_data) {
+        },
+        update(admin_data) {
+            // cambiar de vista para actualizar administrador
             this.$router.push({ path: `/administrators/${admin_data._id}` });
+        },
+        confirmModal(admin_data) {
+            this.titleModal = 'Eliminar administrador'
+            this.bodyModal = "¿Deseas eliminar el siguiente usuario?\n" + admin_data.name + " " + admin_data.last_name
+            this.isShowModal = !this.isShowModal;
+            this.userIdToDelete = admin_data._id
+        },
+        async deleteUser() {
+            let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.userIdToDelete });
+            console.log(inactive_response);
+            this.bodyModal = inactive_response.data.message;
 
+            setTimeout(() => {
+                this.isShowModal = !this.isShowModal;
+            }, 1500);
+            this.getAdministrators()
+        },
+        closeModal() {
+            this.isShowModal = !this.isShowModal;
+            this.userIdToDelete = ''
         }
     }
 }
@@ -174,6 +196,10 @@ export default {
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
+    }
+
+    .head-container a:hover {
+        color: #FFF;
     }
 
     .add-button {
@@ -241,6 +267,20 @@ export default {
     .thead-admin {
         background: #212529;
         color: #FFF;
+    }
+
+    .thead-admin th:last-child {
+        border-radius: 0px 15px 0px 0px;
+        border: 1px solid white;
+        -moz-border-radius: 0px 15px 0px 0px;
+        -webkit-border-radius: 0px 15px 0px 0px;
+    }
+
+    .thead-admin th:first-child {
+        border-radius: 15px 0px 0px 0px;
+        border: 1px solid white;
+        -moz-border-radius: 15px 0px 0px 0px;
+        -webkit-border-radius: 15px 0px 0px 0px;
     }
 
     .actions {
