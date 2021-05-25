@@ -4,7 +4,7 @@
 
 <script>
 export default {
-    props: ['type', 'placeholder', 'model'],
+    props: ['type', 'placeholder', 'model'], //, 'newValue'
     data() {
         return {
             localValue: this.model

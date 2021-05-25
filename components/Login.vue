@@ -28,6 +28,7 @@
                 <label>Recordarme</label>
             </div>
             
+            <!-- Loader -->
             <div class="lds-dual-ring" v-if="busy"></div>
 
             <div class="buttons">
@@ -38,7 +39,7 @@
                 <button type="button" class="btn forgot-button">Olvidé mi contraseña</button>
             </div>
             
-            <ModalConfirm v-if="isShowModal" @close="closeModal" :text="textModal" />
+            <ModalConfirm v-if="isShowModal" @close="closeModal" :textBody="textModal" />
         </div>
     </div>
 </template>
@@ -83,7 +84,6 @@ export default {
                     localStorage.setItem('user_token', res.data.token);
                     this.$store.commit('setUserInfo', res.data.payload);
                     this.$store.commit('setToken', res.data.token);
-                    // console.log(res);
                     this.busy = false;
 
                     setTimeout(() => {
@@ -231,6 +231,7 @@ export default {
         border-radius: 22px;
     }
 
+    /* estilos para el loading predeterminado */
     .lds-dual-ring {
         display: inline-block;
         width: 50px;

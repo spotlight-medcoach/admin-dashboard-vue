@@ -10,7 +10,7 @@
             </div>
 
             <div class="form-container">
-                <h1>Crear administrador</h1>
+                <h1>Crear spotlighter</h1>
 
                 <div class="inputs">
                     <div class="input-container">
@@ -156,44 +156,109 @@ export default {
     },
     data() {
         return {
+            name: '',
+            last_name: '',
             email: '',
             phone: '',
+            country: '',
+            state: '',
             university: '',
             account_number: '',
             password: '',
             confirm_password: ''
         }
     },
-    created() {
+    async created() {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
     },
     methods: {
-        addSpotlighter() {
+        async addSpotlighter() {
             if (process.browser) {
-                this.$axios
-                .post('/createUser', {
+                // verificar que la universidad exista en la lista
+                let universities = JSON.parse(localStorage.getItem('universities'));
+                let university_filtered = universities.filter(uni => uni.name.toLowerCase() == this.university.toLowerCase());
+                
+                let data = {
                     name: this.name,
                     last_name: this.last_name,
                     email: this.email,
                     password: this.password,
-                    role: 'Spotlighter'
-                    
-                })
-                .then(res => {
-                    console.log(res);
-                    alert('Everithing okay ', res)
-                })
-                .catch(err => {
-                    console.log(err)
-                    alert('Error: ', err)
-                })
+                    role: 'Spotlighter',
+                    phone: this.phone,
+                    account_number: this.account_number,
+                    country: 'this.country',
+                    state: 'this.state',
+                    university_id: university_filtered[0]._id
+                }
+
+                console.log('data: ', data)
+
+                let add_response = await this.$axios.post('/createUser', data);
+                console.log('response: ', add_response);
             }
         }
     }
 }
 </script>
 
-<style>
+<style scoped>
+    .add-container {
+        display: flex;
+        flex-direction: column;
+        font-family: Montserrat;
+    }
 
+    .button-container {
+        margin-top: 1.5%;
+        margin-left: 3%;
+    }
+
+    .button-container a {
+        color: #000;
+        text-decoration: none;
+    }
+
+    .form-container {
+        display: flex;
+        flex-direction: column;
+        width: 80%;
+        margin-top: 1%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .inputs {
+        display: flex;
+        flex-direction: row;
+        justify-content:center;
+        align-items: center;
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 2%;
+        margin-bottom: 2%;
+    }
+
+    .input-container {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .inputs-email {
+        display: flex;
+        width: 60%;
+        justify-content: center;
+        align-items: center;
+        margin-top: 2%;
+        margin-bottom: 2%;
+    }
+
+    .btn-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-top: 3%;
+        margin-right: 10%;
+    }
 </style>

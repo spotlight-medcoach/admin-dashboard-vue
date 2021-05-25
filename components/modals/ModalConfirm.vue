@@ -4,13 +4,17 @@
             <div class="modal-wrapper" role="document">
                 <div class="modal-container">
                     <div class="modal-header">
-                        <h5 class="modal-title">Modal title</h5>
+                        <h5 class="modal-title">{{ textTitle }}</h5>
                     </div>
                     <div class="modal-body">
-                        <p>{{ text }}</p>
+                        <p>{{ textBody }}</p>
                     </div>
+                    
+                    <!-- <div class="lds-dual-ring" v-if="busy"></div> -->
+
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="$emit('close')">Close</button>
+                        <button type="button" class="btn" data-dismiss="modal" @click="$emit('close')">Cancelar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="deleteUser">Eliminar</button>
                     </div>
                 </div>
             </div>
@@ -20,7 +24,7 @@
 
 <script>
 export default {
-    props: ['text']
+    props: ['textTitle', 'textBody', 'deleteUser', 'busy']
 };
 </script>
 

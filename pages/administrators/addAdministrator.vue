@@ -74,6 +74,11 @@
                     </div>
                 </div>
             </div>
+
+            <div class="load-container">
+                <div class="lds-dual-ring" v-if="busy"></div>
+            </div>
+
             <div class="btn-container">
                 <SuccessButton
                     :text="'Agregar usuario'"
@@ -82,6 +87,8 @@
                     :i_class="'fas fa-check-circle'"
                 />
             </div>
+
+            <ModalConfirm v-if="isShowModal" @close="closeModal" :textBody="textModal" :textTitle="textTile" />
         </div>
     </div>
 </template>
@@ -91,10 +98,22 @@ import Navigation from '../../components/navs/Navigation';
 import SuccessButton from '../../components/buttons/SuccessButton';
 import InputTitle from '../../components/inputs/InputTitle';
 import Input from '../../components/inputs/Input';
+import ModalConfirm from '../../components/modals/ModalConfirm';
 
 export default {
+    components: {
+        Navigation,
+        SuccessButton,
+        InputTitle,
+        Input,
+        ModalConfirm
+    },
     data() {
         return {
+            busy: false,
+            isShowModal: false,
+            textModal: '',
+            textTitle: '',
             name: '',
             last_name: '',
             email: '',
@@ -102,43 +121,42 @@ export default {
             confirm_password: ''
         }
     },
-    components: {
-        Navigation,
-        SuccessButton,
-        InputTitle,
-        Input
-    },
     created() {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
     },
     methods: {
-        addAdministrator() {
-            if (process.browser) {
-                this.$axios
-                .post('/createUser', {
-                    name: this.name,
-                    last_name: this.last_name,
-                    email: this.email,
-                    password: this.password,
-                    role: 'Administrador'
-                    
-                })
-                .then(res => {
-                    console.log(res);
-                    alert('Everithing okay ', res)
-                })
-                .catch(err => {
-                    console.log(err)
-                    alert('Error: ', err)
-                })
-            }
+        async addAdministrator() {
+            this.busy = !this.busy;
+
+            let add_response = await this.$axios.post('/createUser', {
+                name: this.name,
+                last_name: this.last_name,
+                email: this.email,
+                password: this.password,
+                role: 'Administrador'
+            });
+
+            this.busy = !this.busy;
+            this.isShowModal = !this.isShowModal;
+            this.textTitle = 'Administradores'
+            this.textModal = add_response.data.message
+            setTimeout(() => {
+                this.$router.push({ path: '/administrators' })
+                this.isShowModal = !this.isShowModal;
+            }, 1500);
+        },
+        deleteUser() {
+
+        },
+        closeModal() {
+            this.isShowModal = !this.isShowModal;
         }
     }
 }
 </script>
 
-<style>
+<style scoped>
     .add-container {
         display: flex;
         flex-direction: column;
@@ -198,6 +216,11 @@ export default {
         margin-right: 10%;
     }
 
+    .load-container {
+        display: flex;
+        justify-content: center;
+    }
+
     /* .add-admi {
         display: flex;
         flex-direction: column;
@@ -230,4 +253,32 @@ export default {
         margin: 20px 0px;
         padding: 20px, 0px;
     } */
+
+    /* estilos para el loading predeterminado */
+    .lds-dual-ring {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+    }
+
+    .lds-dual-ring:after {
+        content: " ";
+        display: block;
+        width: 44px;
+        height: 44px;
+        /* margin: 8px; */
+        border-radius: 50%;
+        border: 6px solid #FE9400;
+        border-color: #FE9400 transparent #FE9400 transparent;
+        animation: lds-dual-ring 1.2s linear infinite;
+    }
+
+    @keyframes lds-dual-ring {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 </style>

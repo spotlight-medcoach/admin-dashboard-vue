@@ -46,15 +46,15 @@ export default {
             alert('Configuración');
         },
         logout() {
-            this.isShowModal = !this.isShowModal;
-            this.textModal = 'Cerrando sesión...'
+            // this.isShowModal = !this.isShowModal;
+            // this.textModal = 'Cerrando sesión...'
 
             setTimeout(() => {
                 this.$router.push({ path: '/' });
 
                 this.$store.dispatch('killSession')
                 localStorage.clear();
-                this.isShowModal = !this.isShowModal
+                // this.isShowModal = !this.isShowModal
             }, 1000)
         }
     }

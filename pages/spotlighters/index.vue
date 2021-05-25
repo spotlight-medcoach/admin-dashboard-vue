@@ -28,7 +28,8 @@
 
 
             <div class="table-container">
-                <table class="table table-bordered">
+                <Loading v-if="loading" />
+                <table v-else class="table table-bordered">
                     <thead class="thead-admin">
                         <tr>
                             <th scope="col"><input type="checkbox"></th>
@@ -42,22 +43,39 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="spotlighter in spotlighters" :key="spotlighter.admin_id">
+                        <tr v-for="(spotlighter, index) in spotlighters" :key="spotlighter.admin_id">
                             <td><input type="checkbox" name="" id=""></td>
                             <td>{{ spotlighter.name }} {{ spotlighter.last_name }}</td>
                             <td>{{ spotlighter.account_number }}</td>
                             <td>{{ spotlighter.phone }}</td>
                             <td>{{ spotlighter.email }}</td>
-                            <td>Falta obtener esta parte</td>
+                            <td>!!</td>
                             <td>Falta hacer este calculo</td>
                             <td class="td-style">
                                 <button class="fas fa-dollar-sign btn dollar"></button>
-                                <button class="fas fa-ellipsis-v btn"></button>
+                                <div class="dropleft">
+                                    <button class="btn fas fa-ellipsis-v" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <div class="notifications">
+                                            <button type="button" class="btn" @click="update(spotlighters[index])">
+                                                <i class="fas fa-pencil-alt"></i>
+                                                Editar usuario
+                                            </button>
+                                        </div>
+                                        <div class="configuration">
+                                            <button type="button" class="btn" @click="confirmModal(spotlighters[index])">
+                                                <i class="fas fa-trash"></i>
+                                                Eliminar usuario
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+            
 
             <div class="pagination-container">
                 <div class="dropdown drop">
@@ -89,46 +107,80 @@
                     </ul>
                 </nav>
             </div>
+            <ModalConfirm 
+                v-if="isShowModal"
+                @close="closeModal"
+                :textTitle="titleModal"
+                :textBody="bodyModal"
+                :deleteUser="deleteUser" />
         </div>
     </div>
 </template>
 
 <script>
 import Navigation from '../../components/navs/Navigation';
+import Loading from '../../components/modals/Loading';
+import ActionsModal from '../../components/modals/ActionsModal';
+import ModalConfirm from '../../components/modals/ModalConfirm';
 
 export default {
     components: {
-        Navigation
+        Navigation,
+        Loading,
+        ActionsModal,
+        ModalConfirm
     },
     data() {
         return {
+            loading: true,
+            isShowModal: false,
+            titleModal: '',
+            bodyModal: '',
             searchText: '',
-            spotlighters: []
+            spotlighters: [],
+            userIdToDelete: ''
         }
     },
-    created() {
+    async created() {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
-        this.getSpotlighters()
+        await this.getSpotlighters()
+        this.loading = !this.loading;
     },
     methods: {
-        getSpotlighters() {
-            if (process.browser) {
-                this.$axios
-                .get('/getAllSpotlighters?status=true'/* , {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('user_token')}`
-                    }
-                } */)
-                .then(spotlighters => {
-                    // console.log(spotlighters)
-                    this.spotlighters = spotlighters.data.payload;
-                    console.log(this.spotlighters)
-                })
-                .catch(err => {
-                    console.log(err);
-                })
+        async getSpotlighters() {
+            try {
+                // acomodar la variable status
+                let spotlighter_response = await this.$axios.get('/getAllSpotlighters?status=true');
+                this.spotlighters = spotlighter_response.data.payload;
+            } catch (err) {
+                console.log(err);
             }
+        },
+        async update(user) {
+            // cambiar a vista para actualizar spotlighter
+            this.$router.push({ path: `/spotlighters/${user.admin_id}` });
+        },
+        confirmModal(user) {
+            // lógica para eliminar el spotlighter
+            this.titleModal = 'Eliminar spotligther'
+            this.bodyModal = "¿Deseas eliminar el siguiente usuario?\n" + user.name + " " + user.last_name
+            this.isShowModal = !this.isShowModal;
+            this.userIdToDelete = user.admin_id
+        },
+        async deleteUser() {
+            let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.userIdToDelete });
+            console.log(inactive_response);
+            this.bodyModal = inactive_response.data.message;
+
+            setTimeout(() => {
+                this.isShowModal = !this.isShowModal;
+            }, 1500);
+            this.getSpotlighters()
+        },
+        closeModal() {
+            this.isShowModal = !this.isShowModal;
+            this.userIdToDelete = ''
         }
     }
 }
