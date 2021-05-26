@@ -108,7 +108,7 @@
                 />
             </div>
 
-            <DeleteUSerModal 
+            <DeleteUserModal 
                 v-if="isShowModal"
                 @close="closeModal"
                 :textTitle="titleModal"
@@ -125,7 +125,7 @@ import Loading from '../../components/modals/Loading';
 import InputIcon from '../../components/inputs/InputIcon';
 import Input from '../../components/inputs/Input';
 import SuccessButton from '../../components/buttons/SuccessButton';
-import DeleteUSerModal from '../../components/modals/DeleteUSerModal';
+import DeleteUserModal from '../../components/modals/DeleteUserModal';
 
 export default {
     components: {
@@ -134,7 +134,7 @@ export default {
         InputIcon,
         Input,
         SuccessButton,
-        DeleteUSerModal
+        DeleteUserModal
     },
     data() {
         return {
