@@ -13,14 +13,15 @@ export default {
 <style scoped>
     .head-login {
         position: relative;
-        height: 80px;
+        width: 100%;
+        height: 60px;
         background: #FFFFFF;
     }
 
     .head-login img {
         position: absolute;
-        width: 283px;
-        height: 36px;
+        width: 220.11px;
+        height: 28px;
         left: 40px;
         top: calc(50% - 36px/2);
     }

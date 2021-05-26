@@ -23,7 +23,7 @@ export default {
 
 <style scoped>
     input {
-        margin-left: 2.5rem;
+        /* margin-left: 2.5rem; */
         margin-top: .5rem;
         background-color:transparent;
         border: 0px solid;

@@ -9,11 +9,12 @@
                 </nuxt-link>
             </div>
 
-            <div class="form-container">
+            <Loading v-if="loading" />
+            <div v-else class="form-container">
                 <h1>Crear administrador</h1>
 
                 <div class="inputs">
-                    <div class="input-container">
+                    <!-- <div class="input-container">
                         <InputTitle 
                             icon=""
                             title="Nombre(s)" />
@@ -30,11 +31,19 @@
                             type="text"
                             placeholder="Ingresa tus apellidos"
                             v-model="last_name" />
-                    </div>
+                    </div> -->
                 </div>
-
+                    
                 <div class="inputs-email">
-                    <div class="input-container-email">
+                    <InputIcon
+                        type="text"
+                        placeholder="example@example.com"
+                        v-model="email"
+                        icon="fas fa-user-circle"
+                        title="Correo electrónico"
+                    />
+
+                    <!-- <div class="input-container-email">
                         <InputTitle 
                             icon="fas fa-user-circle"
                             title="Correo electrónico" />
@@ -42,11 +51,27 @@
                             type="text"
                             placeholder="example@hotmail.com"
                             v-model="email" />
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="inputs">
-                    <div class="input-container">
+                    
+                    <InputIcon
+                        type="password"
+                        placeholder="• • • • • • • •"
+                        v-model="password"
+                        icon="fas fa-envelope"
+                        title="Contraseña"
+                    />
+
+                    <InputIcon
+                        type="password"
+                        placeholder="• • • • • • • •"
+                        v-model="confirm_password"
+                        icon="fas fa-user-circle"
+                        title="Confirmar contraseña"
+                    />
+                    <!-- <div class="input-container">
                         <InputTitle 
                             icon="fas fa-envelope"
                             title="Contraseña" />
@@ -71,7 +96,7 @@
                                 v-model="confirm_password" />
                             <i class="fas fa-eye"></i>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
@@ -99,6 +124,8 @@ import SuccessButton from '../../components/buttons/SuccessButton';
 import InputTitle from '../../components/inputs/InputTitle';
 import Input from '../../components/inputs/Input';
 import ModalConfirm from '../../components/modals/ModalConfirm';
+import Loading from '../../components/modals/Loading';
+import InputIcon from '../../components/inputs/InputIcon';
 
 export default {
     components: {
@@ -106,12 +133,15 @@ export default {
         SuccessButton,
         InputTitle,
         Input,
-        ModalConfirm
+        ModalConfirm,
+        Loading,
+        InputIcon
     },
     data() {
         return {
             busy: false,
             isShowModal: false,
+            loading: true,
             textModal: '',
             textTitle: '',
             name: '',
@@ -124,6 +154,7 @@ export default {
     created() {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
+        this.loading = !this.loading
     },
     methods: {
         async addAdministrator() {
@@ -197,6 +228,7 @@ export default {
     .input-container {
         margin-left: auto;
         margin-right: auto;
+        
     }
 
     .inputs-email {
