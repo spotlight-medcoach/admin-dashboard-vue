@@ -27,7 +27,7 @@ export default {
 }
 </script>
 
-<style>
+<style scope>
     .input-title {
         display: flex;
         flex-direction: column;
