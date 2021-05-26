@@ -91,15 +91,8 @@
                     </ul>
                 </nav>
             </div>
-
-            <!-- <ModalConfirm 
-                v-if="isShowModal"
-                @close="closeModal"
-                :textTitle="titleModal"
-                :textBody="bodyModal"
-                :deleteUser="deleteUser" /> -->
             
-            <DeleteUSerModal 
+            <DeleteUserModal 
                 v-if="isShowModal"
                 @close="closeModal"
                 :textTitle="titleModal"
@@ -114,14 +107,14 @@
 <script>
 import Navigation from '../../components/navs/Navigation';
 import SuccessButton from '../../components/buttons/SuccessButton';
-import DeleteUSerModal from '../../components/modals/DeleteUSerModal';
+import DeleteUserModal from '../../components/modals/DeleteUserModal';
 import Loading from '../../components/modals/Loading';
 
 export default {
     components: {
         Navigation,
         SuccessButton,
-        DeleteUSerModal,
+        DeleteUserModal,
         Loading
     },
     data() {
@@ -203,7 +196,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
     .admin-container {
         display: flex;
         flex-direction: column;

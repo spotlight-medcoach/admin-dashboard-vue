@@ -2,39 +2,37 @@
     <div>
         <Navigation />
         
-        <div class="admin-container">
+        <div class="cases-container">
             <div class="head-container">
-                <h1>Revisión de casos nuevos</h1>
-                <!-- <nuxt-link 
-                    to="/requestedCases/addRequestedCase"
-                    class="add-button" >
-                    <i class="fas fa-list-alt"></i>
-                        Solicitar nuevo caso
-                </nuxt-link> -->
+                <p>Revisión de casos nuevos</p>
             </div>
 
-            <div class="search-active-container">
-                <input type="searchText" placeholder="Buscar">
+            <div class="filter-container">
+                <div class="search">
+                    <input type="searchText" placeholder="    Buscar">
+                </div>
                 
-                <select v-model="topicSelected" name="topic" class="js-example-basic-single" @change="filterSubtopics(topicSelected)">
-                    <option :value="top" v-for="top in topics" :key="top._id">{{top.name}}</option>
-                </select>
+                <div class="select-container">
+                    <select v-model="topicSelected" name="topic" class="js-example-basic-single" @change="filterSubtopics(topicSelected)">
+                        <option :value="top" v-for="top in topics" :key="top._id">{{top.name}}</option>
+                    </select>
 
-                <select v-model="subtopicSelected" name="subtopic" class="js-example-basic-single">
-                    <option :value="sub._id" v-for="sub in subtopics" :key="sub._id">{{sub.name}}</option>
-                </select>
+                    <select v-model="subtopicSelected" name="subtopic" class="js-example-basic-single">
+                        <option :value="sub._id" v-for="sub in subtopics" :key="sub._id">{{sub.name}}</option>
+                    </select>
+                </div>
             </div>
 
             <div class="table-container">
                 <Loading v-if="loading" />
                 
                 <table v-else class="table table-bordered">
-                    <thead class="thead-admin">
+                    <thead class="thead-cases">
                         <tr>
                             <th scope="col">Caso</th>
                             <th scope="col">Tema</th>
                             <th scope="col">Subtema</th>
-                            <th scope="col">Descripción</th>
+                            <th scope="col">Descripcion</th>
                             <th scope="col">Fecha</th>
                             <th scope="col">Usuario</th>
                             <th scope="col">Acciones</th>
@@ -49,8 +47,13 @@
                             <td>{{ new Date(theCase.approved_date).toLocaleDateString('es-ES') }}</td>
                             <td>{{ theCase.spotlighter_id.admin_id.name }} {{ theCase.spotlighter_id.admin_id.last_name }}</td>
                             <td>
-                                <button class="btn fas fa-list-alt"></button>
-                                <!-- <button class="btn">Ver caso</button> -->
+                                <div class="btn-group dropleft">
+                                    <button class="btn fas fa-list-alt options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                                    <div class="dropdown-menu">
+                                        <button class="btn">Action1</button>
+                                        <button class="btn">Action2</button>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -121,7 +124,6 @@ export default {
         }
 
         await this.getCasesWithReview();
-        // this.loading = !this.loading;
         console.log('cases: ', this.cases)
         console.log('topics: ', this.topics)
     },
@@ -131,7 +133,6 @@ export default {
                 this.loading = !this.loading;
 
                 let cases_response = await this.$axios.get('/getPendingReview');
-                // console.log(cases_response)
                 this.cases = cases_response.data.pending_cases;
 
                 let cases = this.cases;
@@ -151,26 +152,128 @@ export default {
             this.subtopics = topic.subtopics;
         },
         getTopicName(topic_bubble) {
-            // var topic = '';
-            // if (process.browser) {
-                // let topics = JSON.parse(localStorage.getItem('topics'))
             let topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0].name
-            // }
             return topic;
         },
         getSubtopicName(topic_bubble, subtopic_bubble) {
-            // var subtopic = '';
             let topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0]
             let subtopic = topic.subtopics.filter(sub => sub.subtopic == subtopic_bubble);
             return subtopic[0].name
-            // let subtopic = this.subtopics.filter(sub => sub.subtopic == subtopic_bubble)[0]
-            // console.log('sub:', subtopic)
-            // return subtopic.name;
         }
     }
 }
 </script>
 
 <style scoped>
+    .cases-container {
+        display: flex;
+        flex-direction: column;
+        font-family: Montserrat;
+        margin: 40px 40px;
+    }
 
+    .head-container {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 39px;
+        color: #000000;
+    }
+
+
+    .filter-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        position: static;
+        width: 100%;
+        height: 48px;
+    }
+
+    .search {
+        display: flex;
+        align-items: center;
+        width: 60%;
+        height: 100%;
+    }
+
+    .search input {
+        width: 800px;
+        height: 48px;
+        background: #FFFFFF;
+        border: 1px solid #D4D5D7;
+        box-sizing: border-box;
+        border-radius: 10px;
+    }
+
+    .select-container {
+        display: flex;
+        justify-content: space-between;
+        height: 32px;
+        margin: 0px 40px;
+    }
+
+    .select-container select {
+        margin: 0px 20px;
+        border: none;
+        border-bottom: 1px solid #000;
+    }
+
+    .table-container {
+        width: 100%;
+        height: 100%;
+        margin: 20px 0px;
+    }
+
+    .thead-cases {
+        background: #212529;
+        color: #FFF;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 12px;
+        line-height: 15px;
+        text-transform: uppercase;
+    }
+
+    .thead-cases th:last-child {
+        border-radius: 0px 15px 0px 0px;
+        border: 1px solid white;
+        -moz-border-radius: 0px 15px 0px 0px;
+        -webkit-border-radius: 0px 15px 0px 0px;
+    }
+
+    .thead-cases th:first-child {
+        border-radius: 15px 0px 0px 0px;
+        border: 1px solid white;
+        -moz-border-radius: 15px 0px 0px 0px;
+        -webkit-border-radius: 15px 0px 0px 0px;
+    }
+
+    .options {
+        font-size: 24px;
+        color: #FE9400;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .loco {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .drop {
+        margin-right: 5%;
+    }
+
+    .arrows {
+        margin-left: 5%;
+    }
+    .arrow {
+        border: none;
+        color: #FE9400;
+    }
 </style>
