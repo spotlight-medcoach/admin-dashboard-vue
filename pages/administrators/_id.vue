@@ -3,7 +3,7 @@
         <Navigation />
         <div class="add-container">
             <div class="button-container">
-                <nuxt-link to="/spotlighters">
+                <nuxt-link to="/administrators">
                     <i class="fas fa-chevron-left"></i>
                     Cancelar y volver
                 </nuxt-link>
@@ -16,7 +16,21 @@
                 <hr>
 
                 <div class="inputs">
-                    <div class="input-container">
+                    <div class="int-cont">
+                        <Input
+                            type="text"
+                            placeholder="Nombre"
+                            v-model="new_name"
+                            title="Nombre(s)" />
+                    </div>
+                    <div class="int-cont">
+                        <Input
+                            type="text"
+                            placeholder="Apellidos"
+                            v-model="new_last_name"
+                            title="Apellidos" />
+                    </div>
+                    <!-- <div class="input-container">
                         <InputTitle 
                             icon=""
                             title="Nombre(s)" />
@@ -24,7 +38,6 @@
                             type="text"
                             placeholder="Ingresa tu(s) nombre(s)"
                             v-model="new_name" />
-                            <!-- :newValue="user_data.name" -->
                     </div>
                     <div class="input-container">
                         <InputTitle 
@@ -34,12 +47,19 @@
                             type="text"
                             placeholder="Ingresa tus apellidos"
                             v-model="new_last_name" />
-                            <!-- :newValue="user_data.last_name" -->
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="inputs">
-                    <div class="input-container">
+                    <div class="int-cont-email">
+                        <InputIcon
+                            type="text"
+                            placeholder="example@example.com"
+                            v-model="new_email"
+                            icon="fas fa-user-circle"
+                            title="Correo electrónico" />
+                    </div>
+                    <!-- <div class="input-container">
                         <InputTitle 
                             icon="fas fa-user-circle"
                             title="Correo electrónico" />
@@ -47,12 +67,19 @@
                             type="text"
                             placeholder="example@hotmail.com"
                             v-model="new_email" />
-                            <!-- :newValue="user_data.email" -->
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="inputs">
-                    <div class="input-container">
+                    <div class="int-cont-email">
+                        <InputIcon
+                            type="password"
+                            placeholder="• • • • • • • •"
+                            v-model="new_password"
+                            icon="fas fa-envelope"
+                            title="Contraseña" />
+                    </div>
+                    <!-- <div class="input-container">
                         <InputTitle 
                             icon="fas fa-envelope"
                             title="Contraseña" />
@@ -64,7 +91,7 @@
                                 v-model="new_password" />
                             <i class="fas fa-eye"></i>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
             
@@ -81,12 +108,13 @@
                 />
             </div>
 
-            <ModalConfirm 
+            <DeleteUSerModal 
                 v-if="isShowModal"
                 @close="closeModal"
                 :textTitle="titleModal"
                 :textBody="bodyModal"
-                :deleteUser="deleteUser" />
+                :name="nameUser"
+                :action="deleteUser" />
         </div>
     </div>
 </template>
@@ -94,23 +122,23 @@
 <script>
 import Navigation from '../../components/navs/Navigation';
 import Loading from '../../components/modals/Loading';
-import InputTitle from '../../components/inputs/InputTitle';
+import InputIcon from '../../components/inputs/InputIcon';
 import Input from '../../components/inputs/Input';
 import SuccessButton from '../../components/buttons/SuccessButton';
-import ModalConfirm from '../../components/modals/ModalConfirm';
+import DeleteUSerModal from '../../components/modals/DeleteUSerModal';
 
 export default {
     components: {
         Navigation,
         Loading,
-        InputTitle,
+        InputIcon,
         Input,
         SuccessButton,
-        ModalConfirm
+        DeleteUSerModal
     },
     data() {
         return {
-            loading: true,
+            loading: false,
             busy: false,
             isShowModal: false,
             user_data: {},
@@ -119,7 +147,8 @@ export default {
             new_email: '',
             new_password: '',
             titleModal: '',
-            bodyModal: ''
+            bodyModal: '',
+            nameUser: ''
         }
     },
     async created() {
@@ -127,16 +156,19 @@ export default {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
         
         await this.getUser();
-        this.setValueInput()
-        this.loading = !this.loading;
+        this.setValueInput();
     },
     methods: {
         async getUser() {
             try {
+                this.loading = !this.loading;
+
                 let user_response = await this.$axios.get(`/getOneAdminUser?user_id=${this.$route.params.id}`);
                 let user_data = user_response.data.payload;
                 this.user_data = user_data;
-                console.log(user_data)
+                
+                this.loading = !this.loading;
+                console.log('user: ', this.user_data)
             } catch (err) {
                 console.log(err);
             }
@@ -145,6 +177,7 @@ export default {
             this.new_name = this.user_data.name
             this.new_last_name = this.user_data.last_name
             this.new_email = this.user_data.email
+            console.log(this.new_name)
         },
         async updateAdministrator() {
             try {
@@ -157,7 +190,9 @@ export default {
                 });
 
                 this.busy = !this.busy
-                this.bodyModal = updated_response.data.message;
+                this.titleModal = 'Eliminar usuario';
+                this.bodyModal = '¿Deseas eliminar al siguiente usuario?'
+                this.nameUser = admin_data.name + " " + admin_data.last_name
                 setTimeout(() => {
                     this.$router.push({ path: '/administrators' })
                     // this.isShowModal = !this.isShowModal;
@@ -241,13 +276,20 @@ export default {
     .inputs {
         display: flex;
         flex-direction: row;
-        justify-content:center;
+        justify-content:space-between;
         align-items: center;
-        width: 80%;
-        margin-left: auto;
-        margin-right: auto;
-        margin-top: 2%;
-        margin-bottom: 2%;
+        width: 100%;
+    }
+
+    .int-cont {
+        width: 100%;
+        margin: 40px 80px;
+    }
+
+    .int-cont-email {
+        width: 36%;
+        margin: 0px 80px;
+        margin-bottom: 40px;
     }
 
     .input-container {

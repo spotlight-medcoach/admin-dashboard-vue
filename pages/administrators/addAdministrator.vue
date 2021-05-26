@@ -12,91 +12,54 @@
             <Loading v-if="loading" />
             <div v-else class="form-container">
                 <h1>Crear administrador</h1>
+                <hr>
 
                 <div class="inputs">
-                    <!-- <div class="input-container">
-                        <InputTitle 
-                            icon=""
-                            title="Nombre(s)" />
+                    <div class="int-cont">
                         <Input
                             type="text"
                             placeholder="Ingresa tu(s) nombre(s)"
-                            v-model="name" />
+                            v-model="name"
+                            title="Nombre(s)" />
                     </div>
-                    <div class="input-container">
-                        <InputTitle 
-                            icon=""
-                            title="Apellidos" />
+                    <div class="int-cont">
                         <Input
                             type="text"
                             placeholder="Ingresa tus apellidos"
-                            v-model="last_name" />
-                    </div> -->
+                            v-model="last_name"
+                            title="Apellidos" />
+                    </div>
                 </div>
                     
-                <div class="inputs-email">
-                    <InputIcon
-                        type="text"
-                        placeholder="example@example.com"
-                        v-model="email"
-                        icon="fas fa-user-circle"
-                        title="Correo electrónico"
-                    />
-
-                    <!-- <div class="input-container-email">
-                        <InputTitle 
+                <div class="inputs">
+                    <div class="int-cont-email">
+                        <InputIcon
+                            type="text"
+                            placeholder="example@example.com"
+                            v-model="email"
                             icon="fas fa-user-circle"
                             title="Correo electrónico" />
-                        <Input
-                            type="text"
-                            placeholder="example@hotmail.com"
-                            v-model="email" />
-                    </div> -->
+                    </div>
                 </div>
 
                 <div class="inputs">
-                    
-                    <InputIcon
-                        type="password"
-                        placeholder="• • • • • • • •"
-                        v-model="password"
-                        icon="fas fa-envelope"
-                        title="Contraseña"
-                    />
-
-                    <InputIcon
-                        type="password"
-                        placeholder="• • • • • • • •"
-                        v-model="confirm_password"
-                        icon="fas fa-user-circle"
-                        title="Confirmar contraseña"
-                    />
-                    <!-- <div class="input-container">
-                        <InputTitle 
+                    <div class="int-cont">
+                        <InputIcon
+                            type="password"
+                            placeholder="• • • • • • • •"
+                            v-model="password"
                             icon="fas fa-envelope"
                             title="Contraseña" />
-                        
-                        <div>
-                            <Input
-                                type="password"
-                                placeholder="• • • • • • • •"
-                                v-model="password" />
-                            <i class="fas fa-eye"></i>
-                        </div>
                     </div>
 
-                    <div class="input-container">
-                        <InputTitle 
+                    <div class="int-cont">
+                        <InputIcon
+                            type="password"
+                            placeholder="• • • • • • • •"
+                            v-model="confirm_password"
                             icon="fas fa-user-circle"
                             title="Confirmar contraseña" />
-                        <div>
-                            <Input
-                                type="password"
-                                placeholder="• • • • • • • •"
-                                v-model="confirm_password" />
-                            <i class="fas fa-eye"></i>
-                        </div>
-                    </div> -->
+                    </div>
                 </div>
             </div>
 
@@ -207,22 +170,34 @@ export default {
     .form-container {
         display: flex;
         flex-direction: column;
-        width: 80%;
+        width: 85%;
         margin-top: 1%;
         margin-left: auto;
         margin-right: auto;
     }
 
+    hr {
+        margin: 0;
+        opacity: 1;
+        border: 2px solid #000;
+    }
+
     .inputs {
         display: flex;
         flex-direction: row;
-        justify-content:center;
+        justify-content:space-between;
         align-items: center;
-        width: 80%;
-        margin-left: auto;
-        margin-right: auto;
-        margin-top: 2%;
-        margin-bottom: 2%;
+        width: 100%;
+    }
+
+    .int-cont {
+        width: 100%;
+        margin: 40px 80px;
+    }
+
+    .int-cont-email {
+        width: 36%;
+        margin: 0px 80px;
     }
 
     .input-container {

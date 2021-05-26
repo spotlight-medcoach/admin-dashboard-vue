@@ -10,8 +10,20 @@
 
 <script>
 export default {
-    props: ['type', 'placeholder', 'model', 'icon', 'title']
-
+    props: ['type', 'placeholder', 'model', 'icon', 'title'],
+    data() {
+        return {
+            localValue: this.model
+        }
+    },
+    watch: {
+        localValue (newValue) {
+            this.$emit('input', newValue)
+        },
+        value (newValue) {
+            this.localValue = value
+        }
+    }
 }
 </script>
 
@@ -19,36 +31,35 @@ export default {
     .input-title {
         display: flex;
         flex-direction: column;
-        /* align-items: center; */
         color: #1CA4FC;
     }
 
     .title {
         display: flex;
         flex-direction: row;
+        align-items: center;
     }
 
     .input-title i {
         font-size: 24px;
         margin-right: 8px;
-        /* margin: 0px 8px; */
     }
 
     .input-title h3 {
         font-family: Montserrat;
         font-style: normal;
-        font-weight: 550;
-        font-size: 20px;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
         margin-bottom: 0;
     }
 
     input {
-        /* margin-left: 2.5rem; */
         margin-top: .5rem;
         background-color:transparent;
         border: 0px solid;
-        height:30px;
-        width:260px;
+        height: 30px;
+        width: 100%;
         border-bottom: 2px solid lightgray;
         font-family: Montserrat;
     }
