@@ -6,42 +6,50 @@
 			<div>
 				<LinkNavigation
 					to="/statistics"
-					new_class="fas fa-chart-bar link" />
+					new_class="link nuxt-link-active"
+					icon="fas fa-chart-bar" />
 			</div>
 			<div>
 				<LinkNavigation 
 					to="/findCase"
-					new_class="fas fa-search link" />
+					new_class="link nuxt-link-active"
+					icon="fas fa-search" />
 			</div>
-			<!-- <div>
+			<div>
 				<LinkNavigation 
-					to="/"
-					new_class="fas fa-folder link nuxt-link-active" />
-			</div> -->
+					to="/reviewNewQuestions"
+					new_class="link nuxt-link-active"
+					icon="fas fa-folder" />
+			</div>
 			<div>
 				<LinkNavigation 
 					to="/reports"
-					new_class="fas fa-exclamation-circle link nuxt-link-active" />
+					new_class="link nuxt-link-active"
+					icon="fas fa-exclamation-circle" />
 			</div>
 			<div>
 				<LinkNavigation 
 					to="/requestedCases"
-					new_class="fas fa-list-alt link nuxt-link-active" />
+					new_class="link nuxt-link-active"
+					icon="fas fa-list-alt" />
 			</div>
-			<!-- <div>
+			<div>
 				<LinkNavigation 
 					to="/"
-					new_class="fas fa-book-open link nuxt-link-active" />
-			</div> -->
+					new_class="link nuxt-link-active"
+					icon="fas fa-book-open" />
+			</div>
 			<div>
 				<LinkNavigation 
 					to="/spotlighters"
-					new_class="fas fa-user-friends link" />
+					new_class="link nuxt-link-active"
+					icon="fas fa-user-friends" />
 			</div>
 			<div>
 				<LinkNavigation 
 					to="/administrators"
-					new_class="fas fa-user-shield link" />
+					new_class="link nuxt-link-active"
+					icon="fas fa-user-shield" />
 			</div>
 		</nav>
 		
@@ -78,15 +86,16 @@ export default {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		height: 80px;
+		width: 100%;
+		height: 60px;
 		background: #FFF;
 		border-bottom: 1px solid #D4D5D7;
     }
 
     .head-navigation img {
-		height: 36px;
-		margin-left: 4%;
-		margin-right: 4%;
+		width: 220.11px;
+		height: 28px;
+		margin-left: 40px;
     }
 
     .profile {
@@ -97,24 +106,25 @@ export default {
     }
 
 	.profile button {
-		font-size: 30px;
+		font-size: 36px;
 	}
 
 	.nav {
 		display: flex;
 		flex-direction: row;
-		margin-left: 2%;
+
+		margin-left: 7%;
 		margin-right: 4%;
 	}
 
 	.nav div {
 		display: flex;
-		justify-content: center;
 		align-items: center;
-		margin-left: .0001%;
-		margin-right: .0001%;
-		width: 80px;
-		height: 80px;
+		justify-content: center;
+		width: 48px;
+		height: 48px;
+		margin: 0px 21.145px;
+		
 	}
 
 	.nuxt-link-exact-active {

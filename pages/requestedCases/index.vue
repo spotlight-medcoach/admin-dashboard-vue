@@ -15,13 +15,15 @@
             <div class="search-active-container">
                 <input type="searchText" placeholder="Buscar">
                 
-                <select class="options">
-                    <option value="1">Aprobado</option>
-                    <option value="2">Inactivos</option>
+                <select v-model="selected" class="options" @change="changeStatus(selected)">
+                    <option value="Approved by Spotlighter" selected>Aprobado</option>
+                    <option value="Pending">Pendiente</option>
+                    <option value="Accepted by Spotlighter">Aceptado por spotlighter</option>
+                    <option value="In edit">En edición</option>
+                    <option value="Pendign review">Pendiente de revisión</option>
+                    <option value="With feedback">Con retroalimentación</option>
                 </select>
             </div>
-
-            <!-- <h1 v-if="loading">Cargando...</h1> -->
 
             <div class="table-container">
                 <Loading v-if="loading" />
@@ -35,6 +37,7 @@
                             <th scope="col">Descripción</th>
                             <th scope="col">Estado</th>
                             <th scope="col">Usuario</th>
+                            <th scope="col">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,14 +48,14 @@
                             <td>{{ theCase.description }}</td>
                             <td>{{ theCase.status }}</td>
                             <td>{{ theCase.admin_user.name }} {{ theCase.admin_user.last_name }}</td>
-                            <!-- <td>
-                                <button class="fas fa-ellipsis-v btn" @click="showModal = true"></button>
-                            </td> -->
+                            <td>
+                                <button class="btn op"><i class="fas fa-list-alt"></i> Ver caso</button>
+                                <!-- <button class="btn">Ver caso</button> -->
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-                                <!-- <ActionsModal :show="showModal" @close="showModal = false" /> -->
 
             <div class="pagination-container">
                 <div class="dropdown drop">
@@ -101,39 +104,44 @@ export default {
     },
     data() {
         return {
-            loading: true,
             cases: [],
             topics: [],
+            selected: '',
+            loading: false,
             showModal: false
         }
     },
     async created() {
         if (process.browser) 
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
-        // await this.getTopics()
-        // await this.getCases()
-        this.loading = !this.loading
+
+        await this.getCases()
+        // this.loading = !this.loading
     },
     methods: {
-        async getTopics() {
-            try {
-                let topics = await this.$axios.get('/getTopicsWithSubtopics')
-                this.topics = topics.data.payload
-            } catch (err) {
-                console.log(err);
-            }
-        },
         filterTopic(topic_bubble) {
-            return this.topics.filter(top => top.bubble_id == topic_bubble)[0].name
+            var topic = '';
+            if (process.browser) {
+                let topics = JSON.parse(localStorage.getItem('topics'))
+                topic = topics.filter(top => top.bubble_id == topic_bubble)[0].name
+            }
+            return topic;
         },
         filterSubtopic(topic_bubble, subtopic_bubble) {
-            let topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0]
-            let subtopic = topic.subtopics.filter(sub => sub.subtopic == subtopic_bubble);
+            var topic
+            var subtopic
+            if (process.browser) {
+                let topics = JSON.parse(localStorage.getItem('topics'));
+                topic = topics.filter(top => top.bubble_id == topic_bubble)[0]
+                subtopic = topic.subtopics.filter(sub => sub.subtopic == subtopic_bubble);
+            }
 
             return subtopic[0].name
         },
         async getCases() {
             try {
+                this.loading = !this.loading
+
                 let cases_response = await this.$axios.get('/getCasesRequested');
                 this.cases = cases_response.data.payload;
 
@@ -144,16 +152,25 @@ export default {
                 });
 
                 this.cases = cases;
+                this.loading = !this.loading
                 console.log(this.cases);
             } catch (err) {
                 console.log(err);
             }
-            
+        },
+        changeStatus(new_status) {
+            console.log(new_status);
         }
     }
 }
 </script>
 
 <style scoped>
+    .op {
+        font-size: 16px;
+    }
 
+    .op i {
+        font-size: 24px;
+    }
 </style>

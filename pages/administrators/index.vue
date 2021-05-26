@@ -3,7 +3,7 @@
         <Navigation />
         <div class="admin-container">
             <div class="head-container">
-                <h1>Administradores</h1>
+                <p class="title">Administradores</p>
                 <nuxt-link 
                     to="/administrators/addAdministrator"
                     class="add-button" >
@@ -15,9 +15,9 @@
             <div class="search-active-container">
                 <input type="searchText" placeholder="Buscar">
                 
-                <select class="options">
-                    <option value="1">Activos</option>
-                    <option value="2">Inactivos</option>
+                <select v-model="selected" class="options" @change="selectedChange">
+                    <option value="true" selected>Activos</option>
+                    <option value="false">Inactivos</option>
                 </select>
             </div>
 
@@ -118,8 +118,9 @@ export default {
     },
     data() {
         return {
-            loading: true,
+            loading: false,
             isShowModal: false,
+            selected: true,
             searchText: '',
             administrators: [],
             userIdToDelete: ''
@@ -129,16 +130,21 @@ export default {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
         await this.getAdministrators()
-        this.loading = !this.loading
+        // this.loading = !this.loading
     },
     methods: {
         async getAdministrators() {
             try {
-                let administrators_response = await this.$axios.get('/getAllAdminnistrator?status=true')
+                this.loading = !this.loading
+                let administrators_response = await this.$axios.get(`/getAllAdminnistrator?status=${JSON.parse(this.selected)}`)
                 this.administrators = administrators_response.data.administrators
+                this.loading = !this.loading
             } catch (err) {
                 console.log(err);
             }
+        },
+        selectedChange() {
+            this.getAdministrators()
         },
         async setInactive(admin_id) {
             if (process.browser) {
@@ -188,7 +194,16 @@ export default {
     .admin-container {
         display: flex;
         flex-direction: column;
-        margin: 40px;
+        margin: 20px 40px;
+        font-family: Montserrat;
+    }
+
+    .title {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 39px;
+        margin-bottom: 0;
     }
 
     .head-container {
@@ -213,7 +228,6 @@ export default {
         box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
         border-radius: 10px;
 
-        font-family: Montserrat;
         font-style: normal;
         font-weight: 500;
         font-size: 16px;
@@ -245,13 +259,12 @@ export default {
         justify-content: space-between;
         align-items: center;
         padding: 12px;
-        width: 45%;
+        width: 55%;
         height: 48px;
         background: #FFFFFF;
         border: 1px solid #D4D5D7;
         box-sizing: border-box;
         border-radius: 10px;
-        margin: 0px 40px;
         outline: none;
     }
 

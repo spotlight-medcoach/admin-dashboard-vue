@@ -9,13 +9,15 @@
                 </nuxt-link>
             </div>
 
-            <div class="form-container">
+            <Loading v-if="loading" />
+            <div v-else class="form-container">
                 <div class="title-container">
                     <h1>Solicitar nuevo caso</h1>
                     <button type="button" class="btn cancel" @click="discardCase"><i class="fas fa-trash mr-5 pr-5"></i> Descartar caso</button>
                 </div>
 
                 <div class="inputs-container">
+                    
                     <div class="input-name">
                         <InputTitle 
                             icon=""
@@ -83,24 +85,25 @@
                             placeholder="Lorem ipsum dolor, sit amet consectetur adipisicing elit. Veniam, nobis expedita provident eveniet distinctio odio iusto recusandae facere. Molestiae, consectetur. Corporis temporibus voluptate velit quis quae animi cumque nobis tenetur."></textarea>
                     </div>
                 </div>
-
-                <select class="" v-model="selected" @change="usersSelected(selected)">
-                    <option value="" selected>Seleccionar estudiantes</option>
-                    <option v-bind:value="user" v-for="user in users" :key="user._id">
-                        {{ user.name }}
-                    </option>
+                
+                <select v-model="selected" class="js-example-basic-single" name="state" @change="setSelectedUser(selected)">
+                    <option :value="spot.spotlighter_id" v-for="spot in spotlighters" :key="spot.spotlighter_id">{{spot.name}} {{spot.last_name}}</option>
                 </select>
 
-                <h2 v-for="user in users_selected" :key="user._id" class="">{{ user.name}} {{user.last_name}} <i class="fas fa-user-times" @click="removeItem(user)"></i> </h2>
+                <div class="load-container">
+                    <div class="lds-dual-ring" v-if="busy"></div>
+                </div>
 
                 <div class="add-btn">
                     <SuccessButton 
                         :text="'Solicitar nuevo caso'"
-                        :click="add"
+                        :click="addPendingCase"
                         :new_class="'btn'"
                         :i_class="'fas fa-list-alt'" /> 
                 </div>
             </div>
+
+            <ModalConfirm v-if="isShowModal" @close="closeModal" :textBody="textModal" :textTitle="textTile" :deleteUser="deleteUser" />
         </div>
     </div>
 </template>
@@ -110,19 +113,29 @@ import Navigation from '../../components/navs/Navigation';
 import Input from '../../components/inputs/Input';
 import InputTitle from '../../components/inputs/InputTitle';
 import SuccessButton from '../../components/buttons/SuccessButton';
+import Loading from '../../components/modals/Loading';
+import ModalConfirm from '../../components/modals/ModalConfirm';
 
 export default {
     components: {
         Navigation,
         Input,
         InputTitle,
-        SuccessButton
+        SuccessButton,
+        Loading,
+        ModalConfirm
     },
     data() {
         return {
-            users: [],
+            loading: true,
+            busy: false,
+            isShowModal: false,
+            textModal: '',
+            textTitle: '',
+            admin_data: {},
+            spotlighters: [],
+            topics: [],
             selected: '',
-            users_selected: [],
             case_name: '',
             case_id: '',
             topic: '',
@@ -132,48 +145,84 @@ export default {
         }
     },
     async created() {
-        if (process.browser)
+        if (process.browser) {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
+            this.topics = JSON.parse(localStorage.getItem('topics'));
+        }
         
-        await this.getUsers();
+        await this.getSpotlighters();
+        this.getAdminData();
+        this.loading = !this.loading;
+        console.log('topics: ', this.topics);
     },
     methods: {
-        async getUsers() {
+        async getSpotlighters() {
             try {
-                let users = await this.$axios.get('/getAllAdminnistrator?status=true');
-                console.log(users)
-                this.users = users.data.administrators;
+                let spotlighters_response = await this.$axios.get('/getAllSpotlighters?status=true');
+                this.spotlighters = spotlighters_response.data.payload;
             } catch (err) {
                 console.log(err);
             }
         },
-        usersSelected(selected) {
-            try {
-                console.log('select: ', selected)
-                if (selected != null) {
-                    this.users_selected.push(selected)
-                    this.users = this.users.filter(user => user._id !== selected._id)
-                }
-            } catch (err) {
-                console.log(err);
+        getAdminData() {
+            if (process.browser) {
+                this.admin_data = JSON.parse(localStorage.getItem('user'));
             }
         },
-        removeItem(user) {
-            try {
-                console.log('user: ', user)
-                if (user != null) {
-                    this.users.push(user)
-                    this.users_selected = this.users_selected.filter(us => us._id !== user._id)
-                }
-            } catch (err) {
-                console.log(err);
-            }
+        setSelectedUser(spotlighter) {
+            console.log('selected: ', spotlighter);
         },
-        add() {
-            alert('agregar el caso')
+        filterBubbleTopic(topic_name) {
+            var topic_bubble = '';
+            
+            topic_bubble = this.topics.filter(top => top.name.toLowerCase() == topic_name.toLowerCase())
+
+            return topic_bubble[0].bubble_id;
+        },
+        filterBubbleSubtopic(topic_bubble, subtopic_name) {
+            let topic = this.topics.filter(top => top.bubble_id == topic_bubble);
+            let subtopics = topic[0].subtopics
+            
+            let subtopic = subtopics.filter(sub => sub.name.toLowerCase() == subtopic_name.toLowerCase())
+
+            return subtopic[0].subtopic;
+        },
+        async addPendingCase() {
+            this.busy = !this.busy;
+
+            let topic_bubble = this.filterBubbleTopic(this.topic);;
+            let subtopic_bubble = this.filterBubbleSubtopic(topic_bubble, this.subtopic);
+
+            let case_response = await this.$axios.post('/createPendingCase', {
+                admin_user: this.admin_data.admin_id,
+                pending_case_id: this.case_id,
+                name: this.case_name,
+                topic_bubble: topic_bubble,
+                subtopic_bubble: subtopic_bubble,
+                language: this.language,
+                requested: true,
+                request_description: this.description,
+                spotlighter_id: this.selected,
+            })
+
+            // console.log(case_response.data.message)
+            this.busy = !this.busy;
+            this.isShowModal = !this.isShowModal;
+            this.textTitle = 'Nuevo caso'
+            this.textModal = case_response.data.message
+            setTimeout(() => {
+                this.$router.push({ path: '/requestedCases' })
+                this.isShowModal = !this.isShowModal;
+            }, 1500);
         },
         discardCase() {
              this.$router.push({ path: '/requestedCases'});
+        },
+        deleteUser() {
+
+        },
+        closeModal() {
+            this.isShowModal = !this.isShowModal;
         }
     }
 }
@@ -262,6 +311,34 @@ export default {
         display: flex;
         justify-content: flex-end;
         width: 100%;
+    }
+
+    /* estilos para el loading predeterminado */
+    .lds-dual-ring {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+    }
+
+    .lds-dual-ring:after {
+        content: " ";
+        display: block;
+        width: 44px;
+        height: 44px;
+        /* margin: 8px; */
+        border-radius: 50%;
+        border: 6px solid #FE9400;
+        border-color: #FE9400 transparent #FE9400 transparent;
+        animation: lds-dual-ring 1.2s linear infinite;
+    }
+
+    @keyframes lds-dual-ring {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
 </style>

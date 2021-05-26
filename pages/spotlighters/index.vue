@@ -15,10 +15,10 @@
             <div class="search-active-container">
                 <input type="searchText" placeholder="Buscar!!!">
                 
-                <select class="options">
-                    <option value="1">Solicitud de pago!!</option>
-                    <option value="2">Activos</option>
-                    <option value="3">Inactivos</option>
+                <select v-model="selected" class="options" @change="selectedChange">
+                    <!-- <option value="1" selected>Solicitud de pago!!</option> -->
+                    <option value="true">Activos</option>
+                    <option value="false">Inactivos</option>
                 </select>
 
                 <div class="pay-button">
@@ -132,8 +132,9 @@ export default {
     },
     data() {
         return {
-            loading: true,
+            loading: false,
             isShowModal: false,
+            selected: true,
             titleModal: '',
             bodyModal: '',
             searchText: '',
@@ -145,17 +146,21 @@ export default {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
         await this.getSpotlighters()
-        this.loading = !this.loading;
+        // this.loading = !this.loading;
     },
     methods: {
         async getSpotlighters() {
             try {
-                // acomodar la variable status
-                let spotlighter_response = await this.$axios.get('/getAllSpotlighters?status=true');
+                this.loading = !this.loading;
+                let spotlighter_response = await this.$axios.get(`/getAllSpotlighters?status=${JSON.parse(this.selected)}`);
                 this.spotlighters = spotlighter_response.data.payload;
+                this.loading = !this.loading;
             } catch (err) {
                 console.log(err);
             }
+        },
+        selectedChange() {
+            this.getSpotlighters()
         },
         async update(user) {
             // cambiar a vista para actualizar spotlighter

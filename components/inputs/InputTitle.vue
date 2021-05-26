@@ -15,7 +15,7 @@ export default {
     .input-title {
         display: flex;
         flex-direction: row;
-        align-items: center;
+        /* align-items: center; */
         color: #1CA4FC;
     }
 

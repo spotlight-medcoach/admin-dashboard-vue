@@ -1,10 +1,12 @@
 <template>
-    <NuxtLink :to="to" :class="new_class"></NuxtLink>
+    <!-- <div class="link-container"> -->
+        <NuxtLink :to="to" :class="new_class"> <i :class="icon"></i></NuxtLink>
+    <!-- </div> -->
 </template>
 
 <script>
 export default {
-    props: ['to', 'new_class']
+    props: ['to', 'new_class', 'icon']
 }
 </script>
 
@@ -16,16 +18,13 @@ export default {
     }
 
     .link {
-        left: 20%;
-		right: 20%;
-		top: 20%;
-		bottom: 20%;
-		text-decoration: none;
-		font-size: 20px;
-		background: #5F5F5F;
-		color: #FFFFFF;
-
-		padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        color: #FFFFFF;
+        background: #5F5F5F;
         border-radius: 50%;
         border: 1px solid #5F5F5F;
         text-decoration: none;
