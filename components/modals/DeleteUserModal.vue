@@ -4,17 +4,17 @@
             <div class="modal-wrapper" role="document">
                 <div class="modal-container">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ textTitle }}</h5>
+                        <h3 class="modal-title">{{ textTitle }}</h3>
+                        <button class="fas fa-times btn close-btn" @click="$emit('close')"></button>
                     </div>
                     <div class="modal-body">
                         <p>{{ textBody }}</p>
+                        <p>{{ name }}</p>
                     </div>
-                    
-                    <!-- <div class="lds-dual-ring" v-if="busy"></div> -->
 
-                    <div class="footer">
+                    <div class="modal-footer">
                         <button type="button" class="btn" data-dismiss="modal" @click="$emit('close')">Cancelar</button>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="deleteUser">Eliminar</button>
+                        <button type="button" class="btn delete" data-dismiss="modal" @click="action">Eliminar</button>
                     </div>
                 </div>
             </div>
@@ -24,8 +24,8 @@
 
 <script>
 export default {
-    props: ['textTitle', 'textBody', 'deleteUser', 'busy']
-};
+    props: ['textTitle', 'textBody', 'name', 'action']
+}
 </script>
 
 <style scoped>
@@ -46,20 +46,44 @@ export default {
         vertical-align: middle;
     }
 
+    .modal-footer {
+        justify-content: space-between;
+        border-top: 0;
+        padding: 0;
+    }
+
     .modal-container {
-        width: 40%;
+        width: 440px;
+        height: 318px;
         margin: 0px auto;
         padding: 20px 30px;
         background-color: #fff;
-        border-radius: 2px;
+        border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
         transition: all .3s ease;
-        font-family: Helvetica, Arial, sans-serif;
+        font-family: Montserrat;
     }
 
-    .modal-header h3 {
-        margin-top: 0;
-        color: #42b983;
+    .modal-footer button {
+        width: 40%;
+        height: 48px;
+    }
+
+    .close-btn {
+        color: #DB1212;
+    }
+
+    .delete {
+        background: #DB1212;
+        color: #FFF;
+    }
+
+    .modal-header {
+        border-bottom: 0;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 24px;
     }
 
     .modal-body {

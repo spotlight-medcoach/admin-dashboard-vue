@@ -92,12 +92,20 @@
                 </nav>
             </div>
 
-            <ModalConfirm 
+            <!-- <ModalConfirm 
                 v-if="isShowModal"
                 @close="closeModal"
                 :textTitle="titleModal"
                 :textBody="bodyModal"
-                :deleteUser="deleteUser" />
+                :deleteUser="deleteUser" /> -->
+            
+            <DeleteUSerModal 
+                v-if="isShowModal"
+                @close="closeModal"
+                :textTitle="titleModal"
+                :textBody="bodyModal"
+                :name="nameUser"
+                :action="deleteUser" />
 
         </div>
     </div>
@@ -106,14 +114,14 @@
 <script>
 import Navigation from '../../components/navs/Navigation';
 import SuccessButton from '../../components/buttons/SuccessButton';
-import ModalConfirm from '../../components/modals/ModalConfirm';
+import DeleteUSerModal from '../../components/modals/DeleteUSerModal';
 import Loading from '../../components/modals/Loading';
 
 export default {
     components: {
         Navigation,
         SuccessButton,
-        ModalConfirm,
+        DeleteUSerModal,
         Loading
     },
     data() {
@@ -122,6 +130,9 @@ export default {
             isShowModal: false,
             selected: true,
             searchText: '',
+            titleModal: '',
+            bodyModal: '',
+            nameUser: '',
             administrators: [],
             userIdToDelete: ''
         }
@@ -167,8 +178,10 @@ export default {
             this.$router.push({ path: `/administrators/${admin_data._id}` });
         },
         confirmModal(admin_data) {
-            this.titleModal = 'Eliminar administrador'
-            this.bodyModal = "¿Deseas eliminar el siguiente usuario?\n" + admin_data.name + " " + admin_data.last_name
+            this.titleModal = 'Eliminar usuario'
+            this.bodyModal = "¿Deseas eliminar el siguiente usuario?" 
+            this.nameUser = "" + admin_data.name + " " + admin_data.last_name
+            console.log(admin_data.name + " " + admin_data.last_name)
             this.isShowModal = !this.isShowModal;
             this.userIdToDelete = admin_data._id
         },
