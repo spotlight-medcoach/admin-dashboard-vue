@@ -39,67 +39,76 @@
                 <button type="button" class="btn forgot-button">Olvidé mi contraseña</button>
             </div>
             
-            <ModalConfirm v-if="isShowModal" @close="closeModal" :textBody="textModal" />
+            <AlertModal v-if="isShowModal" @close="closeModal" :textTitle="modalTitle" :textBody="modalBody" />
         </div>
     </div>
 </template>
 
 <script>
-import ModalConfirm from './modals/ModalConfirm';
+import AlertModal from './modals/AlertModal';
 import InputTitle from './inputs/InputTitle';
 import Input from './inputs/Input';
 
 export default {
     components: {
-        ModalConfirm,
+        AlertModal,
         InputTitle,
         Input
     },
     data() {
         return {
+            userData: {},
             email: '',
             password: '',
             busy: false,
             isShowModal: false,
-            textModal: ''
+            modalTitle: '',
+            modalBody: ''
         }
     },
     methods: {
-        login() {
-            this.busy = true
-
-            this.$axios
-            .post('/userLogin', {
-                email: this.email,
-                password: this.password
-            })
-            .then(res => {
-                // console.log(res);
-                let userData = res.data.payload;
-                this.isShowModal = !this.isShowModal;
-                this.textModal = res.data.message
-
-                if (process.client) {
-                    localStorage.setItem('user', JSON.stringify(userData));
-                    localStorage.setItem('user_token', res.data.token);
-                    this.$store.commit('setUserInfo', res.data.payload);
-                    this.$store.commit('setToken', res.data.token);
-                    this.busy = false;
-
-                    setTimeout(() => {
-                        this.$router.push({ path: '/statistics' })
-                        this.isShowModal = !this.isShowModal;
-                    }, 1000);
+        async login() {
+            try {
+                this.busy = !this.busy
+    
+                let loginResponse = await this.$axios.post('/userLogin', {
+                    email: this.email,
+                    password: this.password
+                });
+    
+                let data = loginResponse.data.payload;
+                this.userData = data;
+                console.log(this.userData)
+                
+                if (process.browser) {
+                    localStorage.setItem('user', JSON.stringify(this.userData));
+                    localStorage.setItem('user_token', loginResponse.data.token);
+                    this.$store.commit('setUserInfo', loginResponse.data.payload);
+                    this.$store.commit('setToken', loginResponse.data.token);
                 }
-            })
-            .catch(err => {
+                
                 this.isShowModal = !this.isShowModal;
-                this.textModal = err.response.data.message;
+                this.busy = !this.busy;
+
+                this.modalTitle = 'Login'
+                this.modalBody = loginResponse.data.message + " \n" + this.userData.role
+
+                setTimeout(() => {
+                    if (this.userData.role == 'Administrador')
+                        this.$router.push({ path: '/statistics' })
+                    else
+                        this.$router.push({ path: '/requestedQuestions'})
+                    
+                    this.isShowModal = !this.isShowModal;
+                }, 1500);
+            } catch (err) {
+                this.isShowModal = !this.isShowModal;
+                this.modalTitle = 'Login'
+                this.modalBody = err.response.data.message;
                 const response = err.response;
                 console.log('Error: ', response.data.message);
-                // alert(response.data.message);
                 this.busy = false;
-            });
+            }
         },
         closeModal() {
             this.isShowModal = !this.isShowModal;
@@ -147,41 +156,6 @@ export default {
         margin: 20px 0px;
         padding: 20px, 0px;
     }
-
-    /* .input-title {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        color: #1CA4FC;
-    }
-
-    .input-title i {
-        font-size: 24px;
-        margin: 0px 8px;
-    }
-
-    .input-title h3 {
-        font-family: Montserrat;
-        font-style: normal;
-        font-weight: 550;
-        font-size: 20px;
-        margin-bottom: 0;
-    }
-
-    input {
-        margin-left: 2.5rem;
-        margin-top: .5rem;
-        background-color:transparent;
-        border: 0px solid;
-        height:30px;
-        width:260px;
-        border-bottom: 2px solid lightgray;
-        font-family: Montserrat;
-    }
-
-    input:focus {
-        outline: none;
-    } */
 
     .check {
         display: flex;
