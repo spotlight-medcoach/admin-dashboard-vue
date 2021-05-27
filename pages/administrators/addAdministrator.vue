@@ -11,7 +11,7 @@
 
             <Loading v-if="loading" />
             <div v-else class="form-container">
-                <h1>Crear administrador</h1>
+                <p class="title">Crear administrador</p>
                 <hr>
 
                 <div class="inputs">
@@ -176,6 +176,13 @@ export default {
         margin-right: auto;
     }
 
+    .title {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 39px;
+    }
+
     hr {
         margin: 0;
         opacity: 1;
@@ -227,39 +234,6 @@ export default {
         display: flex;
         justify-content: center;
     }
-
-    /* .add-admi {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-
-        background: #FFFFFF;
-        box-shadow: 0px 0px 40px rgba(29, 43, 72, 0.5);
-        border-radius: 20px;
-    }
-
-    .add-admi-title {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: flex-start;
-        height: 41px;
-        background: red;
-    }
-
-    .inputs-container {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .input-container {
-        display: flex;
-        flex-direction: column;
-        margin: 20px 0px;
-        padding: 20px, 0px;
-    } */
 
     /* estilos para el loading predeterminado */
     .lds-dual-ring {

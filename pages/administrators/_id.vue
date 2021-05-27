@@ -12,7 +12,7 @@
 
             <Loading v-if="loading" />
             <div v-else class="form-container">
-                <h1>Editar administrador</h1>
+                <p class="title">Editar administrador</p>
                 <hr>
 
                 <div class="inputs">
@@ -249,8 +249,11 @@ export default {
         margin-right: 5%;
     }
 
-    h1 {
-        margin-bottom: 0;
+    .title {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 39px;
     }
 
     hr {
