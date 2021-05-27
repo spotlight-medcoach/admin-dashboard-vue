@@ -21,11 +21,12 @@ export default {
         }
     },
     async created() {
-        if (process.browser)
+        if (process.browser){
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
+            await this.getUniversities()
+            await this.getTopics()
+        }
             
-        await this.getUniversities()
-        await this.getTopics()
         this.loading = !this.loading
     },
     methods: {
