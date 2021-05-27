@@ -12,141 +12,91 @@
 
             <Loading v-if="loading" />
             <div v-else class="form-container">
-                <h1>Editar spotlighter</h1>
+                <p class="title">Editar spotlighter</p>
                 <hr>
 
-                <div class="inputs">
-                    <div class="input-container">
-                        <InputTitle 
-                            icon=""
-                            title="Nombre(s)" />
-                        <Input
-                            type="text"
-                            placeholder="Ingresa tu(s) nombre(s)"
-                            v-model="new_name" />
-                            <!-- :newValue="user_data.name" -->
-                    </div>
-                    <div class="input-container">
-                        <InputTitle 
-                            icon=""
-                            title="Apellidos" />
-                        <Input
-                            type="text"
-                            placeholder="Ingresa tus apellidos"
-                            v-model="new_last_name" />
-                            <!-- :newValue="user_data.last_name" -->
-                    </div>
-                </div>
-
-                <div class="inputs">
-                    <div class="input-container">
-                        <InputTitle
-                            icon=""
-                            title="País"
-                        />
-                        <Input
-                            type="text"
-                            placeholder="País"
-                            v-model="new_country"
-                        />
-                            <!-- :newValue="user_data.country" -->
-                        <!-- <select name="" id="">
-                            <option value="1">País1</option>
-                            <option value="2">País2</option>
-                            <option value="3">País3</option>
-                        </select> -->
-                    </div>
-                    <div class="input-container">
-                        <InputTitle
-                            icon=""
-                            title="Estado"
-                        />
-
-                        <Input
-                            type="text"
-                            placeholder="Estado"
-                            v-model="new_state" />
-                            <!-- :newValue="user_data.state" -->
-                        <!-- <select name="" id="">
-                            <option value="1">Estado1</option>
-                            <option value="2">Estado2</option>
-                            <option value="3">Estado3</option>
-                        </select> -->
-                    </div>
-                </div>
-
-                <div class="inputs">
-                    <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-user-circle"
-                            title="Correo electrónico" />
-                        <Input
-                            type="text"
-                            placeholder="example@hotmail.com"
-                            v-model="new_email" />
-                            <!-- :newValue="user_data.email" -->
-                    </div>
-                    <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-mobile-alt"
-                            title="Teléfono" />
-                        <Input
-                            type="text"
-                            placeholder="3411228534"
-                            v-model="new_phone" />
-                            <!-- :newValue="user_data.phone" -->
-                    </div>
-                </div>
-
-                <div class="inputs">
-                    <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-university"
-                            title="Universidad" />
-                        <Input
-                            type="text"
-                            placeholder="Universidad"
-                            v-model="new_university" />
-                            <!-- <input type="text" value="holis"> -->
-                    </div>
-                    <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-credit-card"
-                            title="Número de cuenta" />
-                        <Input
-                            type="text"
-                            placeholder="0000 0000 0000 0000"
-                            v-model="new_account_number" />
-                            <!-- :newValue="user_data.account_number" -->
-                    </div>
-                </div>
-
-                <div class="inputs">
-                    <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-envelope"
-                            title="Contraseña" />
-                        
-                        <div>
+                <div class="inputs-container">
+                    <div class="inputs">
+                        <div class="inp-cont">
                             <Input
-                                type="password"
-                                placeholder="• • • • • • • •"
-                                v-model="new_password" />
-                            <i class="fas fa-eye"></i>
+                                type="text"
+                                placeholder="Nombre"
+                                v-model="new_name"
+                                title="Nombre(s)" />
+                        </div>
+                        <div class="inp-cont">
+                            <Input
+                                type="text"
+                                placeholder="Apellidos"
+                                v-model="new_name"
+                                title="Apellidos" />
                         </div>
                     </div>
 
-                    <div class="input-container">
-                        <!-- <InputTitle 
-                            icon="fas fa-user-circle"
-                            title="Confirmar contraseña" />
-                        <div>
+                    <div class="inputs">
+                        <div class="inp-cont">
                             <Input
-                                type="password"
+                                type="text"
+                                placeholder="País"
+                                v-model="new_country"
+                                title="País" />
+                        </div>
+                        <div class="inp-cont">
+                            <Input
+                                type="text"
+                                placeholder="Estado"
+                                v-model="new_state"
+                                title="Estado" />
+                        </div>
+                    </div>
+
+                    <div class="inputs">
+                        <div class="inp-cont">
+                            <InputIcon
+                                type="text"
+                                placeholder="example@example.com"
+                                v-model="new_email"
+                                icon="fas fa-user-circle"
+                                title="Correo electrónico" />
+                        </div>
+                        <div class="inp-cont">
+                            <InputIcon
+                                type="text"
+                                placeholder="341 111 2233"
+                                v-model="new_phone"
+                                icon="fas fa-mobile-alt"
+                                title="Teléfono" />
+                        </div>
+                    </div>
+
+                    <div class="inputs">
+                        <div class="inp-cont">
+                            <InputIcon
+                                type="text"
+                                placeholder="Universidad"
+                                v-model="new_university"
+                                icon="fas fa-university"
+                                title="Universidad" />
+                        </div>
+                        <div class="inp-cont">
+                            <InputIcon
+                                type="text"
+                                placeholder="5555 5555 5555 5555"
+                                v-model="new_account_number"
+                                icon="fas fa-credit-card"
+                                title="Número de cuenta" />
+                        </div>
+                    </div>
+
+                    <div class="inputs-pass">
+                        <div class="inp-cont-pass">
+                            <InputIcon
+                                type="text"
                                 placeholder="• • • • • • • •"
-                                v-model="new_confirm_password" />
-                            <i class="fas fa-eye"></i>
-                        </div> -->
+                                v-model="new_password"
+                                icon="fas fa-envelope"
+                                title="Contraseña" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -164,41 +114,44 @@
                 />
             </div>
 
-            <ModalConfirm 
+            <DeleteUserModal 
                 v-if="isShowModal"
                 @close="closeModal"
                 :textTitle="titleModal"
                 :textBody="bodyModal"
-                :deleteUser="deleteUser" />
-
+                :name="nameUser"
+                :action="deleteUser" />
+            
         </div>
     </div>
 </template>
 
 <script>
 import Navigation from '../../components/navs/Navigation';
-import InputTitle from '../../components/inputs/InputTitle';
+import InputIcon from '../../components/inputs/InputIcon';
 import Input from '../../components/inputs/Input';
 import Loading from '../../components/modals/Loading';
 import SuccessButton from '../../components/buttons/SuccessButton';
-import ModalConfirm from '../../components/modals/ModalConfirm';
+import DeleteUserModal from '../../components/modals/DeleteUserModal';
 
 export default {
     components: {
         Navigation,
-        InputTitle,
+        InputIcon,
         Input,
         Loading,
         SuccessButton,
-        ModalConfirm
+        DeleteUserModal
     },
     data() {
         return {
-            loading: true,
+            loading: false,
             busy: false,
             isShowModal: false,
+            universities: [],
             titleModal: '',
             bodyModal: '',
+            nameUser: '',
             user_data: {},
             new_name: '',
             new_last_name: '',
@@ -213,19 +166,29 @@ export default {
         }
     },
     async created() {
-        if (process.browser)
+        if (process.browser){
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
+            this.universities = JSON.parse(localStorage.getItem('universities'))
+        }
         
         await this.getUser();
         this.setValueInputs();
-        this.loading = !this.loading;
+        
         console.log(this.user_data)
     },
     methods: {
         async getUser() {
-            let user_response = await this.$axios.get(`/getOneAdminUser?user_id=${this.$route.params.id}`);
-            let user_data = user_response.data.payload;
-            this.user_data = user_data;
+            try {
+                this.loading = !this.loading;
+                
+                let user_response = await this.$axios.get(`/getOneAdminUser?user_id=${this.$route.params.id}`);
+                let user_data = user_response.data.payload;
+                this.user_data = user_data;
+    
+                this.loading = !this.loading;
+            } catch (err) {
+                console.log(err);
+            }
         },
         setValueInputs() {
             this.new_name = this.user_data.name
@@ -235,12 +198,9 @@ export default {
             this.new_email = this.user_data.email
             this.new_phone = this.user_data.phone
             this.new_account_number = this.user_data.account_number
-            
-            if (process.browser) {
-                let universities = JSON.parse(localStorage.getItem('universities'))
-                let myUniversity = universities.filter(uni => uni._id == this.user_data.university_id)
-                this.new_university = myUniversity[0].name
-            }
+            let myUniversity = this.universities.filter(uni => uni._id == this.user_data.university_id)[0]
+            console.log(myUniversity)
+            this.new_university = myUniversity.name
         },
         async updateSpotlighter() {
             this.busy = !this.busy;
@@ -266,8 +226,6 @@ export default {
             });
 
             this.busy = !this.busy;
-            this.titleModal = 'Spotlighters';
-            this.bodyModal = updated_response.data.message;
 
             setTimeout(() => {
                 this.$router.push({ path: '/spotlighters' })
@@ -275,17 +233,15 @@ export default {
             }, 1000);
         },
         confirmModal() {
-            this.bodyModal = 'Eliminar usuario.';
-            this.bodyModal = "¿Deseas eliminar el siguiente usuario?\n" + this.user_data.name + " " + this.user_data.last_name
+            this.titleModal = 'Eliminar spotlighter';
+            this.bodyModal = '¿Deseas eliminar el siguiente usuario?'
+            this. nameUser = this.user_data.name + " " + this.user_data.last_name
             this.isShowModal = !this.isShowModal;
         },
         async deleteUser() {
             try {
                 let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.$route.params.id });
-                console.log(inactive_response);
                 
-                // this.bodyModal = 'Eliminado'
-                // this.isShowModal = !this.isShowModal;
                 setTimeout(() => {
                     this.$router.push({ path: '/spotlighters' })
                     this.isShowModal = !this.isShowModal;
@@ -312,8 +268,8 @@ export default {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        margin-top: 1.5%;
-        margin-left: 3%;
+        margin-top: 10px;
+        margin-left: 40px;
     }
 
     .button-container button {
@@ -321,8 +277,11 @@ export default {
         margin-right: 5%;
     }
 
-    h1 {
-        margin-bottom: 0;
+    .title {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 39px;
     }
 
     hr {
@@ -339,10 +298,17 @@ export default {
     .form-container {
         display: flex;
         flex-direction: column;
-        width: 80%;
-        margin-top: 1%;
+        /* align-items: center; */
+        width: 90%;
+        margin-top: 10px;
         margin-left: auto;
         margin-right: auto;
+    }
+
+    .inputs-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .inputs {
@@ -350,25 +316,26 @@ export default {
         flex-direction: row;
         justify-content:center;
         align-items: center;
-        width: 80%;
-        margin-left: auto;
-        margin-right: auto;
-        margin-top: 2%;
-        margin-bottom: 2%;
+        width: 90%;
     }
 
-    .input-container {
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .inputs-email {
+    .inputs-pass {
         display: flex;
-        width: 60%;
-        justify-content: center;
-        align-items: center;
-        margin-top: 2%;
-        margin-bottom: 2%;
+        align-items: flex-start;
+        width: 90%;
+    }
+
+    .inp-cont {
+        width: 100%;
+        margin: 20px 40px;
+    }
+
+    .inp-cont-pass {
+        display: flex;
+        align-items: flex-start;
+        width: 42%;
+        margin: 0px 40px;
+        /* margin-bottom: 40px; */
     }
 
     .btn-container {

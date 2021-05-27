@@ -4,7 +4,7 @@
             <i :class="icon"></i>
             <h3>{{ title }}</h3>
         </div>
-        <input :type="type" :placeholder="placeholder" v-model="localValue">
+        <input :type="type" :placeholder="placeholder" v-model="localValue" class="inp">
     </div>
 </template>
 
@@ -54,7 +54,7 @@ export default {
         margin-bottom: 0;
     }
 
-    input {
+    .inp {
         margin-top: .5rem;
         background-color:transparent;
         border: 0px solid;

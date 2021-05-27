@@ -10,123 +10,101 @@
             </div>
 
             <div class="form-container">
-                <h1>Crear spotlighter</h1>
+                <p class="title">Crear spotlighter</p>
+                <hr>
 
-                <div class="inputs">
-                    <div class="input-container">
-                        <InputTitle 
-                            icon=""
-                            title="Nombre(s)" />
-                        <Input
-                            type="text"
-                            placeholder="Ingresa tu(s) nombre(s)"
-                            v-model="name" />
-                    </div>
-                    <div class="input-container">
-                        <InputTitle 
-                            icon=""
-                            title="Apellidos" />
-                        <Input
-                            type="text"
-                            placeholder="Ingresa tus apellidos"
-                            v-model="last_name" />
-                    </div>
-                </div>
-
-                <div class="inputs">
-                    <div class="input-container">
-                        <InputTitle
-                            icon=""
-                            title="País"
-                        />
-                        <select name="" id="">
-                            <option value="1">País1</option>
-                            <option value="2">País2</option>
-                            <option value="3">País3</option>
-                        </select>
-                    </div>
-                    <div class="input-container">
-                        <InputTitle
-                            icon=""
-                            title="Estado"
-                        />
-                        <select name="" id="">
-                            <option value="1">Estado1</option>
-                            <option value="2">Estado2</option>
-                            <option value="3">Estado3</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="inputs">
-                    <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-user-circle"
-                            title="Correo electrónico" />
-                        <Input
-                            type="text"
-                            placeholder="example@hotmail.com"
-                            v-model="email" />
-                    </div>
-                    <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-mobile-alt"
-                            title="Teléfono" />
-                        <Input
-                            type="text"
-                            placeholder="3411228534"
-                            v-model="phone" />
-                    </div>
-                </div>
-
-                <div class="inputs">
-                    <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-university"
-                            title="Universidad" />
-                        <Input
-                            type="text"
-                            placeholder="Universidad"
-                            v-model="university" />
-                    </div>
-                    <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-credit-card"
-                            title="Número de cuenta" />
-                        <Input
-                            type="text"
-                            placeholder="0000 0000 0000 0000"
-                            v-model="account_number" />
-                    </div>
-                </div>
-
-                <div class="inputs">
-                    <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-envelope"
-                            title="Contraseña" />
-                        
-                        <div>
+                <div class="inputs-container">
+                    <div class="inputs">
+                        <div class="int-cont">
                             <Input
-                                type="password"
-                                placeholder="• • • • • • • •"
-                                v-model="password" />
-                            <i class="fas fa-eye"></i>
+                                type="text"
+                                placeholder="Nombre(s)"
+                                v-model="name"
+                                title="Nombre(s)" />
+                        </div>
+                        <div class="int-cont">
+                            <Input
+                                type="text"
+                                placeholder="Apellidos"
+                                v-model="last_name"
+                                title="Apellidos" />
                         </div>
                     </div>
 
-                    <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-user-circle"
-                            title="Confirmar contraseña" />
-                        <div>
+                    <div class="inputs">
+                        <div class="int-cont">
                             <Input
-                                type="password"
-                                placeholder="• • • • • • • •"
-                                v-model="confirm_password" />
-                            <i class="fas fa-eye"></i>
+                                type="text"
+                                placeholder="País"
+                                v-model="country"
+                                title="País" />
+                        </div>
+                        <div class="int-cont">
+                            <Input
+                                type="text"
+                                placeholder="Estados"
+                                v-model="state"
+                                title="Estado" />
                         </div>
                     </div>
+
+                    <div class="inputs">
+                        <div class="int-cont">
+                            <InputIcon
+                                type="text"
+                                placeholder="example@example.com"
+                                v-model="email"
+                                icon="fas fa-user-circle"
+                                title="Correo electrónico" />
+                        </div>
+                        <div class="int-cont">
+                            <InputIcon
+                                type="text"
+                                placeholder="341 111 2233"
+                                v-model="phone"
+                                icon="fas fa-mobile-alt"
+                                title="Teléfono" />
+                        </div>
+                    </div>
+
+                    <div class="inputs">
+                        <div class="int-cont">
+                            <InputIcon
+                                type="text"
+                                placeholder="Universidad"
+                                v-model="university"
+                                icon="fas fa-university"
+                                title="Universidad" />
+                        </div>
+                        <div class="int-cont">
+                            <InputIcon
+                                type="text"
+                                placeholder="5555 5555 5555 5555"
+                                v-model="account_number"
+                                icon="fas fa-credit-card"
+                                title="Número de cuenta" />
+                        </div>
+                    </div>
+
+                    <div class="inputs">
+                        <div class="int-cont">
+                            <InputIcon
+                                type="password"
+                                placeholder="• • • • • • • •"
+                                v-model="password"
+                                icon="fas fa-envelope"
+                                title="Contraseña" />
+                        </div>
+                        <div class="int-cont">
+                            <InputIcon
+                                type="password"
+                                placeholder="• • • • • • • •"
+                                v-model="confirm_password"
+                                icon="fas fa-envelope"
+                                title="Confirmar contraseña" />
+                        </div>
+                    </div>
+
                 </div>
             </div>
             <div class="btn-container">
@@ -143,14 +121,14 @@
 
 <script>
 import Navigation from '../../components/navs/Navigation';
-import InputTitle from '../../components/inputs/InputTitle';
+import InputIcon from '../../components/inputs/InputIcon';
 import Input from '../../components/inputs/Input';
 import SuccessButton from '../../components/buttons/SuccessButton';
 
 export default {
     components: {
         Navigation,
-        InputTitle,
+        InputIcon,
         Input,
         SuccessButton
     },
@@ -209,6 +187,28 @@ export default {
         font-family: Montserrat;
     }
 
+    .form-container {
+        display: flex;
+        flex-direction: column;
+        width: 85%;
+        margin-top: 1%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    hr {
+        margin: 0;
+        opacity: 1;
+        border: 2px solid #000;
+    }
+
+    .title {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 39px;
+    }
+
     .button-container {
         margin-top: 1.5%;
         margin-left: 3%;
@@ -219,30 +219,25 @@ export default {
         text-decoration: none;
     }
 
-    .form-container {
-        display: flex;
-        flex-direction: column;
-        width: 80%;
-        margin-top: 1%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
     .inputs {
         display: flex;
         flex-direction: row;
         justify-content:center;
         align-items: center;
-        width: 80%;
-        margin-left: auto;
-        margin-right: auto;
-        margin-top: 2%;
-        margin-bottom: 2%;
+        /* width: 90%; */
+        width: 960px;
     }
 
-    .input-container {
-        margin-left: auto;
-        margin-right: auto;
+    .int-cont {
+        width: 100%;
+        margin: 10px 40px;
+    }
+
+    .inputs-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* height: 472px; */
     }
 
     .inputs-email {
@@ -258,7 +253,6 @@ export default {
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        margin-top: 3%;
-        margin-right: 10%;
+        margin: 2% 10%;
     }
 </style>
