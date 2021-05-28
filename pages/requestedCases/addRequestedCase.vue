@@ -17,78 +17,67 @@
                 </div>
 
                 <div class="inputs-container">
-                    
-                    <div class="input-name">
-                        <InputTitle 
-                            icon=""
-                            title="Nombre del caso" />
-
+                    <div class="name">
                         <Input
                             type="text"
-                            placeholder="Example"
-                            v-model="case_name" />
+                            placeholder="Nombre del caso"
+                            v-model="case_name"
+                            title="Nombre del caso" />
                     </div>
 
-                    <div class="">
-                        <InputTitle 
-                            icon=""
-                            title="ID" />
+                    <div class="id">
                         <Input
                             type="text"
-                            placeholder="123456"
-                            v-model="case_id" />
+                            placeholder="1234"
+                            v-model="case_id"
+                            title="ID" />
                     </div>
                 </div>
 
-                <div class="inputs-container topic-container">
-                    <div class="">
-                        <InputTitle 
-                            icon=""
+                <div class="inputs-container topic">
+                    <div class="inp-cont">
+                        <Input
+                            type="text"
+                            placeholder="Tema"
+                            v-model="topic"
                             title="Tema" />
-                        <Input
-                            type="text"
-                            placeholder="Texto"
-                            v-model="topic" />
                     </div>
 
-                    <div class="">
-                        <InputTitle 
-                            icon=""
+                    <div class="inp-cont">
+                        <Input
+                            type="text"
+                            placeholder="Subtema"
+                            v-model="subtopic"
                             title="Subtema" />
-                        <Input
-                            type="text"
-                            placeholder="Texto"
-                            v-model="subtopic" />
                     </div>
 
-                    <div class="">
-                        <InputTitle 
-                            icon=""
-                            title="Idioma" />
+                    <div class="inp-cont">
                         <Input
                             type="text"
                             placeholder="Español"
-                            v-model="language" />
+                            v-model="language"
+                            title="Idioma" />
                     </div>
                 </div>
 
                 <div class="inputs-container">
                     <div class="description">
-                        <InputTitle 
-                            icon=""
-                            title="Descripción" />
+                        <h3>Descripción</h3>
                         <textarea
-                            name="description"
-                            id="description"
-                            v-model="description"
-                            rows="7"
-                            placeholder="Lorem ipsum dolor, sit amet consectetur adipisicing elit. Veniam, nobis expedita provident eveniet distinctio odio iusto recusandae facere. Molestiae, consectetur. Corporis temporibus voluptate velit quis quae animi cumque nobis tenetur."></textarea>
+                                name="description"
+                                id="description"
+                                v-model="description"
+                                rows="7"
+                                placeholder="Lorem ipsum dolor, sit amet consectetur adipisicing elit. Veniam, nobis expedita provident eveniet distinctio odio iusto recusandae facere. Molestiae, consectetur. Corporis temporibus voluptate velit quis quae animi cumque nobis tenetur."></textarea>
                     </div>
                 </div>
                 
-                <select v-model="selected" class="js-example-basic-single" name="state" @change="setSelectedUser(selected)">
-                    <option :value="spot.spotlighter_id" v-for="spot in spotlighters" :key="spot.spotlighter_id">{{spot.name}} {{spot.last_name}}</option>
-                </select>
+                <div class="assign">
+                    <h3>Asignar caso a: {{ selected }}</h3>
+                    <select v-model="selected" class="js-example-basic-single" name="state" @change="setSelectedUser(selected)">
+                        <option :value="spot.spotlighter_id" v-for="spot in spotlighters" :key="spot.spotlighter_id">{{spot.name}} {{spot.last_name}}</option>
+                    </select>
+                </div>
 
                 <div class="load-container">
                     <div class="lds-dual-ring" v-if="busy"></div>
@@ -260,6 +249,14 @@ export default {
         width: 100%;
     }
 
+    .title-container h1 {
+        font-family: Montserrat;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 39px;
+    }
+
     .cancel {
         font-family: Montserrat;
         font-style: normal;
@@ -277,17 +274,37 @@ export default {
     .inputs-container {
         display: flex;
         flex-direction: row;
+        justify-content: space-between;
         width: 100%;
         margin-top: 1%;
     }
 
-    .input-name {
-        width: 80%;
+    .name {
+        width: 65%;
+    }
+    .id {
+        width: 30%;
     }
 
-    .topic-container {
-        display: flex;
+    .topic {
         justify-content: space-between;
+    }
+
+    .inp-cont {
+        width: 30%;
+    }
+
+    .assign {
+        margin: 20px 0px;
+    }
+
+    .assign h3 {
+        color: #1CA4FC;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
+        margin-bottom: 24px;
     }
 
     .description {
@@ -296,11 +313,24 @@ export default {
         width: 100%;
     }
 
+    .description h3 {
+        color: #1CA4FC;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
+        margin-bottom: 0;
+    }
+
     textarea {
         margin-top: 1%;
         border: 1px solid #000000;
         box-sizing: border-box;
         border-radius: 10px;
+    }
+
+    textarea:focus {
+        outline: none;
     }
     
     .select-users {

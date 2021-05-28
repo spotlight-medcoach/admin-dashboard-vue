@@ -274,6 +274,10 @@ export default {
         outline: none;
     }
 
+    .search-active-container input:focus {
+        outline: none;
+    }
+
     .options {
         font-family: Montserrat;
         width: 15%;

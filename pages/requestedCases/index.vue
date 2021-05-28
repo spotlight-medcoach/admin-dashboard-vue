@@ -1,9 +1,11 @@
 <template>
     <div>
         <Navigation />
-        <div class="admin-container">
+        <div class="cases-container">
             <div class="head-container">
-                <h1>Casos solicitados</h1>
+                <div class="title">
+                    <p>Casos solicitados</p>
+                </div>
                 <nuxt-link 
                     to="/requestedCases/addRequestedCase"
                     class="add-button" >
@@ -12,8 +14,8 @@
                 </nuxt-link>
             </div>
 
-            <div class="search-active-container">
-                <input type="searchText" placeholder="Buscar">
+            <div class="search-container">
+                <input type="searchText" placeholder="    Buscar">
                 
                 <select v-model="selected" class="options" @change="changeStatus(selected)">
                     <option value="Approved by Spotlighter" selected>Aprobado</option>
@@ -34,23 +36,25 @@
                             <th scope="col">Caso</th>
                             <th scope="col">Tema</th>
                             <th scope="col">Subtema</th>
-                            <th scope="col">Descripción</th>
+                            <th scope="col">Descripcion</th>
                             <th scope="col">Estado</th>
                             <th scope="col">Usuario</th>
-                            <th scope="col">Acciones</th>
+                            <th scope="col" class="act">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="tbody">
                         <tr v-for="theCase in cases" :key="theCase._id">
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
-                            <td>{{ theCase.description }}</td>
+                            <td>{{ theCase.request_description }}</td>
                             <td>{{ theCase.status }}</td>
                             <td>{{ theCase.admin_user.name }} {{ theCase.admin_user.last_name }}</td>
-                            <td>
-                                <button class="btn op"><i class="fas fa-list-alt"></i> Ver caso</button>
-                                <!-- <button class="btn">Ver caso</button> -->
+                            <td class="act">
+                                <div class="op">
+                                    
+                                    <button class="btn op"><i class="fas fa-list-alt"></i> Ver caso</button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -166,11 +170,156 @@ export default {
 </script>
 
 <style scoped>
-    .op {
+    .cases-container {
+        display: flex;
+        flex-direction: column;
+        margin: 0px 40px;
+        font-family: Montserrat;
+    }
+
+    .head-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        height: 39px;
+        margin: 20px 0px;
+    }
+
+    .title {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 39px;
+        color: #000;
+        height: 39px;
+    }
+    
+    .title p {
+        margin: 0;
+    }
+
+    .add-button {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        padding: 12px 20px;
+
+        background: #20B000;
+        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
+        border-radius: 10px;
+
+        font-style: normal;
+        font-weight: 500;
         font-size: 16px;
+        line-height: 20px;
+        letter-spacing: 0.4px;
+        color: #FFFFFF;
+        text-decoration: none;
+    }
+
+    .add-button i {
+        position: static;
+        font-size: 24px;
+        margin-right: 12px;
+    }
+
+    .search-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        height: 48px;
+    }
+
+    .search-container input {
+        width: 800px;
+        height: 48px;
+        background: #FFFFFF;
+        border: 1px solid #D4D5D7;
+        box-sizing: border-box;
+        border-radius: 10px;
+    }
+
+    .search-container input:focus {
+        outline: none;
+    }
+
+    .options {
+        font-family: Montserrat;
+        width: 15%;
+        height: 32px;
+        margin: 0px 40px;
+        border: none;
+        border-bottom: 1px solid #000;
+    }
+
+    .table-container {
+        margin: 20px 0px;
+    }
+
+    .thead-admin {
+        background: #212529;
+        color: #FFF;
+        text-transform: uppercase;
+    }
+
+    .thead-admin th:last-child {
+        border-radius: 0px 15px 0px 0px;
+        border: 1px solid white;
+        -moz-border-radius: 0px 15px 0px 0px;
+        -webkit-border-radius: 0px 15px 0px 0px;
+    }
+
+    .thead-admin th:first-child {
+        border-radius: 15px 0px 0px 0px;
+        border: 1px solid white;
+        -moz-border-radius: 15px 0px 0px 0px;
+        -webkit-border-radius: 15px 0px 0px 0px;
+    }
+
+    .tbody {
+        font-size: 12px
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .loco {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .drop {
+        margin-right: 5%;
+    }
+
+    .arrows {
+        margin-left: 5%;
+    }
+    .arrow {
+        border: none;
+        color: #FE9400;
+    }
+
+    .act {
+        width: 10%;
+    }
+
+    .op {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        color: #1CA4FC;
+        font-size: 12px;
     }
 
     .op i {
         font-size: 24px;
+        padding-right: 5px;
     }
 </style>
