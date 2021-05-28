@@ -12,11 +12,13 @@
                 <div class="filter-container">
                     <div class="select-container">
                         <select v-model="topicSelected" name="topic" class="js-example-basic-single" @change="filterSubtopics(topicSelected)">
+                            <option value="" disabled selected>Tema</option>
                             <option :value="top" v-for="top in topics" :key="top._id">{{top.name}}</option>
                         </select>
 
-                        <select v-model="subtopicSelected" name="subtopic" class="js-example-basic-single">
-                            <option :value="sub._id" v-for="sub in subtopics" :key="sub._id">{{sub.name}}</option>
+                        <select v-model="subtopicSelected" name="subtopic" class="js-example-basic-single" @change="getCasesRequested()">
+                            <option value="" selected>Elegir subtema</option>
+                            <option :value="sub.subtopic" v-for="sub in subtopics" :key="sub._id">{{sub.name}}</option>
                         </select>
                     </div>
                 </div>
@@ -137,6 +139,7 @@ export default {
         }
     },
     async created() {
+        this.loading = !this.loading
         if (process.browser) {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
             
@@ -154,6 +157,7 @@ export default {
         console.log('cases', this.casesRequested)
         // console.log('top', this.topics)
         // console.log('uni', this.universities)
+        this.loading = !this.loading
     },
     methods: {
         async getUniversities() {
@@ -167,14 +171,47 @@ export default {
             this.$store.commit('setTopics');
         },
         async getCasesRequested() {
-            this.loading = !this.loading
+            // let casesResponse = await this.$axios.get(`/getCasesRequested`, { params: { topic_bubble: '', subtopic_bubble: '' } })
+            // this.casesRequested = casesResponse.data.payload.cases
+            // // console.log('res: ', casesResponse.data.payload.cases)
 
-            let casesResponse = await this.$axios.get('/getCasesRequested')
-            this.casesRequested = casesResponse.data.payload
+            // this.filterTopicSubtopicName();
+
+            var bubble_topic_selected = ''
+            let bubble_subotopic_selected = ''
+            if (this.topicSelected)
+                bubble_topic_selected = this.topicSelected.bubble_id
+
+            // if (this.subtopicSelected)
+            //     bubble_subotopic_selected = this.subtopicSelected.subtopic
+            console.log('subtopicSelected: ', this.subtopicSelected)
+            let casesResponse = await this.$axios.get(`/getCasesRequested`, { params: { topic_bubble: bubble_topic_selected, subtopic_bubble: this.subtopicSelected }})
+            this.casesRequested = casesResponse.data.payload.cases
+            console.log('res: ', casesResponse.data.payload.cases)
+            
+            console.log('topselect', this.topicSelected)
+            console.log('subselect', this.subtopicSelected)
 
             this.filterTopicSubtopicName();
+        },
+
+        async reloadCasesRequested() {
+            var bubble_topic_selected = ''
+            let bubble_subotopic_selected = ''
+            if (this.topicSelected)
+                bubble_topic_selected = this.topicSelected.bubble_id
+
+            if (this.subtopicSelected)
+                bubble_subotopic_selected = this.subtopicSelected.subtopic
+
+            let casesResponse = await this.$axios.get(`/getCasesRequested`, { params: { topic_bubble: bubble_topic_selected, subtopic_bubble: bubble_subotopic_selected }})
+            this.casesRequested = casesResponse.data.payload.cases
+            console.log('res: ', casesResponse.data.payload.cases)
             
-            this.loading = !this.loading
+            console.log('topselect', this.topicSelected)
+            console.log('subselect', this.subtopicSelected)
+
+            this.filterTopicSubtopicName();
         },
         acceptConfirm(caseToConfirmId) {
             this.titleModal = 'Aceptar caso solicitado';
@@ -190,6 +227,7 @@ export default {
         },
         filterSubtopics(topic) {
             this.subtopics = topic.subtopics;
+            this.getCasesRequested();
         },
         filterTopicSubtopicName() {
             let casesUpdated = []
@@ -219,7 +257,12 @@ export default {
         },
         async rejectCase() {
             try {
-                
+                let rejectResponse = await this.$axios.put('/rejectCaseRequested', {
+                    case_id: this.caseToRejectId
+                })
+
+                this.isShowModalReject = !this.isShowModalReject;
+                this.getCasesRequested();
             } catch (err) {
                 console.log(err);
             }
