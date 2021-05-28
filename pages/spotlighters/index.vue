@@ -274,6 +274,7 @@ export default {
     .thead-spotlighter {
         background: #212529;
         color: #FFF;
+        text-transform: uppercase;
     }
 
     .thead-spotlighter th:last-child {

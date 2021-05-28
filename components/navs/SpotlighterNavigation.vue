@@ -16,10 +16,10 @@
 					icon="fas fa-folder" />
 			</div>
 			<div>
-				<!-- <LinkNavigation 
-					to="/reviewNewQuestions"
+				<LinkNavigation 
+					to="/myCases"
 					new_class="link nuxt-link-active"
-					icon="fas fa-list-alt" /> -->
+					icon="fas fa-list-alt" />
 			</div>
 			
 		</nav>
