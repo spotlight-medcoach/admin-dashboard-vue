@@ -19,10 +19,7 @@
                 <div class="search-input">
                     <input type="text" placeholder="    Buscar">
                 </div>
-                <!-- <div class="">
 
-                </div> -->
-                <!-- <div class=""></div> -->
                 <select name="" id="" class="js-example-basic-single">
                     <option value="" selected>Todos los estados</option>
                     <option value="">En edición</option>
@@ -46,14 +43,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(theCase) in myCases" :key="theCase.admin_id">
+                        <tr v-for="(theCase, index) in myCases" :key="theCase._id">
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
                             <td>{{ theCase.request_description }}</td>
                             <td>{{ theCase.status }}</td>
                             <td class="td-style">
-                                <button class="btn op"><i class="fas fa-list-alt"></i> Ver caso</button>
+                                <button class="btn op" @click="viewCase(myCases[index])"><i class="fas fa-list-alt"></i> Ver caso</button>
                             </td>
                         </tr>
                     </tbody>
@@ -152,6 +149,10 @@ export default {
             console.log('updated', casesUpdated)
             this.myCases = casesUpdated;
         },
+        viewCase(theCase) {
+            // console.log(theCase)
+            this.$router.push({ path: `/myCases/${theCase._id}` });
+        }
     }
 }
 </script>
