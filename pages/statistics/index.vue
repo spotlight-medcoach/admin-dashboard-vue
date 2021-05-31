@@ -23,8 +23,11 @@ export default {
     async created() {
         if (process.browser){
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
-            await this.getUniversities()
-            await this.getTopics()
+            
+            if (!localStorage.getItem('universities'))
+                await this.getUniversities()
+            if (!localStorage.getItem('topics'))
+                await this.getTopics()
         }
             
         this.loading = !this.loading

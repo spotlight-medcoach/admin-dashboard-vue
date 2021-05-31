@@ -21,6 +21,7 @@
                             type="text"
                             placeholder="Nombre"
                             v-model="new_name"
+                            :val="new_name"
                             title="Nombre(s)" />
                     </div>
                     <div class="int-cont">
@@ -28,26 +29,9 @@
                             type="text"
                             placeholder="Apellidos"
                             v-model="new_last_name"
+                            :val="new_last_name"
                             title="Apellidos" />
                     </div>
-                    <!-- <div class="input-container">
-                        <InputTitle 
-                            icon=""
-                            title="Nombre(s)" />
-                        <Input
-                            type="text"
-                            placeholder="Ingresa tu(s) nombre(s)"
-                            v-model="new_name" />
-                    </div>
-                    <div class="input-container">
-                        <InputTitle 
-                            icon=""
-                            title="Apellidos" />
-                        <Input
-                            type="text"
-                            placeholder="Ingresa tus apellidos"
-                            v-model="new_last_name" />
-                    </div> -->
                 </div>
 
                 <div class="inputs">
@@ -56,18 +40,10 @@
                             type="text"
                             placeholder="example@example.com"
                             v-model="new_email"
+                            :val="new_email"
                             icon="fas fa-user-circle"
                             title="Correo electrónico" />
                     </div>
-                    <!-- <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-user-circle"
-                            title="Correo electrónico" />
-                        <Input
-                            type="text"
-                            placeholder="example@hotmail.com"
-                            v-model="new_email" />
-                    </div> -->
                 </div>
 
                 <div class="inputs">
@@ -76,22 +52,10 @@
                             type="password"
                             placeholder="• • • • • • • •"
                             v-model="new_password"
+                            :val="new_password"
                             icon="fas fa-envelope"
                             title="Contraseña" />
                     </div>
-                    <!-- <div class="input-container">
-                        <InputTitle 
-                            icon="fas fa-envelope"
-                            title="Contraseña" />
-                        
-                        <div>
-                            <Input
-                                type="password"
-                                placeholder="• • • • • • • •"
-                                v-model="new_password" />
-                            <i class="fas fa-eye"></i>
-                        </div>
-                    </div> -->
                 </div>
             </div>
             
@@ -156,7 +120,10 @@ export default {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
         
         await this.getUser();
-        this.setValueInput();
+        // this.new_name = this.user_data.name
+        //     this.new_last_name = this.user_data.last_name
+        //     this.new_email = this.user_data.email
+        console.log('name', this.new_name)
     },
     methods: {
         async getUser() {
@@ -166,6 +133,7 @@ export default {
                 let user_response = await this.$axios.get(`/getOneAdminUser?user_id=${this.$route.params.id}`);
                 let user_data = user_response.data.payload;
                 this.user_data = user_data;
+                this.setValueInput();
                 
                 this.loading = !this.loading;
                 console.log('user: ', this.user_data)
@@ -177,7 +145,7 @@ export default {
             this.new_name = this.user_data.name
             this.new_last_name = this.user_data.last_name
             this.new_email = this.user_data.email
-            console.log(this.new_name)
+            console.log('name', this.new_name)
         },
         async updateAdministrator() {
             try {
@@ -190,14 +158,12 @@ export default {
                 });
 
                 this.busy = !this.busy
-                this.titleModal = 'Eliminar usuario';
-                this.bodyModal = '¿Deseas eliminar al siguiente usuario?'
-                this.nameUser = admin_data.name + " " + admin_data.last_name
+
                 setTimeout(() => {
+                    alert(updated_response.data.message)
+                    // console.log(updated_response)
                     this.$router.push({ path: '/administrators' })
-                    // this.isShowModal = !this.isShowModal;
                 }, 1000);
-                // console.log(updated_response)
             } catch (err) {
                 console.log(err)
             }

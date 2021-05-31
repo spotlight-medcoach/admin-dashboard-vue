@@ -4,16 +4,15 @@
             <h3>{{ title }}</h3>
         </div>
         <input :type="type" :placeholder="placeholder" v-model="localValue">
-        <h2>{{model}}</h2>
     </div>
 </template>
 
 <script>
 export default {
-    props: ['type', 'placeholder', 'model', 'title'],
+    props: ['type', 'placeholder', 'model', 'val', 'title'],
     data() {
         return {
-            localValue: this.model
+            localValue: this.val
         }
     },
     watch: {

@@ -10,10 +10,10 @@
 
 <script>
 export default {
-    props: ['type', 'placeholder', 'model', 'icon', 'title'],
+    props: ['type', 'placeholder', 'model', 'val', 'icon', 'title'],
     data() {
         return {
-            localValue: this.model
+            localValue: this.val
         }
     },
     watch: {

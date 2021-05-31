@@ -28,12 +28,12 @@
                     <thead class="thead-admin">
                         <tr>
                             <th scope="col">Nombre completo</th>
-                            <th scope="col">Correo electrónico</th>
+                            <th scope="col">Correo electronico</th>
                             <th scope="col" class="actions">Acciones</th>
 
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="tbody">
                         <tr v-for="(admin, index) in administrators" :key="admin._id">
                             <td>{{ admin.name }} {{ admin.last_name }}</td>
                             <td>{{ admin.email }}</td>
@@ -62,34 +62,24 @@
             </div>
 
             <div class="pagination-container">
-                <div class="dropdown drop">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Rows per page:
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                        <button class="dropdown-item" type="button">10</button>
-                        <button class="dropdown-item" type="button">15</button>
-                        <button class="dropdown-item" type="button">20</button>
-                    </div>
+                <div class="select-container">
+                    <span>Rows per page: </span>
+                    <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                    </select>
                 </div>
 
-                <nav class="arrows" aria-label="Page navigation example">
-                    <ul class="pagination">
-                        <div class="loco">
-                            1 - 10 of n items
-                        </div>
-                        <li class="page-item p-2">
-                            <a class="page-link arrow" href="#" aria-label="Previous">
-                                <span class="fas fa-chevron-left"></span>
-                            </a>
-                        </li>
-                        <li class="page-item p-2">
-                            <a class="page-link arrow" href="#" aria-label="Next">
-                                <span class="fas fa-chevron-right"></span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+                <div class="arrows-container">
+                    <span>1 - {{pageResults}} of {{totalAdmins}} Administradores</span>
+                    <button class="btn fas fa-chevron-left" @click="before"></button>
+                    <button class="btn fas fa-chevron-right" @click="after"></button>
+                </div>
             </div>
             
             <DeleteUserModal 
@@ -127,7 +117,10 @@ export default {
             bodyModal: '',
             nameUser: '',
             administrators: [],
-            userIdToDelete: ''
+            totalAdmins: 0,
+            userIdToDelete: '',
+            pageResults: 1,
+            page: 1
         }
     },
     async created() {
@@ -140,14 +133,27 @@ export default {
         async getAdministrators() {
             try {
                 this.loading = !this.loading
-                let administrators_response = await this.$axios.get(`/getAllAdminnistrator?status=${JSON.parse(this.selected)}`)
-                this.administrators = administrators_response.data.administrators
+
+                let administrators_response = await this.$axios
+                .get('/getAllAdminnistrator', {
+                    params: {
+                        status: this.selected,
+                        page: this.page,
+                        pageResults: this.pageResults
+                    }
+                })
+                this.administrators = administrators_response.data.payload.admins
+                this.totalAdmins = administrators_response.data.payload.length
+                
                 this.loading = !this.loading
             } catch (err) {
                 console.log(err);
             }
         },
         selectedChange() {
+            this.getAdministrators()
+        },
+        rowsChange() {
             this.getAdministrators()
         },
         async setInactive(admin_id) {
@@ -187,6 +193,13 @@ export default {
                 this.isShowModal = !this.isShowModal;
             }, 1500);
             this.getAdministrators()
+        },
+        before() {
+            // this.page += 1
+            alert('Logica para esta asunto')
+        },
+        after() {
+            alert('Logica para esta asunto')
         },
         closeModal() {
             this.isShowModal = !this.isShowModal;
@@ -290,6 +303,12 @@ export default {
     .thead-admin {
         background: #212529;
         color: #FFF;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 12px;
+        line-height: 15px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
     }
 
     .thead-admin th:last-child {
@@ -306,6 +325,18 @@ export default {
         -webkit-border-radius: 15px 0px 0px 0px;
     }
 
+    .tbody {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 18px;
+        color: #212529;
+    }
+
+    td {
+        vertical-align: middle;
+    }
+
     .actions {
         width: 5%;
     }
@@ -313,9 +344,44 @@ export default {
     .pagination-container {
         display: flex;
         justify-content: flex-end;
+        height: 56px;
     }
 
-    .loco {
+    .select-container {
+        display: flex;
+        align-items: center;
+        margin: 0px 40px;
+    }
+
+    .select-container span {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        margin: 0px 10px;
+        color: #212529;
+    }
+
+    .arrows-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 0px 40px;
+    }
+
+    .arrows-container span {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        color: #212529;
+    }
+
+    .arrows-container button {
+        color: #FE9400;
+    }
+
+    /* .loco {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -326,12 +392,12 @@ export default {
     }
 
     .arrows {
+        display: flex;
+        align-items: center;
         margin-left: 5%;
     }
     .arrow {
         border: none;
         color: #FE9400;
-        /* outline: none; */
-        /* background: red; */
-    }
+    } */
 </style>
