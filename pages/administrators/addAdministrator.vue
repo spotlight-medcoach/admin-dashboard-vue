@@ -37,28 +37,35 @@
                             type="text"
                             placeholder="example@example.com"
                             v-model="email"
-                            icon="fas fa-user-circle"
+                            icon="fas fa-envelope"
                             title="Correo electrónico" />
                     </div>
                 </div>
 
                 <div class="inputs">
                     <div class="int-cont">
-                        <InputIcon
-                            type="password"
-                            placeholder="• • • • • • • •"
-                            v-model="password"
-                            icon="fas fa-envelope"
-                            title="Contraseña" />
+                        <div class="password">
+                            <InputIcon
+                                :type="typePassword"
+                                placeholder="• • • • • • • •"
+                                v-model="password"
+                                icon="fas fa-lock"
+                                title="Contraseña" />
+
+                            <button :class="classPassword" @click="changeIconClassPass"></button>
+                        </div>
                     </div>
 
                     <div class="int-cont">
-                        <InputIcon
-                            type="password"
-                            placeholder="• • • • • • • •"
-                            v-model="confirm_password"
-                            icon="fas fa-user-circle"
-                            title="Confirmar contraseña" />
+                        <div class="password">
+                            <InputIcon
+                                :type="typeConfirm"
+                                placeholder="• • • • • • • •"
+                                v-model="confirm_password"
+                                icon="fas fa-lock"
+                                title="Confirmar contraseña" />
+                            <button :class="classConfirm" @click="changeIconClassConf"></button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -75,8 +82,6 @@
                     :i_class="'fas fa-check-circle'"
                 />
             </div>
-
-            <ModalConfirm v-if="isShowModal" @close="closeModal" :textBody="textModal" :textTitle="textTile" />
         </div>
     </div>
 </template>
@@ -86,7 +91,6 @@ import Navigation from '../../components/navs/Navigation';
 import SuccessButton from '../../components/buttons/SuccessButton';
 import InputTitle from '../../components/inputs/InputTitle';
 import Input from '../../components/inputs/Input';
-import ModalConfirm from '../../components/modals/ModalConfirm';
 import Loading from '../../components/modals/Loading';
 import InputIcon from '../../components/inputs/InputIcon';
 
@@ -96,22 +100,23 @@ export default {
         SuccessButton,
         InputTitle,
         Input,
-        ModalConfirm,
         Loading,
         InputIcon
     },
     data() {
         return {
             busy: false,
-            isShowModal: false,
             loading: true,
-            textModal: '',
-            textTitle: '',
             name: '',
             last_name: '',
             email: '',
             password: '',
-            confirm_password: ''
+            confirm_password: '',
+            typePassword: 'password',
+            classPassword: 'btn fas fa-eye',
+
+            typeConfirm: 'password',
+            classConfirm: 'btn fas fa-eye'
         }
     },
     created() {
@@ -132,19 +137,29 @@ export default {
             });
 
             this.busy = !this.busy;
-            this.isShowModal = !this.isShowModal;
-            this.textTitle = 'Administradores'
-            this.textModal = add_response.data.message
+
             setTimeout(() => {
+                alert(add_response.data.message);
                 this.$router.push({ path: '/administrators' })
-                this.isShowModal = !this.isShowModal;
             }, 1500);
         },
-        deleteUser() {
-
+        changeIconClassPass() {
+            if (this.typePassword == 'password') {
+                this.typePassword = 'text'
+                this.classPassword = 'btn fas fa-eye-slash'
+            } else if (this.typePassword == 'text') {
+                this.typePassword = 'password'
+                this.classPassword = 'btn fas fa-eye'
+            }
         },
-        closeModal() {
-            this.isShowModal = !this.isShowModal;
+        changeIconClassConf() {
+            if (this.typeConfirm == 'password') {
+                this.typeConfirm = 'text'
+                this.classConfirm = 'btn fas fa-eye-slash'
+            } else if (this.typeConfirm == 'text') {
+                this.typeConfirm = 'password'
+                this.classConfirm = 'btn fas fa-eye'
+            }
         }
     }
 }
@@ -200,6 +215,11 @@ export default {
     .int-cont {
         width: 100%;
         margin: 40px 80px;
+    }
+
+    .password {
+        display: flex;
+        align-items: flex-end;
     }
 
     .int-cont-email {

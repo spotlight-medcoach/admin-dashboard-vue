@@ -19,7 +19,7 @@
 
                     <div class="modal-footer">
                         <button type="button" class="btn" data-dismiss="modal" @click="$emit('close')">Cancelar</button>
-                        <button type="button" class="btn delete" data-dismiss="modal" @click="action">Eliminar</button>
+                        <button type="button" class="btn activate" data-dismiss="modal" @click="action">Habilitar</button>
                     </div>
                 </div>
             </div>
@@ -84,8 +84,8 @@ export default {
         color: #DB1212;
     }
 
-    .delete {
-        background: #DB1212;
+    .activate {
+        background: #20B000;
         color: #FFF;
     }
 

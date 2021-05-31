@@ -4,27 +4,25 @@
             <h2 class="login-title">Iniciar sesión</h2>
 
             <div class="input-container">
-                <InputTitle 
+                <InputIcon
+                    type="text"
+                    placeholder="example@example.com"
+                    v-model="email"
                     icon="fas fa-user-circle"
                     title="Correo electrónico" />
-                <Input
-                    type="text"
-                    placeholder="example@hotmail.com"
-                    v-model="email" />
             </div>
 
             <div class="input-container">
-                <InputTitle 
-                    icon="fas fa-lock"
-                    title="Contraseña" />
-                <Input
+                <InputIcon
                     type="password"
                     placeholder="• • • • • • • •"
-                    v-model="password" />
+                    v-model="password"
+                    icon="fas fa-user-circle"
+                    title="Contaseña" />
             </div>
 
             <div class="check">
-                <input class="" type="checkbox">
+                <input v-model="checked" class="" type="checkbox">
                 <label>Recordarme</label>
             </div>
             
@@ -43,17 +41,20 @@
 </template>
 
 <script>
-import InputTitle from './inputs/InputTitle';
-import Input from './inputs/Input';
+import InputIcon from '../components/inputs/InputIcon';
+// import InputTitle from './inputs/InputTitle';
+// import Input from './inputs/Input';
 
 export default {
     components: {
-        InputTitle,
-        Input
+        InputIcon
+        // InputTitle,
+        // Input
     },
     data() {
         return {
             userData: {},
+            checked: false,
             email: '',
             password: '',
             busy: false,
@@ -79,8 +80,10 @@ export default {
                     // Almacenamos en localStorage el token e información del usuario
                     localStorage.setItem('user', JSON.stringify(this.userData));
                     localStorage.setItem('user_token', loginResponse.data.token);
+                    localStorage.setItem('remember_me', this.checked);
                     this.$store.commit('setUserInfo', loginResponse.data.payload);
                     this.$store.commit('setToken', loginResponse.data.token);
+                    this.$store.commit('setRememberMe', this.checked);
                 }
                 
                 this.busy = !this.busy;
@@ -147,6 +150,8 @@ export default {
         flex-direction: column;
         margin: 20px 0px;
         padding: 20px, 0px;
+        width: 80%;
+
     }
 
     .check {
