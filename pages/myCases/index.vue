@@ -26,7 +26,7 @@
                     <option value="">Feedback</option>
                     <option value="">Aprobados</option>
                 </select>
-                <button class="btn"><i class="fas fa-plus-circle"></i> Crear nuevo caso</button>
+                <button class="btn" @click="addCase"><i class="fas fa-plus-circle"></i> Crear nuevo caso</button>
             </div>
 
             <div class="table-container">
@@ -148,6 +148,9 @@ export default {
             });
             console.log('updated', casesUpdated)
             this.myCases = casesUpdated;
+        },
+        addCase() {
+            this.$router.push({ path: '/myCases/addNewCase' });
         },
         viewCase(theCase) {
             // console.log(theCase)
