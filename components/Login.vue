@@ -38,20 +38,16 @@
                 </button>
                 <button type="button" class="btn forgot-button">Olvidé mi contraseña</button>
             </div>
-            
-            <AlertModal v-if="isShowModal" @close="closeModal" :textTitle="modalTitle" :textBody="modalBody" />
         </div>
     </div>
 </template>
 
 <script>
-import AlertModal from './modals/AlertModal';
 import InputTitle from './inputs/InputTitle';
 import Input from './inputs/Input';
 
 export default {
     components: {
-        AlertModal,
         InputTitle,
         Input
     },
@@ -78,36 +74,32 @@ export default {
     
                 let data = loginResponse.data.payload;
                 this.userData = data;
-                console.log(this.userData)
                 
                 if (process.browser) {
+                    // Almacenamos en localStorage el token e información del usuario
                     localStorage.setItem('user', JSON.stringify(this.userData));
                     localStorage.setItem('user_token', loginResponse.data.token);
                     this.$store.commit('setUserInfo', loginResponse.data.payload);
                     this.$store.commit('setToken', loginResponse.data.token);
                 }
                 
-                this.isShowModal = !this.isShowModal;
                 this.busy = !this.busy;
 
-                this.modalTitle = 'Login'
-                this.modalBody = loginResponse.data.message + " \n" + this.userData.role
-
                 setTimeout(() => {
-                    if (this.userData.role == 'Administrador')
+                    if (this.userData.role == 'Administrador') {
+                        // agregar los topic y las universidades al localStorage
+                        alert(loginResponse.data.message)
                         this.$router.push({ path: '/statistics' })
-                    else
+                    } else {
+                        alert(loginResponse.data.message)
                         this.$router.push({ path: '/requestedQuestions'})
-                    
-                    this.isShowModal = !this.isShowModal;
+                    }
                 }, 1500);
             } catch (err) {
-                this.isShowModal = !this.isShowModal;
-                this.modalTitle = 'Login'
-                this.modalBody = err.response.data.message;
+                alert(response.data.message)
                 const response = err.response;
                 console.log('Error: ', response.data.message);
-                this.busy = false;
+                this.busy = !this.busy;
             }
         },
         closeModal() {
