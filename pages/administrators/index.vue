@@ -41,16 +41,20 @@
                                 <div class="dropleft">
                                     <button class="btn fas fa-ellipsis-v" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <div class="configuration">
+                                            <button v-if="selected == 'true'" type="button" class="btn" @click="confirmModalInactive(administrators[index])">
+                                                <i class="fas fa-trash"></i>
+                                                Eliminar usuario
+                                            </button>
+                                            <button v-else-if="selected == 'false'" type="button" class="btn" @click="confirmModalActive(administrators[index])">
+                                                <i class="fas fa-check-circle"></i>
+                                                Habilitar usuario
+                                            </button>
+                                        </div>
                                         <div class="notifications">
                                             <button type="button" class="btn" @click="update(administrators[index])">
                                                 <i class="fas fa-pencil-alt"></i>
                                                 Editar usuario
-                                            </button>
-                                        </div>
-                                        <div class="configuration">
-                                            <button type="button" class="btn" @click="confirmModal(administrators[index])">
-                                                <i class="fas fa-trash"></i>
-                                                Eliminar usuario
                                             </button>
                                         </div>
                                     </div>
@@ -65,13 +69,13 @@
                 <div class="select-container">
                     <span>Rows per page: </span>
                     <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="5">5</option>
-                        <option value="10">10</option>
-                        <option value="15">15</option>
-                        <option value="20">20</option>
+                        <option value=1>1</option>
+                        <option value=2>2</option>
+                        <option value=3>3</option>
+                        <option value=5>5</option>
+                        <option value=10>10</option>
+                        <option value=15>15</option>
+                        <option value=20>20</option>
                     </select>
                 </div>
 
@@ -83,12 +87,22 @@
             </div>
             
             <DeleteUserModal 
-                v-if="isShowModal"
-                @close="closeModal"
+                v-if="isShowModalInactive"
+                @close="closeModalInactive"
                 :textTitle="titleModal"
                 :textBody="bodyModal"
                 :name="nameUser"
-                :action="deleteUser" />
+                :action="inactivateUser"
+                :isBusy="busy" />
+            
+            <ActiveUserModal 
+                v-if="isShowModalActive"
+                @close="closeModalActive"
+                :textTitle="titleModal"
+                :textBody="bodyModal"
+                :name="nameUser"
+                :action="activateUser"
+                :isBusy="busy" />
 
         </div>
     </div>
@@ -98,6 +112,7 @@
 import Navigation from '../../components/navs/Navigation';
 import SuccessButton from '../../components/buttons/SuccessButton';
 import DeleteUserModal from '../../components/modals/DeleteUserModal';
+import ActiveUserModal from '../../components/modals/ActiveUserModal';
 import Loading from '../../components/modals/Loading';
 
 export default {
@@ -105,13 +120,16 @@ export default {
         Navigation,
         SuccessButton,
         DeleteUserModal,
+        ActiveUserModal,
         Loading
     },
     data() {
         return {
             loading: false,
-            isShowModal: false,
-            selected: true,
+            busy: false,
+            isShowModalInactive: false,
+            isShowModalActive: false,
+            selected: 'true',
             searchText: '',
             titleModal: '',
             bodyModal: '',
@@ -119,7 +137,8 @@ export default {
             administrators: [],
             totalAdmins: 0,
             userIdToDelete: '',
-            pageResults: 1,
+            userIdToActive: '',
+            pageResults: 5,
             page: 1
         }
     },
@@ -127,7 +146,6 @@ export default {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
         await this.getAdministrators()
-        // this.loading = !this.loading
     },
     methods: {
         async getAdministrators() {
@@ -156,54 +174,65 @@ export default {
         rowsChange() {
             this.getAdministrators()
         },
-        async setInactive(admin_id) {
-            if (process.browser) {
-                this.$axios
-                .put('/setInactiveUser', {
-                    user_id: admin_id
-                })
-                .then(res => {
-                    console.log(res.data.message);
-                    alert(res.data.message);
-                })
-                .catch(err => {
-                    console.log('Error: ', JSON.stringify(err));
-                    alert('Error: ', JSON.stringify(err));
-                });
+        confirmModalActive(admin_data) {
+            this.titleModal = 'Habilitar usuario';
+            this.bodyModal = '¿Deseas habilitar el siguiente usuario?'
+            this.nameUser = admin_data.name + " " + admin_data.last_name;
+            this.userIdToActive = admin_data._id;
+
+            this.isShowModalActive = !this.isShowModalActive;
+        },
+        async activateUser() {
+            try {
+                this.busy = !this.busy;
+
+                let activeResponse = await this.$axios.put('/setActiveUser', { user_id: this.userIdToActive })
+                alert(activeResponse.data.message)
+                
+                this.busy = !this.busy;
+                this.isShowModalActive = !this.isShowModalActive;
+                
+                this.getAdministrators()
+            } catch (err) {
+                console.log(err);
+                alert(JSON.stringify(err));
             }
         },
         update(admin_data) {
-            // cambiar de vista para actualizar administrador
             this.$router.push({ path: `/administrators/${admin_data._id}` });
         },
-        confirmModal(admin_data) {
+        confirmModalInactive(admin_data) {
             this.titleModal = 'Eliminar usuario'
             this.bodyModal = "¿Deseas eliminar el siguiente usuario?" 
             this.nameUser = "" + admin_data.name + " " + admin_data.last_name
-            console.log(admin_data.name + " " + admin_data.last_name)
-            this.isShowModal = !this.isShowModal;
             this.userIdToDelete = admin_data._id
+            
+            this.isShowModalInactive = !this.isShowModalInactive;
         },
-        async deleteUser() {
+        async inactivateUser() {
+            this.busy = !this.busy;
+            
             let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.userIdToDelete });
-            console.log(inactive_response);
-            this.bodyModal = inactive_response.data.message;
+            alert(inactive_response.data.message);
+            
+            this.busy = !this.busy;
+            this.isShowModalInactive = !this.isShowModalInactive;
 
-            setTimeout(() => {
-                this.isShowModal = !this.isShowModal;
-            }, 1500);
-            this.getAdministrators()
+            this.getAdministrators();
         },
         before() {
-            // this.page += 1
             alert('Logica para esta asunto')
         },
         after() {
             alert('Logica para esta asunto')
         },
-        closeModal() {
-            this.isShowModal = !this.isShowModal;
+        closeModalInactive() {
+            this.isShowModalInactive = !this.isShowModalInactive;
             this.userIdToDelete = ''
+        },
+        closeModalActive() {
+            this.isShowModalActive = !this.isShowModalActive;
+            this.userIdToActive = ''
         }
     }
 }

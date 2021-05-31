@@ -48,13 +48,16 @@
 
                 <div class="inputs">
                     <div class="int-cont-email">
-                        <InputIcon
-                            type="password"
-                            placeholder="• • • • • • • •"
-                            v-model="new_password"
-                            :val="new_password"
-                            icon="fas fa-envelope"
-                            title="Contraseña" />
+                        <div class="password">
+                            <InputIcon
+                                :type="typePassword"
+                                placeholder="• • • • • • • •"
+                                v-model="new_password"
+                                icon="fas fa-lock"
+                                title="Contraseña" />
+
+                            <button :class="classPassword" @click="changeIconClassPass"></button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -112,7 +115,9 @@ export default {
             new_password: '',
             titleModal: '',
             bodyModal: '',
-            nameUser: ''
+            nameUser: '',
+            typePassword: 'password',
+            classPassword: 'btn fas fa-eye',
         }
     },
     async created() {
@@ -120,10 +125,6 @@ export default {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
         
         await this.getUser();
-        // this.new_name = this.user_data.name
-        //     this.new_last_name = this.user_data.last_name
-        //     this.new_email = this.user_data.email
-        console.log('name', this.new_name)
     },
     methods: {
         async getUser() {
@@ -186,6 +187,15 @@ export default {
                 }, 1500);
             } catch (err) {
                 console.log(err);
+            }
+        },
+        changeIconClassPass() {
+            if (this.typePassword == 'password') {
+                this.typePassword = 'text'
+                this.classPassword = 'btn fas fa-eye-slash'
+            } else if (this.typePassword == 'text') {
+                this.typePassword = 'password'
+                this.classPassword = 'btn fas fa-eye'
             }
         },
         closeModal() {
@@ -259,6 +269,11 @@ export default {
         width: 36%;
         margin: 0px 80px;
         margin-bottom: 40px;
+    }
+
+    .password {
+        display: flex;
+        align-items: flex-end;
     }
 
     .input-container {
