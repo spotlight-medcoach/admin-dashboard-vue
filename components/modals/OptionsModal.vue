@@ -46,15 +46,11 @@ export default {
             alert('Configuración');
         },
         logout() {
-            // this.isShowModal = !this.isShowModal;
-            // this.textModal = 'Cerrando sesión...'
-
             setTimeout(() => {
                 this.$router.push({ path: '/' });
 
                 this.$store.dispatch('killSession')
                 localStorage.clear();
-                // this.isShowModal = !this.isShowModal
             }, 1000)
         }
     }
@@ -90,6 +86,10 @@ export default {
 
     .modal-container i {
         margin-right: .5rem;
+    }
+
+    button:hover {
+        color: #FE9400;
     }
 
     /* .modal-enter {

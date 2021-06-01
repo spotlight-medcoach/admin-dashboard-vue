@@ -1,7 +1,7 @@
 <template>
     <div class="load-container">
-        <h2>Cargando...</h2>
         <div class="lds-dual-ring"></div>
+        <h2>Cargando... Por favor, espera un momento</h2>
     </div>
 </template>
 
@@ -17,22 +17,33 @@ export default {
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background: whitesmoke;
+        background: #FFF;
         margin: 2rem;
         padding: 2rem;
     }
 
+    .load-container h2 {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 24px;
+        display: flex;
+        color: #9E9E9E;
+        margin-bottom: 0;
+        margin-top: 23px;
+    }
+
     .lds-dual-ring {
         display: inline-block;
-        width: 50px;
-        height: 50px;
+        width: 160px;
+        height: 160px;
     }
 
     .lds-dual-ring:after {
         content: " ";
         display: block;
-        width: 44px;
-        height: 44px;
+        width: 160px;
+        height: 160px;
         /* margin: 8px; */
         border-radius: 50%;
         border: 6px solid #FE9400;

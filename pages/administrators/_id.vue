@@ -81,7 +81,8 @@
                 :textTitle="titleModal"
                 :textBody="bodyModal"
                 :name="nameUser"
-                :action="deleteUser" />
+                :action="deleteUser"
+                :isBusy="busy" />
         </div>
     </div>
 </template>
