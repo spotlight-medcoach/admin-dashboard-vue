@@ -19,7 +19,7 @@
                 
                 <div class="filter-drop">
                     <select v-model="selected" class="options" @change="selectedChange">
-                        <option value="true">Activos</option>
+                        <option value="true" selected>Activos</option>
                         <option value="false">Inactivos</option>
                     </select>
                 </div>
@@ -40,35 +40,39 @@
                             <th scope="col">Número de cuenta</th>
                             <th scope="col">Telefono</th>
                             <th scope="col">Email</th>
-                            <th scope="col">Preguntas!!</th>
-                            <th scope="col">Saldo!!!</th>
+                            <th scope="col">Preguntas</th>
+                            <th scope="col">Saldo</th>
                             <th scope="col" class="actions">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="tbody">
                         <tr v-for="(spotlighter, index) in spotlighters" :key="spotlighter.admin_id">
                             <td><input class="check-style" type="checkbox" name="" id=""></td>
                             <td>{{ spotlighter.name }} {{ spotlighter.last_name }}</td>
                             <td>{{ spotlighter.account_number }}</td>
                             <td>{{ spotlighter.phone }}</td>
                             <td>{{ spotlighter.email }}</td>
-                            <td>!!</td>
+                            <td></td>
                             <td>Falta hacer este calculo</td>
                             <td class="td-style">
                                 <button class="fas fa-dollar-sign btn dollar"></button>
                                 <div class="dropleft">
                                     <button class="btn fas fa-ellipsis-v" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <div class="configuration">
+                                            <button v-if="selected == 'true'" type="button" class="btn" @click="confirmModalInactive(spotlighters[index])">
+                                                <i class="fas fa-trash"></i>
+                                                Eliminar usuario
+                                            </button>
+                                            <button v-else-if="selected == 'false'" type="button" class="btn" @click="confirmModalActive(spotlighters[index])">
+                                                <i class="fas fa-check-circle"></i>
+                                                Habilitar usuario
+                                            </button>
+                                        </div>
                                         <div class="notifications">
                                             <button type="button" class="btn" @click="update(spotlighters[index])">
                                                 <i class="fas fa-pencil-alt"></i>
                                                 Editar usuario
-                                            </button>
-                                        </div>
-                                        <div class="configuration">
-                                            <button type="button" class="btn" @click="confirmModal(spotlighters[index])">
-                                                <i class="fas fa-trash"></i>
-                                                Eliminar usuario
                                             </button>
                                         </div>
                                     </div>
@@ -81,41 +85,43 @@
             
 
             <div class="pagination-container">
-                <div class="dropdown drop">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Rows per page:!!!!
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                        <button class="dropdown-item" type="button">10</button>
-                        <button class="dropdown-item" type="button">15</button>
-                        <button class="dropdown-item" type="button">20</button>
-                    </div>
+                <div class="select-container">
+                    <span>Rows per page: </span>
+                    <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
+                        <option value=1>1</option>
+                        <option value=2>2</option>
+                        <option value=3>3</option>
+                        <option value=5>5</option>
+                        <option value=10>10</option>
+                        <option value=15>15</option>
+                        <option value=20>20</option>
+                    </select>
                 </div>
 
-                <nav class="arrows" aria-label="Page navigation example">
-                    <ul class="pagination">
-                        <div class="loco">
-                            1 - 10 of n items!!!
-                        </div>
-                        <li class="page-item p-2">
-                            <a class="page-link arrow" href="#" aria-label="Previous">
-                                <span class="fas fa-chevron-left"></span>
-                            </a>
-                        </li>
-                        <li class="page-item p-2">
-                            <a class="page-link arrow" href="#" aria-label="Next">
-                                <span class="fas fa-chevron-right"></span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+                <div class="arrows-container">
+                    <span>1 - {{pageResults}} of {{totalSpotlighters}} Spotlighters</span>
+                    <button class="btn fas fa-chevron-left" @click="before"></button>
+                    <button class="btn fas fa-chevron-right" @click="after"></button>
+                </div>
             </div>
-            <ModalConfirm 
-                v-if="isShowModal"
-                @close="closeModal"
+
+            <DeleteUserModal 
+                v-if="isShowModalInactive"
+                @close="closeModalInactive"
                 :textTitle="titleModal"
                 :textBody="bodyModal"
-                :deleteUser="deleteUser" />
+                :name="nameUser"
+                :action="inactivateUser"
+                :isBusy="busy" />
+
+            <ActiveUserModal 
+                v-if="isShowModalActive"
+                @close="closeModalActive"
+                :textTitle="titleModal"
+                :textBody="bodyModal"
+                :name="nameUser"
+                :action="activateUser"
+                :isBusy="busy" />
         </div>
     </div>
 </template>
@@ -124,27 +130,36 @@
 import Navigation from '../../components/navs/Navigation';
 import Loading from '../../components/modals/Loading';
 import ActionsModal from '../../components/modals/ActionsModal';
-import ModalConfirm from '../../components/modals/ModalConfirm';
+import DeleteUserModal from '../../components/modals/DeleteUserModal';
+import ActiveUserModal from '../../components/modals/ActiveUserModal';
 
 export default {
     components: {
         Navigation,
         Loading,
         ActionsModal,
-        ModalConfirm
+        DeleteUserModal,
+        ActiveUserModal
     },
     data() {
         return {
+            busy: false,
             loading: false,
-            isShowModal: false,
-            selected: true,
+            isShowModalInactive: false,
+            isShowModalActive: false,
+            selected: 'true',
+            searchText: '',
             titleModal: '',
             bodyModal: '',
-            searchText: '',
+            nameUser: '',
             spotlighters: [],
-            userIdToDelete: ''
+            totalSpotlighters: 0,
+            userIdToDelete: '',
+            userIdToActive: '',
+            pageResults: 5,
+            page: 1
         }
-    },
+    }, // Instituto de Estudios Superiores de Tamaulipas (IEST Anáhuac) Escuela de Medicina
     async created() {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
@@ -155,8 +170,19 @@ export default {
         async getSpotlighters() {
             try {
                 this.loading = !this.loading;
-                let spotlighter_response = await this.$axios.get(`/getAllSpotlighters?status=${JSON.parse(this.selected)}`);
-                this.spotlighters = spotlighter_response.data.payload;
+
+                let spotlighter_response = await this.$axios
+                .get('/getAllSpotlighters', {
+                    params: {
+                        status: this.selected,
+                        page: this.page,
+                        pageResults: this.pageResults
+                    }
+                });
+
+                this.spotlighters = spotlighter_response.data.payload.spotlighters;
+                this.totalSpotlighters = spotlighter_response.data.payload.length;
+                
                 this.loading = !this.loading;
             } catch (err) {
                 console.log(err);
@@ -169,26 +195,71 @@ export default {
             // cambiar a vista para actualizar spotlighter
             this.$router.push({ path: `/spotlighters/${user.admin_id}` });
         },
-        confirmModal(user) {
-            // lógica para eliminar el spotlighter
-            this.titleModal = 'Eliminar spotligther'
-            this.bodyModal = "¿Deseas eliminar el siguiente usuario?\n" + user.name + " " + user.last_name
-            this.isShowModal = !this.isShowModal;
-            this.userIdToDelete = user.admin_id
+        confirmModalActive(admin_data) {
+            this.titleModal = 'Habilitar usuario';
+            this.bodyModal = '¿Deseas habilitar el siguiente usuario?'
+            this.nameUser = admin_data.name + " " + admin_data.last_name;
+            this.userIdToActive = admin_data.admin_id;
+
+            this.isShowModalActive = !this.isShowModalActive;
         },
-        async deleteUser() {
+        async activateUser() {
+            try {
+                this.busy = !this.busy;
+
+                let activeResponse = await this.$axios.put('/setActiveUser', { user_id: this.userIdToActive })
+                alert(activeResponse.data.message)
+                
+                this.busy = !this.busy;
+                this.isShowModalActive = !this.isShowModalActive;
+                
+                this.getSpotlighters()
+            } catch (err) {
+                console.log(err);
+                alert(JSON.stringify(err));
+            }
+        },
+        confirmModalInactive(admin_data) {
+            console.log(admin_data)
+            this.titleModal = 'Eliminar usuario'
+            this.bodyModal = "¿Deseas eliminar el siguiente usuario?" 
+            this.nameUser = "" + admin_data.name + " " + admin_data.last_name
+            this.userIdToDelete = admin_data.admin_id
+            
+            this.isShowModalInactive = !this.isShowModalInactive;
+        },
+        async inactivateUser() {
+            this.busy = !this.busy;
+
             let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.userIdToDelete });
             console.log(inactive_response);
+            alert(inactive_response.data.message);
             this.bodyModal = inactive_response.data.message;
-
-            setTimeout(() => {
-                this.isShowModal = !this.isShowModal;
-            }, 1500);
+            
+            this.busy = !this.busy;
+            this.isShowModalInactive = !this.isShowModalInactive;
+            
             this.getSpotlighters()
         },
-        closeModal() {
-            this.isShowModal = !this.isShowModal;
+        selectedChange() {
+            this.getSpotlighters()
+        },
+        rowsChange() {
+            this.getSpotlighters()
+        },
+        before() {
+            alert('Logica para esta asunto')
+        },
+        after() {
+            alert('Logica para esta asunto')
+        },
+        closeModalInactive() {
+            this.isShowModalInactive = !this.isShowModalInactive;
             this.userIdToDelete = ''
+        },
+        closeModalActive() {
+            this.isShowModalActive = !this.isShowModalActive;
+            this.userIdToActive = ''
         }
     }
 }
@@ -274,6 +345,11 @@ export default {
     .thead-spotlighter {
         background: #212529;
         color: #FFF;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 12px;
+        line-height: 15px;
+        letter-spacing: 1px;
         text-transform: uppercase;
     }
 
@@ -289,6 +365,18 @@ export default {
         border: 1px solid white;
         -moz-border-radius: 15px 0px 0px 0px;
         -webkit-border-radius: 15px 0px 0px 0px;
+    }
+
+    .tbody {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 18px;
+        color: #212529;
+    }
+
+    td {
+        vertical-align: middle;
     }
 
     .check-style {
@@ -338,23 +426,40 @@ export default {
     .pagination-container {
         display: flex;
         justify-content: flex-end;
+        height: 56px;
     }
 
-    .loco {
+    .select-container {
         display: flex;
         align-items: center;
-        justify-content: center;
-    }
-    
-    .drop {
-        margin-right: 5%;
+        margin: 0px 40px;
     }
 
-    .arrows {
-        margin-left: 5%;
+    .select-container span {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        margin: 0px 10px;
+        color: #212529;
     }
-    .arrow {
-        border: none;
+
+    .arrows-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 0px 40px;
+    }
+
+    .arrows-container span {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        color: #212529;
+    }
+
+    .arrows-container button {
         color: #FE9400;
     }
 </style>

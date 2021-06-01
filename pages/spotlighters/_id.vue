@@ -22,13 +22,15 @@
                                 type="text"
                                 placeholder="Nombre"
                                 v-model="new_name"
+                                :val="new_name"
                                 title="Nombre(s)" />
                         </div>
                         <div class="inp-cont">
                             <Input
                                 type="text"
                                 placeholder="Apellidos"
-                                v-model="new_name"
+                                v-model="new_last_name"
+                                :val="new_last_name"
                                 title="Apellidos" />
                         </div>
                     </div>
@@ -39,6 +41,7 @@
                                 type="text"
                                 placeholder="País"
                                 v-model="new_country"
+                                :val="new_country"
                                 title="País" />
                         </div>
                         <div class="inp-cont">
@@ -46,6 +49,7 @@
                                 type="text"
                                 placeholder="Estado"
                                 v-model="new_state"
+                                :val="new_state"
                                 title="Estado" />
                         </div>
                     </div>
@@ -56,6 +60,7 @@
                                 type="text"
                                 placeholder="example@example.com"
                                 v-model="new_email"
+                                :val="new_email"
                                 icon="fas fa-user-circle"
                                 title="Correo electrónico" />
                         </div>
@@ -64,6 +69,7 @@
                                 type="text"
                                 placeholder="341 111 2233"
                                 v-model="new_phone"
+                                :val="new_phone"
                                 icon="fas fa-mobile-alt"
                                 title="Teléfono" />
                         </div>
@@ -75,6 +81,7 @@
                                 type="text"
                                 placeholder="Universidad"
                                 v-model="new_university"
+                                :val="new_university"
                                 icon="fas fa-university"
                                 title="Universidad" />
                         </div>
@@ -83,6 +90,7 @@
                                 type="text"
                                 placeholder="5555 5555 5555 5555"
                                 v-model="new_account_number"
+                                :val="new_account_number"
                                 icon="fas fa-credit-card"
                                 title="Número de cuenta" />
                         </div>
@@ -94,6 +102,7 @@
                                 type="text"
                                 placeholder="• • • • • • • •"
                                 v-model="new_password"
+                                :val="new_password"
                                 icon="fas fa-envelope"
                                 title="Contraseña" />
                         </div>
@@ -120,7 +129,8 @@
                 :textTitle="titleModal"
                 :textBody="bodyModal"
                 :name="nameUser"
-                :action="deleteUser" />
+                :action="deleteUser"
+                :isBusy="busy" />
             
         </div>
     </div>
@@ -172,7 +182,6 @@ export default {
         }
         
         await this.getUser();
-        this.setValueInputs();
         
         console.log(this.user_data)
     },
@@ -184,6 +193,7 @@ export default {
                 let user_response = await this.$axios.get(`/getOneAdminUser?user_id=${this.$route.params.id}`);
                 let user_data = user_response.data.payload;
                 this.user_data = user_data;
+                this.setValueInputs();
     
                 this.loading = !this.loading;
             } catch (err) {
@@ -191,6 +201,7 @@ export default {
             }
         },
         setValueInputs() {
+            console.log('data', this.user_data)
             this.new_name = this.user_data.name
             this.new_last_name = this.user_data.last_name
             this.new_country = this.user_data.country
@@ -225,11 +236,11 @@ export default {
                 password: this.new_password
             });
 
+            alert(updated_response.data.message);
             this.busy = !this.busy;
 
             setTimeout(() => {
                 this.$router.push({ path: '/spotlighters' })
-                // this.isShowModal = !this.isShowModal;
             }, 1000);
         },
         confirmModal() {
@@ -344,6 +355,7 @@ export default {
         justify-content: flex-end;
         margin-top: 3%;
         margin-right: 10%;
+        margin-bottom: 3%;
     }
 
     .load-container {

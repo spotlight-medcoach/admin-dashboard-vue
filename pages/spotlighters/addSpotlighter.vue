@@ -88,25 +88,37 @@
 
                     <div class="inputs">
                         <div class="int-cont">
-                            <InputIcon
-                                type="password"
-                                placeholder="• • • • • • • •"
-                                v-model="password"
-                                icon="fas fa-envelope"
-                                title="Contraseña" />
+                            <div class="password">
+                                <InputIcon
+                                    :type="typePassword"
+                                    placeholder="• • • • • • • •"
+                                    v-model="password"
+                                    icon="fas fa-lock"
+                                    title="Contraseña" />
+
+                                <button :class="classPassword" @click="changeIconClassPass"></button>
+                            </div>
                         </div>
                         <div class="int-cont">
-                            <InputIcon
-                                type="password"
-                                placeholder="• • • • • • • •"
-                                v-model="confirm_password"
-                                icon="fas fa-envelope"
-                                title="Confirmar contraseña" />
+                            <div class="password">
+                                <InputIcon
+                                    :type="typeConfirm"
+                                    placeholder="• • • • • • • •"
+                                    v-model="confirm_password"
+                                    icon="fas fa-lock"
+                                    title="Confirmar contraseña" />
+                                <button :class="classConfirm" @click="changeIconClassConf"></button>
+                            </div>
                         </div>
                     </div>
 
                 </div>
             </div>
+
+            <div class="load-container">
+                <div class="lds-dual-ring" v-if="busy"></div>
+            </div>
+
             <div class="btn-container">
                 <SuccessButton
                     :text="'Agregar usuario'"
@@ -134,6 +146,8 @@ export default {
     },
     data() {
         return {
+            busy: false,
+            loading: false,
             name: '',
             last_name: '',
             email: '',
@@ -143,7 +157,12 @@ export default {
             university: '',
             account_number: '',
             password: '',
-            confirm_password: ''
+            confirm_password: '',
+            typePassword: 'password',
+            classPassword: 'btn fas fa-eye',
+
+            typeConfirm: 'password',
+            classConfirm: 'btn fas fa-eye'
         }
     },
     async created() {
@@ -152,6 +171,7 @@ export default {
     },
     methods: {
         async addSpotlighter() {
+            this.busy = !this.busy;
             if (process.browser) {
                 // verificar que la universidad exista en la lista
                 let universities = JSON.parse(localStorage.getItem('universities'));
@@ -174,6 +194,28 @@ export default {
 
                 let add_response = await this.$axios.post('/createUser', data);
                 console.log('response: ', add_response);
+                alert(add_response.data.message)
+                
+                this.busy = !this.busy;
+                this.$router.push({ path: '/spotlighters' });
+            }
+        },
+        changeIconClassPass() {
+            if (this.typePassword == 'password') {
+                this.typePassword = 'text'
+                this.classPassword = 'btn fas fa-eye-slash'
+            } else if (this.typePassword == 'text') {
+                this.typePassword = 'password'
+                this.classPassword = 'btn fas fa-eye'
+            }
+        },
+        changeIconClassConf() {
+            if (this.typeConfirm == 'password') {
+                this.typeConfirm = 'text'
+                this.classConfirm = 'btn fas fa-eye-slash'
+            } else if (this.typeConfirm == 'text') {
+                this.typeConfirm = 'password'
+                this.classConfirm = 'btn fas fa-eye'
             }
         }
     }
@@ -233,6 +275,12 @@ export default {
         margin: 10px 40px;
     }
 
+    .password {
+        display: flex;
+        align-items: flex-end;
+        width: 100%;
+    }
+
     .inputs-container {
         display: flex;
         flex-direction: column;
@@ -254,5 +302,38 @@ export default {
         align-items: center;
         justify-content: flex-end;
         margin: 2% 10%;
+    }
+    
+    .load-container {
+        display: flex;
+        justify-content: center;
+    }
+
+    /* estilos para el loading predeterminado */
+    .lds-dual-ring {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+    }
+
+    .lds-dual-ring:after {
+        content: " ";
+        display: block;
+        width: 44px;
+        height: 44px;
+        /* margin: 8px; */
+        border-radius: 50%;
+        border: 6px solid #FE9400;
+        border-color: #FE9400 transparent #FE9400 transparent;
+        animation: lds-dual-ring 1.2s linear infinite;
+    }
+
+    @keyframes lds-dual-ring {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
     }
 </style>

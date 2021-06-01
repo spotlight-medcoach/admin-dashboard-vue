@@ -32,6 +32,7 @@ export default {
         display: flex;
         flex-direction: column;
         color: #1CA4FC;
+        width: 100%;
     }
 
     .title {
