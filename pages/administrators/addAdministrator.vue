@@ -138,10 +138,8 @@ export default {
 
             this.busy = !this.busy;
 
-            setTimeout(() => {
-                alert(add_response.data.message);
-                this.$router.push({ path: '/administrators' })
-            }, 1500);
+            alert(add_response.data.message);
+            this.$router.push({ path: '/administrators' })
         },
         changeIconClassPass() {
             if (this.typePassword == 'password') {

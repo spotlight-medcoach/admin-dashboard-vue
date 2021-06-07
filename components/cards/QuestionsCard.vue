@@ -6,8 +6,8 @@
                 <h3 class="content">{{question.question.content}}</h3>
             </div>
             <div class="icons">
-                <button class="btn fas fa-pencil-alt edit" @click="updateQuestion"></button>
-                <button class="btn fas fa-trash delete" @click="deleteQuestion"></button>
+                <button class="btn fas fa-pencil-alt edit" @click="$emit('updateQuestion')"></button>
+                <button class="btn fas fa-trash delete" @click="$emit('deleteQuestion')"></button>
             </div>
         </div>
     </div>
@@ -23,7 +23,7 @@ export default {
     .question-container {
         display: flex;
         flex-direction: column;
-        margin: 20px 0px;
+        margin: 10px 0px;
     }
     .question-body {
         display: flex;

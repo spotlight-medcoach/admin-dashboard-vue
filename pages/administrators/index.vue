@@ -5,6 +5,7 @@
             <div class="head-container">
                 <p class="title">Administradores</p>
                 <nuxt-link 
+                    v-if="!loading"
                     to="/administrators/addAdministrator"
                     class="add-button" >
                     <i class="fas fa-user-plus"></i>
@@ -12,7 +13,8 @@
                 </nuxt-link>
             </div>
 
-            <div class="search-active-container">
+            <Loading v-if="loading" />
+            <div v-else class="search-active-container">
                 <input type="searchText" placeholder="Buscar">
                 
                 <select v-model="selected" class="options" @change="selectedChange">
@@ -21,10 +23,8 @@
                 </select>
             </div>
 
-            <div class="table-container">
-                <Loading v-if="loading" />
-
-                <table v-else class="table table-bordered">
+            <div v-if="!loading" class="table-container">
+                <table class="table table-bordered">
                     <thead class="thead-admin">
                         <tr>
                             <th scope="col">Nombre completo</th>
@@ -51,7 +51,7 @@
                                                 Habilitar usuario
                                             </button>
                                         </div>
-                                        <div class="notifications">
+                                        <div v-if="selected == 'true'" class="notifications">
                                             <button type="button" class="btn" @click="update(administrators[index])">
                                                 <i class="fas fa-pencil-alt"></i>
                                                 Editar usuario
@@ -65,7 +65,7 @@
                 </table>
             </div>
 
-            <div class="pagination-container">
+            <div v-if="!loading" class="pagination-container">
                 <div class="select-container">
                     <span>Rows per page: </span>
                     <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">

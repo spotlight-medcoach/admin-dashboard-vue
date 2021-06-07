@@ -17,5 +17,8 @@ export default {
     .success button {
         color: #FFF;
         background: #20B000;
+        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
+        border-radius: 10px;
+        padding: 12px 20px;
     }
 </style>

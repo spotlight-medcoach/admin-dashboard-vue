@@ -17,14 +17,14 @@
                     type="password"
                     placeholder="• • • • • • • •"
                     v-model="password"
-                    icon="fas fa-user-circle"
+                    icon="fas fa-lock"
                     title="Contaseña" />
             </div>
 
-            <div class="check">
+            <!-- <div class="check">
                 <input v-model="checked" class="" type="checkbox">
                 <label>Recordarme</label>
-            </div>
+            </div> -->
             
             <!-- Loader -->
             <div class="lds-dual-ring" v-if="busy"></div>

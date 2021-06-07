@@ -7,19 +7,22 @@
 				<LinkNavigation
 					to="/requestedQuestions"
 					new_class="link nuxt-link-active"
-					icon="fas fa-file-medical" />
+					icon="fas fa-file-medical"
+					title="Preguntas solicitadas" />
 			</div>
 			<div>
 				<LinkNavigation 
 					to="/casesWithFeedback"
 					new_class="link nuxt-link-active"
-					icon="fas fa-folder" />
+					icon="fas fa-folder"
+					title="Correcciones" />
 			</div>
 			<div>
 				<LinkNavigation 
 					to="/myCases"
 					new_class="link nuxt-link-active"
-					icon="fas fa-list-alt" />
+					icon="fas fa-list-alt"
+					title="Mis casos" />
 			</div>
 			
 		</nav>
@@ -92,9 +95,9 @@ export default {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 48px;
-		height: 48px;
-		margin: 0px 21.145px;
+		width: 125px;
+		/* height: 48px; */
+		/* margin: 0px 21.145px; */
 		
 	}
 

@@ -8,41 +8,53 @@
                     <h1>Mis casos</h1>
                 </div>
 
-                <div class="pay-container">
+                <div v-if="!loading" class="pay-container">
                     <p>Fecha de último pago</p>
                     <button class="btn"><i class="fas fa-dollar-sign"></i> Solicitar pago</button>
                 </div>
 
             </div>
 
-            <div class="filter-container">
+            <Loading v-if="loading" />
+            <div v-else class="filter-container">
                 <div class="search-input">
-                    <input type="text" placeholder="    Buscar">
+                    <input type="text" placeholder="Buscar">
                 </div>
 
-                <select name="" id="" class="js-example-basic-single">
+                <select v-model="statusSelected" name="status" class="js-example-basic-single" @change="getMyCases">
                     <option value="" selected>Todos los estados</option>
-                    <option value="">En edición</option>
-                    <option value="">Feedback</option>
-                    <option value="">Aprobados</option>
+                    <option value="Pending review">Revisión pendiente</option>
+                    <option value="In edit">En edición</option>
+                    <option value="With feedback">Feedback</option>
+                    <option value="Approved by Spotlighter">Aprobados</option>
                 </select>
+
+                <select v-model="topicSelected" name="topic" class="js-example-basic-single" @change="filterSubtopics(topicSelected)">
+                    <option value="" selected>Temas</option>
+                    <option :value="top" v-for="top in topics" :key="top._id">{{top.name}}</option>
+                </select>
+
+                <select v-model="subtopicSelected" name="subtopic" class="js-example-basic-single" @change="getCasesFilteredBySubtopic(subtopicSelected)">
+                    <option value="" selected>Subtemas</option>
+                    <option :value="sub.subtopic" v-for="sub in subtopics" :key="sub._id">{{sub.name}}</option>
+                </select>
+
                 <button class="btn" @click="addCase"><i class="fas fa-plus-circle"></i> Crear nuevo caso</button>
             </div>
 
-            <div class="table-container">
-                <Loading v-if="loading" />
-                <table v-else class="table table-bordered">
+            <div v-if="!loading" class="table-container">
+                <table class="table table-bordered">
                     <thead class="thead-cases">
                         <tr>
                             <th scope="col">Caso</th>
                             <th scope="col">Tema</th>
                             <th scope="col">Subtema</th>
-                            <th scope="col">Descripcion</th>
+                            <th scope="col">Descripcion requerida</th>
                             <th scope="col">Estado</th>
                             <th scope="col" class="actions">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="tbody">
                         <tr v-for="(theCase, index) in myCases" :key="theCase._id">
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
@@ -57,35 +69,27 @@
                 </table>
             </div>
 
-            <div class="pagination-container">
-                <div class="dropdown drop">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Rows per page:!!!!
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                        <button class="dropdown-item" type="button">10</button>
-                        <button class="dropdown-item" type="button">15</button>
-                        <button class="dropdown-item" type="button">20</button>
-                    </div>
+            <div v-if="!loading" class="pagination-container">
+                <div class="select-container">
+                    <span>Rows per page: </span>
+                    <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
+                        <option value=1>1</option>
+                        <option value=2>2</option>
+                        <option value=3>3</option>
+                        <option value=5>5</option>
+                        <option value=10>10</option>
+                        <option value=15>15</option>
+                        <option value=20>20</option>
+                        <option value=40>40</option>
+                        <option value=50>50</option>
+                    </select>
                 </div>
 
-                <nav class="arrows" aria-label="Page navigation example">
-                    <ul class="pagination">
-                        <div class="loco">
-                            1 - 10 of n items!!!
-                        </div>
-                        <li class="page-item p-2">
-                            <a class="page-link arrow" href="#" aria-label="Previous">
-                                <span class="fas fa-chevron-left"></span>
-                            </a>
-                        </li>
-                        <li class="page-item p-2">
-                            <a class="page-link arrow" href="#" aria-label="Next">
-                                <span class="fas fa-chevron-right"></span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+                <div class="arrows-container">
+                    <span>1 - {{pageResults}} of {{totalCases}} casos</span>
+                    <button class="btn fas fa-chevron-left" @click="before"></button>
+                    <button class="btn fas fa-chevron-right" @click="after"></button>
+                </div>
             </div>
         </div>
     </div>
@@ -104,7 +108,17 @@ export default {
         return {
             loading: false,
             myCases: [],
-            topics: []
+            topics: [],
+            subtopics: [],
+            statusSelected: '',
+            topicSelected: '',
+            subtopicSelected: '',
+            topicBubbleSelected: '',
+            subtopicBubbleSelected: '',
+
+            totalCases: 0,
+            pageResults: 50,
+            page: 1
         }
     },
     async created() {
@@ -121,21 +135,37 @@ export default {
         }
 
         await this.getMyCases();
-        console.log('cas', this.myCases)
     },
     methods: {
         async getMyCases() {
             this.loading = !this.loading;
 
-            let casesResponse = await this.$axios.get('/getMyCases')
-            this.myCases = casesResponse.data.payload;
-            console.log(casesResponse.data.payload)
+            let casesResponse = await this.$axios.get('/getMyCases', {
+                params: {
+                    status: this.statusSelected,
+                    topic_bubble: this.topicBubbleSelected,
+                    subtopic_bubble: this.subtopicBubbleSelected,
+                    pageResults: this.pageResults,
+                    page: this.page
+                }
+            })
 
-            this.loading = !this.loading;
+            this.myCases = casesResponse.data.payload.cases;
+            this.totalCases = casesResponse.data.payload.length;
+
             this.filterTopicSubtopicName();
+            this.loading = !this.loading;
+        },
+        filterSubtopics(topic) {
+            this.topicBubbleSelected = topic.bubble_id;
+            this.subtopics = topic.subtopics;
+            this.getMyCases();
+        },
+        getCasesFilteredBySubtopic(subtopic) {
+            this.subtopicBubbleSelected = subtopic;
+            this.getMyCases();
         },
         filterTopicSubtopicName() {
-            console.log('filter')
             let casesUpdated = []
             this.myCases.forEach(oneCase => {
                 oneCase.topic_name = this.topics.filter(top => top.bubble_id == oneCase.topic_bubble)[0].name
@@ -146,14 +176,21 @@ export default {
                 
                 casesUpdated.push(oneCase);
             });
-            console.log('updated', casesUpdated)
             this.myCases = casesUpdated;
         },
         addCase() {
             this.$router.push({ path: '/myCases/addNewCase' });
         },
+        rowsChange() {
+            this.getMyCases()
+        },
+        before() {
+            alert('Logica para esta asunto')
+        },
+        after() {
+            alert('Logica para esta asunto')
+        },
         viewCase(theCase) {
-            // console.log(theCase)
             this.$router.push({ path: `/myCases/${theCase._id}` });
         }
     }
@@ -215,7 +252,7 @@ export default {
 
     .search-input {
         height: 48px;
-        width: 50%;
+        width: 35%;
     }
 
     .search-input input {
@@ -225,6 +262,7 @@ export default {
         border: 1px solid #D4D5D7;
         box-sizing: border-box;
         border-radius: 10px;
+        padding: 15px;
     }
 
     .search-input input:focus {
@@ -242,7 +280,7 @@ export default {
 
     .filter-container select {
         height: 32px;
-        width: 20%;
+        /* width: 20%; */
         border: none;
         border-bottom: 1px solid #000;
     }
@@ -267,6 +305,18 @@ export default {
         -webkit-border-radius: 15px 0px 0px 0px;
     }
 
+    .tbody {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 18px;
+        color: #212529;
+    }
+
+    td {
+        vertical-align: middle;
+    }
+
     .op {
         display: flex;
         flex-direction: row;
@@ -283,23 +333,40 @@ export default {
     .pagination-container {
         display: flex;
         justify-content: flex-end;
+        height: 56px;
     }
 
-    .loco {
+    .select-container {
         display: flex;
         align-items: center;
-        justify-content: center;
-    }
-    
-    .drop {
-        margin-right: 5%;
+        margin: 0px 40px;
     }
 
-    .arrows {
-        margin-left: 5%;
+    .select-container span {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        margin: 0px 10px;
+        color: #212529;
     }
-    .arrow {
-        border: none;
+
+    .arrows-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 0px 40px;
+    }
+
+    .arrows-container span {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        color: #212529;
+    }
+
+    .arrows-container button {
         color: #FE9400;
     }
 </style>

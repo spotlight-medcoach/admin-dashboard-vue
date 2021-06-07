@@ -7,6 +7,7 @@
                     <p>Casos solicitados</p>
                 </div>
                 <nuxt-link 
+                    v-if="!loading"
                     to="/requestedCases/addRequestedCase"
                     class="add-button" >
                     <i class="fas fa-list-alt"></i>
@@ -14,10 +15,12 @@
                 </nuxt-link>
             </div>
 
-            <div class="search-container">
+            <Loading v-if="loading" />
+            <div v-else class="search-container">
                 <input type="searchText" placeholder="    Buscar">
                 
                 <select v-model="selected" class="options" @change="changeStatus(selected)">
+                    <option value="" selected>Filtrar por estado</option>
                     <option value="Approved by Spotlighter" selected>Aprobado</option>
                     <option value="Pending">Pendiente</option>
                     <option value="Accepted by Spotlighter">Aceptado por spotlighter</option>
@@ -27,10 +30,8 @@
                 </select>
             </div>
 
-            <div class="table-container">
-                <Loading v-if="loading" />
-                
-                <table v-else class="table table-bordered">
+            <div v-if="!loading" class="table-container">
+                <table class="table table-bordered">
                     <thead class="thead-admin">
                         <tr>
                             <th scope="col">Caso</th>
@@ -61,35 +62,25 @@
                 </table>
             </div>
 
-            <div class="pagination-container">
-                <div class="dropdown drop">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Rows per page:
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                        <button class="dropdown-item" type="button">10</button>
-                        <button class="dropdown-item" type="button">15</button>
-                        <button class="dropdown-item" type="button">20</button>
-                    </div>
+            <div v-if="!loading" class="pagination-container">
+                <div class="select-container">
+                    <span>Rows per page: </span>
+                    <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
+                        <option value=1>1</option>
+                        <option value=2>2</option>
+                        <option value=3>3</option>
+                        <option value=5>5</option>
+                        <option value=10>10</option>
+                        <option value=15>15</option>
+                        <option value=20>20</option>
+                    </select>
                 </div>
 
-                <nav class="arrows" aria-label="Page navigation example">
-                    <ul class="pagination">
-                        <div class="loco">
-                            1 - 10 of n items
-                        </div>
-                        <li class="page-item p-2">
-                            <a class="page-link arrow" href="#" aria-label="Previous">
-                                <span class="fas fa-chevron-left"></span>
-                            </a>
-                        </li>
-                        <li class="page-item p-2">
-                            <a class="page-link arrow" href="#" aria-label="Next">
-                                <span class="fas fa-chevron-right"></span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+                <div class="arrows-container">
+                    <span>1 - {{pageResults}} of {{totalCases}} casos</span>
+                    <button class="btn fas fa-chevron-left" @click="before"></button>
+                    <button class="btn fas fa-chevron-right" @click="after"></button>
+                </div>
             </div>
         </div>
     </div>
@@ -112,7 +103,11 @@ export default {
             topics: [],
             selected: '',
             loading: false,
-            showModal: false
+            showModal: false,
+
+            totalCases: 0,
+            pageResults: 5,
+            page: 1
         }
     },
     async created() {
@@ -146,9 +141,16 @@ export default {
             try {
                 this.loading = !this.loading
 
-                let cases_response = await this.$axios.get('/getCasesRequested');
-                this.cases = cases_response.data.payload;
-
+                let cases_response = await this.$axios.get('/getCasesRequested', {
+                    params: {
+                        status: this.selected,
+                        page: this.page,
+                        pageResults: this.pageResults
+                    }
+                });
+                this.cases = cases_response.data.payload.cases;
+                this.totalCases = cases_response.data.payload.length;
+                // console.log('tot:', this.totalCases)
                 let cases = this.cases;
                 cases.forEach(oneCase => {
                     oneCase.topic_name = this.filterTopic(oneCase.topic_bubble)
@@ -162,8 +164,18 @@ export default {
                 console.log(err);
             }
         },
+        rowsChange() {
+            this.getCases()
+        },
+        before() {
+            alert('Logica para esta asunto')
+        },
+        after() {
+            alert('Logica para esta asunto')
+        },
         changeStatus(new_status) {
             console.log(new_status);
+            this.getCases()
         }
     }
 }
@@ -283,29 +295,6 @@ export default {
         font-size: 12px
     }
 
-    .pagination-container {
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    .loco {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .drop {
-        margin-right: 5%;
-    }
-
-    .arrows {
-        margin-left: 5%;
-    }
-    .arrow {
-        border: none;
-        color: #FE9400;
-    }
-
     .act {
         width: 10%;
     }
@@ -322,4 +311,45 @@ export default {
         font-size: 24px;
         padding-right: 5px;
     }
+
+    .pagination-container {
+        display: flex;
+        justify-content: flex-end;
+        height: 56px;
+    }
+
+    .select-container {
+        display: flex;
+        align-items: center;
+        margin: 0px 40px;
+    }
+
+    .select-container span {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        margin: 0px 10px;
+        color: #212529;
+    }
+
+    .arrows-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 0px 40px;
+    }
+
+    .arrows-container span {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        color: #212529;
+    }
+
+    .arrows-container button {
+        color: #FE9400;
+    }
+
 </style>

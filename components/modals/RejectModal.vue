@@ -10,11 +10,17 @@
                     <div class="modal-body">
                         <p>{{ textBody }}</p>
                         <p>{{ name }}</p>
+
+                    </div>
+                    
+                    <!-- Loader -->
+                    <div class="load-container">
+                        <div class="lds-dual-ring" v-if="isBusy"></div>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn" data-dismiss="modal" @click="$emit('close')">Cancelar</button>
-                        <button type="button" class="btn delete" data-dismiss="modal" @click="action">Rechazar caso</button>
+                        <button type="button" class="btn delete" data-dismiss="modal" @click="action">{{textButton}}</button>
                     </div>
                 </div>
             </div>
@@ -24,7 +30,7 @@
 
 <script>
 export default {
-    props: ['textTitle', 'textBody', 'name', 'action']
+    props: ['textTitle', 'textBody', 'name', 'action', 'textButton', 'isBusy']
 }
 </script>
 
@@ -87,13 +93,12 @@ export default {
 
     .modal-title {
         font-style: normal;
-        font-weight: 500;
+        font-weight: bold;
         font-size: 20px;
         line-height: 24px;
     }
 
     .modal-body {
-        margin: 20px 0;
         font-size: 14px;
     }
 
@@ -113,5 +118,38 @@ export default {
     .modal-leave-active .modal-container {
         -webkit-transform: scale(1.1);
         transform: scale(1.1);
+    }
+
+    /* estilos para el loading predeterminado */
+    .load-container {
+        display: flex;
+        justify-content: center;
+        /* margin: 0px auto; */
+    }
+
+    .lds-dual-ring {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+    }
+
+    .lds-dual-ring:after {
+        content: " ";
+        display: block;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 6px solid #FE9400;
+        border-color: #FE9400 transparent #FE9400 transparent;
+        animation: lds-dual-ring 1.2s linear infinite;
+    }
+
+    @keyframes lds-dual-ring {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
     }
 </style>

@@ -2,7 +2,10 @@
     <div>
         <Navigation />
         <h1>Análisis banco de preguntas</h1>
-        <Loading v-if="loading" />
+
+        <div class="statistics-container">
+            <Loading v-if="loading" />
+        </div>
     </div>
 </template>
 
@@ -17,10 +20,12 @@ export default {
     },
     data() {
         return {
-            loading: true
+            loading: false
         }
     },
     async created() {
+        this.loading = !this.loading;
+
         if (process.browser){
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
             
@@ -30,7 +35,7 @@ export default {
                 await this.getTopics()
         }
             
-        this.loading = !this.loading
+        this.loading = !this.loading;
     },
     methods: {
         async getUniversities() {
@@ -43,10 +48,21 @@ export default {
             localStorage.setItem('topics', JSON.stringify(topics.data.payload))
             this.$store.commit('setTopics')
         },
+        async getTypes() {
+            let types = await this.$axios.get('/getTypes');
+            localStorage.setItem('types', JSON.stringify(types.data.payload));
+            this.$store.commit('setTypes');
+        }
     }
 }
 </script>
 
 <style scoped>
+    .statistics-container {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        margin: auto;
+    }
 
 </style>

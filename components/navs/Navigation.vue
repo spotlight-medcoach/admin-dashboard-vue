@@ -7,49 +7,57 @@
 				<LinkNavigation
 					to="/statistics"
 					new_class="link nuxt-link-active"
-					icon="fas fa-chart-bar" />
+					icon="fas fa-chart-bar"
+					title="Análisis de banco" />
 			</div>
 			<div>
 				<LinkNavigation 
 					to="/findCase"
 					new_class="link nuxt-link-active"
-					icon="fas fa-search" />
+					icon="fas fa-search"
+					title="Búsqueda de casos" />
 			</div>
 			<div>
 				<LinkNavigation 
 					to="/reviewNewQuestions"
 					new_class="link nuxt-link-active"
-					icon="fas fa-folder" />
+					icon="fas fa-folder"
+					title="Revisión de preguntas" />
 			</div>
 			<div>
 				<LinkNavigation 
 					to="/reports"
 					new_class="link nuxt-link-active"
-					icon="fas fa-exclamation-circle" />
+					icon="fas fa-exclamation-circle"
+					title="Reportes" />
 			</div>
 			<div>
 				<LinkNavigation 
 					to="/requestedCases"
 					new_class="link nuxt-link-active"
-					icon="fas fa-list-alt" />
+					icon="fas fa-list-alt"
+					title="Solicitud de casos" />
 			</div>
 			<div>
 				<LinkNavigation 
-					to="/"
+					to="/simulators"
 					new_class="link nuxt-link-active"
-					icon="fas fa-book-open" />
+					icon="fas fa-book-open"
+					title="Simuladores" />
 			</div>
 			<div>
 				<LinkNavigation 
 					to="/spotlighters"
 					new_class="link nuxt-link-active"
-					icon="fas fa-user-friends" />
+					icon="fas fa-user-friends"
+					title="Spotlighters" />
 			</div>
 			<div>
 				<LinkNavigation 
 					to="/administrators"
 					new_class="link nuxt-link-active"
-					icon="fas fa-user-shield" />
+					icon="fas fa-user-shield"
+					title="Administradores" />
 			</div>
 		</nav>
 		
@@ -112,19 +120,15 @@ export default {
 	.nav {
 		display: flex;
 		flex-direction: row;
-
-		margin-left: 7%;
-		margin-right: 4%;
+		margin-top: 4px;
+		margin: 0px 4%;
 	}
 
 	.nav div {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 48px;
-		height: 48px;
-		margin: 0px 21.145px;
-		
+		width: 125px;
 	}
 
 	.nuxt-link-exact-active {
@@ -138,6 +142,5 @@ export default {
 		align-items: flex-end;
 		justify-content: flex-end;
 		background: red;
-		/* top: 5%; */
 	}
 </style>

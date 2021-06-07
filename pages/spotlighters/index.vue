@@ -5,6 +5,7 @@
             <div class="head-container">
                 <h1>Spotlighters</h1>
                 <nuxt-link 
+                    v-if="!loading"
                     to="/spotlighters/addSpotlighter"
                     class="add-button" >
                     <i class="fas fa-user-plus"></i>
@@ -12,7 +13,8 @@
                 </nuxt-link>
             </div>
 
-            <div class="filter-container">
+            <Loading v-if="loading" />
+            <div v-else class="filter-container">
                 <div class="search">
                     <input type="searchText" placeholder="    Buscar">
                 </div>
@@ -23,19 +25,12 @@
                         <option value="false">Inactivos</option>
                     </select>
                 </div>
-
-                <div class="pay-button">
-                    <button type="button" class="btn"><i class="fas fa-dollar-sign"></i> Pagar a varios!!!</button>
-                </div>
             </div>
 
-
-            <div class="table-container">
-                <Loading v-if="loading" />
-                <table v-else class="table table-bordered">
+            <div v-if="!loading" class="table-container">
+                <table class="table table-bordered">
                     <thead class="thead-spotlighter">
                         <tr>
-                            <th scope="col"><input type="checkbox"></th>
                             <th scope="col">Nombre completo</th>
                             <th scope="col">Número de cuenta</th>
                             <th scope="col">Telefono</th>
@@ -47,7 +42,6 @@
                     </thead>
                     <tbody class="tbody">
                         <tr v-for="(spotlighter, index) in spotlighters" :key="spotlighter.admin_id">
-                            <td><input class="check-style" type="checkbox" name="" id=""></td>
                             <td>{{ spotlighter.name }} {{ spotlighter.last_name }}</td>
                             <td>{{ spotlighter.account_number }}</td>
                             <td>{{ spotlighter.phone }}</td>
@@ -69,7 +63,7 @@
                                                 Habilitar usuario
                                             </button>
                                         </div>
-                                        <div class="notifications">
+                                        <div v-if="selected == 'true'" class="notifications">
                                             <button type="button" class="btn" @click="update(spotlighters[index])">
                                                 <i class="fas fa-pencil-alt"></i>
                                                 Editar usuario
@@ -84,7 +78,7 @@
             </div>
             
 
-            <div class="pagination-container">
+            <div v-if="!loading" class="pagination-container">
                 <div class="select-container">
                     <span>Rows per page: </span>
                     <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
@@ -133,7 +127,7 @@ import ActionsModal from '../../components/modals/ActionsModal';
 import DeleteUserModal from '../../components/modals/DeleteUserModal';
 import ActiveUserModal from '../../components/modals/ActiveUserModal';
 
-export default {
+export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Matamoros Escuela de Medicina
     components: {
         Navigation,
         Loading,
@@ -387,6 +381,7 @@ export default {
     .td-style {
         display: flex;
         flex-direction: row;
+        justify-content: center;
     }
 
     .dollar {
