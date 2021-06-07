@@ -10,11 +10,11 @@
                     <div class="modal-body">
                         <p>{{ textBody }}</p>
                         <p>{{ name }}</p>
+                    </div>
 
-                        <!-- Loader -->
-                        <div class="loader">
-                            <div class="lds-dual-ring" v-if="isBusy"></div>
-                        </div>
+                    <!-- Loader -->
+                    <div class="loader">
+                        <div class="lds-dual-ring" v-if="isBusy"></div>
                     </div>
 
                     <div class="modal-footer">
@@ -37,6 +37,7 @@ export default {
     .loader {
         display: flex;
         justify-content: center;
+        /* margin-right: 15%; */
     }
 
     .modal-mask {
@@ -97,8 +98,12 @@ export default {
         line-height: 24px;
     }
 
-    .modal-body {
+    /* .modal-body {
         margin: 10px 0;
+    } */
+
+    .modal-body p {
+        margin-bottom: .5rem;
     }
 
     .modal-default-button {

@@ -21,8 +21,18 @@
         </div>
         <div class="info-container">
             <div class="name-container">
-                <p class="title">Descripción:</p>
-                <span class="content">{{request_description}}</span>
+                <div v-if="theStatus != 'With feedback'">
+                    <p class="title">Descripción requerida:</p>
+                    <span>{{request_description}}</span>
+                </div>
+
+                <div v-else>
+                    <p class="feedback">Feedback</p>
+                    <span>{{feedback}}</span>
+                </div>
+
+                <!-- <p :class="newStatus =! 'With feeback' ? 'title' : 'feedback'">{{newStatus =! 'With feedback' ? 'Descripción' : 'Feedback'}}:</p>
+                <span class="content">{{request_description}}</span> -->
             </div>
         </div>
     </div>
@@ -30,7 +40,12 @@
 
 <script>
 export default {
-    props: ['caseName', 'id', 'language', 'request_description', 'topic', 'subtopic']
+    props: ['caseName', 'id', 'language', 'theStatus', 'request_description', 'feedback', 'topic', 'subtopic'],
+    data() {
+        return {
+            newStatus: this.theStatus
+        }
+    }
 }
 </script>
 
@@ -61,6 +76,13 @@ export default {
         font-size: 16px;
         line-height: 20px;
         color: #1CA4FC;
+    }
+
+    .feedback {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
+        color: #DB1212;
     }
 
     .content {

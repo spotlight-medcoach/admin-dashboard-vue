@@ -7,7 +7,7 @@
                     <i class="fas fa-chevron-left"></i>
                     Cancelar y volver
                 </nuxt-link>
-                <button class="btn" @click="confirmModal"><i class="fas fa-trash"></i> Eliminar usuario</button>
+                <button v-if="!loading" class="btn" @click="confirmModal"><i class="fas fa-trash"></i> Eliminar usuario</button>
             </div>
 
             <Loading v-if="loading" />
@@ -66,7 +66,7 @@
                 <div class="lds-dual-ring" v-if="busy"></div>
             </div>
 
-            <div class="btn-container">
+            <div v-if="!loading" class="btn-container">
                 <SuccessButton
                     :text="'Guardar cambios'"
                     :click="updateAdministrator"

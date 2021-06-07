@@ -35,20 +35,23 @@
                 </div>
 
                 <div class="inputs-container topic">
-                    <div class="inp-cont">
-                        <Input
-                            type="text"
-                            placeholder="Tema"
-                            v-model="topic"
-                            title="Tema" />
+                    <div class="topic-container">
+                        <div class="input">
+                            <h3>Tema</h3>
+                            <select v-model="topicBubbleSelected" class="js-example-basic-single" @change="filterSubtopics(topicBubbleSelected)">
+                                <option value="" disabled selected>Tema</option>
+                                <option :value="top.bubble_id" v-for="top in topics" :key="top._id">{{top.name}}</option>
+                            </select>
+                        </div>
                     </div>
-
-                    <div class="inp-cont">
-                        <Input
-                            type="text"
-                            placeholder="Subtema"
-                            v-model="subtopic"
-                            title="Subtema" />
+                    <div class="subtopic-container">
+                        <div class="input">
+                            <h3>Subtema</h3>
+                            <select v-model="subtopicBubbleSelected" class="js-example-basic-single">
+                                <option value="" selected>Elegir subtema</option>
+                                <option :value="sub.subtopic" v-for="sub in subtopics" :key="sub._id">{{sub.name}}</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="inp-cont">
@@ -92,7 +95,6 @@
                 </div>
             </div>
 
-            <ModalConfirm v-if="isShowModal" @close="closeModal" :textBody="textModal" :textTitle="textTile" :deleteUser="deleteUser" />
         </div>
     </div>
 </template>
@@ -103,7 +105,6 @@ import Input from '../../components/inputs/Input';
 import InputTitle from '../../components/inputs/InputTitle';
 import SuccessButton from '../../components/buttons/SuccessButton';
 import Loading from '../../components/modals/Loading';
-import ModalConfirm from '../../components/modals/ModalConfirm';
 
 export default {
     components: {
@@ -112,18 +113,19 @@ export default {
         InputTitle,
         SuccessButton,
         Loading,
-        ModalConfirm
     },
     data() {
         return {
             loading: true,
             busy: false,
-            isShowModal: false,
+            topicBubbleSelected: '',
+            subtopicBubbleSelected: '',
             textModal: '',
             textTitle: '',
             admin_data: {},
             spotlighters: [],
             topics: [],
+            subtopics: [],
             selected: '',
             case_name: '',
             case_id: '',
@@ -148,7 +150,8 @@ export default {
         async getSpotlighters() {
             try {
                 let spotlighters_response = await this.$axios.get('/getAllSpotlighters?status=true');
-                this.spotlighters = spotlighters_response.data.payload;
+                this.spotlighters = spotlighters_response.data.payload.spotlighters;
+                console.log(spotlighters_response.data)
             } catch (err) {
                 console.log(err);
             }
@@ -161,54 +164,48 @@ export default {
         setSelectedUser(spotlighter) {
             console.log('selected: ', spotlighter);
         },
-        filterBubbleTopic(topic_name) {
-            var topic_bubble = '';
-            
-            topic_bubble = this.topics.filter(top => top.name.toLowerCase() == topic_name.toLowerCase())
-
-            return topic_bubble[0].bubble_id;
-        },
-        filterBubbleSubtopic(topic_bubble, subtopic_name) {
-            let topic = this.topics.filter(top => top.bubble_id == topic_bubble);
-            let subtopics = topic[0].subtopics
-            
-            let subtopic = subtopics.filter(sub => sub.name.toLowerCase() == subtopic_name.toLowerCase())
-
-            return subtopic[0].subtopic;
+        filterSubtopics(topic) {
+            let topicFiltered = this.topics.filter(top => top.bubble_id == topic)
+            this.subtopics = topicFiltered[0].subtopics
         },
         async addPendingCase() {
-            this.busy = !this.busy;
+            try {
+                this.busy = !this.busy;
 
-            let topic_bubble = this.filterBubbleTopic(this.topic);;
-            let subtopic_bubble = this.filterBubbleSubtopic(topic_bubble, this.subtopic);
+                console.log({
+                    admin_user: this.admin_data.admin_id,
+                    pending_case_id: this.case_id,
+                    name: this.case_name,
+                    topic_bubble: this.topicBubbleSelected,
+                    subtopic_bubble: this.subtopicBubbleSelected,
+                    language: this.language,
+                    requested: true,
+                    request_description: this.description,
+                    spotlighter_id: this.selected,
+                })
+                
+                let case_response = await this.$axios.post('/createPendingCase', {
+                    admin_user: this.admin_data.admin_id,
+                    pending_case_id: this.case_id,
+                    name: this.case_name,
+                    topic_bubble: this.topicBubbleSelected,
+                    subtopic_bubble: this.subtopicBubbleSelected,
+                    language: this.language,
+                    requested: true,
+                    request_description: this.description,
+                    spotlighter_id: this.selected,
+                })
 
-            let case_response = await this.$axios.post('/createPendingCase', {
-                admin_user: this.admin_data.admin_id,
-                pending_case_id: this.case_id,
-                name: this.case_name,
-                topic_bubble: topic_bubble,
-                subtopic_bubble: subtopic_bubble,
-                language: this.language,
-                requested: true,
-                request_description: this.description,
-                spotlighter_id: this.selected,
-            })
-
-            // console.log(case_response.data.message)
-            this.busy = !this.busy;
-            this.isShowModal = !this.isShowModal;
-            this.textTitle = 'Nuevo caso'
-            this.textModal = case_response.data.message
-            setTimeout(() => {
+                this.busy = !this.busy;
+                alert(case_response.data.message)
                 this.$router.push({ path: '/requestedCases' })
-                this.isShowModal = !this.isShowModal;
-            }, 1500);
+            } catch (err) {
+                console.log(err)
+                alert(err.message)
+            }
         },
         discardCase() {
              this.$router.push({ path: '/requestedCases'});
-        },
-        deleteUser() {
-
         },
         closeModal() {
             this.isShowModal = !this.isShowModal;
@@ -279,6 +276,45 @@ export default {
         margin-top: 1%;
     }
 
+    .topic-container {
+        display: flex;
+        width: 30%;
+    }
+
+    .topic-container h3 {
+        color: #1CA4FC;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
+        margin-bottom: 12px;
+    }
+
+    .input {
+        width: 100%;
+    }
+
+    .input select {
+        width: 100%;
+        border: 0px;
+        outline: 0px;
+        border-bottom: 2px solid lightgray;
+    }
+
+    .subtopic-container {
+        display: flex;
+        width: 30%;
+    }
+
+    .subtopic-container h3 {
+        color: #1CA4FC;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
+        margin-bottom: 12px;
+    }
+
     .name {
         width: 65%;
     }
@@ -327,6 +363,7 @@ export default {
         border: 1px solid #000000;
         box-sizing: border-box;
         border-radius: 10px;
+        padding: 10px;
     }
 
     textarea:focus {
@@ -344,6 +381,12 @@ export default {
     }
 
     /* estilos para el loading predeterminado */
+    .load-container {
+        display: flex;
+        justify-content: center;
+        margin: 0px auto;
+    }
+
     .lds-dual-ring {
         display: inline-block;
         width: 50px;

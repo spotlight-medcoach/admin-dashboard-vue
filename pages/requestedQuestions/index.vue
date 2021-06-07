@@ -2,106 +2,82 @@
     <div>
         <SpotlighterNavigation />
 
-        <!-- <Loading v-if="loading" /> -->
         <div class="questions-container">
             <div class="head-container">
                 <div class="title">
                     <p>Preguntas solicitadas</p>
                 </div>
 
-                <div class="filter-container">
+                <div v-if="!loading" class="filter-container">
                     <div class="select-container">
-                        <select v-model="topicSelected" name="topic" class="js-example-basic-single" @change="filterSubtopics(topicSelected)">
-                            <option value="" disabled selected>Tema</option>
-                            <option :value="top" v-for="top in topics" :key="top._id">{{top.name}}</option>
+                        <select v-model="topicBubbleSelected" class="js-example-basic-single" @change="filterSubtopics(topicBubbleSelected)" name="topic" id="topic">
+                            <option value="">Tema</option>
+                            <option :value="top.bubble_id" v-for="top in topics" :key="top._id">{{top.name}}</option>
                         </select>
 
-                        <select v-model="subtopicSelected" name="subtopic" class="js-example-basic-single" @change="getCasesRequested()">
-                            <option value="" selected>Elegir subtema</option>
+                        <select v-model="subtopicBubbleSelected" class="js-example-basic-single" @change="getCasesRequested()" name="subtopic" id="subtopic">
+                            <option value="">Elegir subtema</option>
                             <option :value="sub.subtopic" v-for="sub in subtopics" :key="sub._id">{{sub.name}}</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <div class="table-container">
-                <Loading v-if="loading" />
-                <table v-else class="table table-bordered">
-                    <thead class="thead-admin">
-                        <tr>
-                            <th scope="col">Caso</th>
-                            <th scope="col">Tema</th>
-                            <th scope="col">Subtema</th>
-                            <th scope="col">Descripcion</th>
-                            <th scope="col">Fecha</th>
-                            <th scope="col" class="actions">Acciones</th>
+            <Loading v-if="loading" />
+            <div v-else class="table-container">
 
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(oneCase) in casesRequested" :key="oneCase._id">
-                            <td>{{ oneCase.name }}</td>
-                            <td>{{ oneCase.topic_name }}</td>
-                            <td>{{ oneCase.subtopic_name }}</td>
-                            <td>{{ oneCase.request_description }}</td>
-                            <td>{{ oneCase.approved_date }}</td>
-                            <td>
-                                <div class="actions-btn">
-                                    <button class="btn fas fa-check-circle accept" @click="acceptConfirm(oneCase._id)"></button>
-                                    <button class="btn fas fa-trash-alt reject" @click="rejectConfirm(oneCase._id)"></button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <RequestQuestionCard
+                    v-for="oneCase in casesRequested"
+                    :key="oneCase._id"
+                    @aceptCase="acceptConfirm"
+                    @rejectCase="rejectConfirm"
+                    :name="oneCase.name"
+                    :topicName="oneCase.topic_name"
+                    :subtopicName="oneCase.subtopic_name"
+                    :requestDescription="oneCase.request_description"
+                    :id="oneCase._id" />
             </div>
 
-            <div class="pagination-container">
-                <div class="dropdown drop">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Rows per page:
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                        <button class="dropdown-item" type="button">10</button>
-                        <button class="dropdown-item" type="button">15</button>
-                        <button class="dropdown-item" type="button">20</button>
-                    </div>
+            <div v-if="!loading" class="pagination-container">
+                <div class="select-container">
+                    <span>Rows per page: </span>
+                    <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
+                        <option value=1>1</option>
+                        <option value=2>2</option>
+                        <option value=3>3</option>
+                        <option value=5>5</option>
+                        <option value=10>10</option>
+                        <option value=15>15</option>
+                        <option value=20>20</option>
+                    </select>
                 </div>
 
-                <nav class="arrows" aria-label="Page navigation example">
-                    <ul class="pagination">
-                        <div class="loco">
-                            1 - 10 of n items
-                        </div>
-                        <li class="page-item p-2">
-                            <a class="page-link arrow" href="#" aria-label="Previous">
-                                <span class="fas fa-chevron-left"></span>
-                            </a>
-                        </li>
-                        <li class="page-item p-2">
-                            <a class="page-link arrow" href="#" aria-label="Next">
-                                <span class="fas fa-chevron-right"></span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+                <div class="arrows-container">
+                    <span>1 - {{pageResults}} of {{totalCases}} casos</span>
+                    <button class="btn fas fa-chevron-left" @click="before"></button>
+                    <button class="btn fas fa-chevron-right" @click="after"></button>
+                </div>
             </div>
 
             <AcceptModal 
                 v-if="isShowModalAccept"
-                @close="closeModal"
+                @close="closeAcceptModal"
                 :textTitle="titleModal"
                 :textBody="bodyModal"
                 :name="nameUser"
-                :action="acceptCase" />
-            
+                :action="acceptCase"
+                :textButton="button"
+                :isBusy="busy" />
+                
             <RejectModal 
                 v-if="isShowModalReject"
-                @close="closeModal"
+                @close="closeRejectModal"
                 :textTitle="titleModal"
                 :textBody="bodyModal"
                 :name="nameUser"
-                :action="rejectCase" />
+                :action="rejectCase"
+                :textButton="button"
+                :isBusy="busy" />
 
         </div>
     </div>
@@ -110,6 +86,7 @@
 <script>
 import SpotlighterNavigation from '../../components/navs/SpotlighterNavigation';
 import Loading from '../../components/modals/Loading';
+import RequestQuestionCard from '../../components/cards/RequestQuestionCard';
 import AcceptModal from '../../components/modals/AcceptModal';
 import RejectModal from '../../components/modals/RejectModal';
 
@@ -117,25 +94,33 @@ export default {
     components: {
         SpotlighterNavigation,
         Loading,
+        RequestQuestionCard,
         AcceptModal,
         RejectModal
     },
     data() {
         return {
+            busy: false,
             loading: false,
             isShowModalAccept: false,
             isShowModalReject: false,
+
             titleModal: '',
             bodyModal: '',
             nameUser: '',
-            topicSelected: '',
-            subtopicSelected: '',
-            caseToAcceptId: '',
-            caseToRejectId: '',
+            topicBubbleSelected: '',
+            subtopicBubbleSelected: '',
+            case_id: '',
+            button:'',
+
             casesRequested: [],
             topics: [],
             subtopics: [],
-            universities: []
+            universities: [],
+
+            totalCases: 0,
+            page: 1,
+            pageResults: 5
         }
     },
     async created() {
@@ -147,17 +132,16 @@ export default {
                 await this.getUniversities()
             if (!localStorage.getItem('topics'))
                 await this.getTopics()
+            if (!localStorage.getItem('types'))
+                await this.getTypes()
             
             this.topics = JSON.parse(localStorage.getItem('topics'));
             this.universities = JSON.parse(localStorage.getItem('universities'));
         }
+        this.loading = !this.loading
 
         await this.getCasesRequested();
-        // this.filterTopicSubtopicName();
         console.log('cases', this.casesRequested)
-        // console.log('top', this.topics)
-        // console.log('uni', this.universities)
-        this.loading = !this.loading
     },
     methods: {
         async getUniversities() {
@@ -170,63 +154,35 @@ export default {
             localStorage.setItem('topics', JSON.stringify(topics.data.payload));
             this.$store.commit('setTopics');
         },
+        async getTypes() {
+            let types = await this.$axios.get('/getTypes');
+            localStorage.setItem('types', JSON.stringify(types.data.payload));
+            this.$store.commit('setTypes');
+        },
         async getCasesRequested() {
-            // let casesResponse = await this.$axios.get(`/getCasesRequested`, { params: { topic_bubble: '', subtopic_bubble: '' } })
-            // this.casesRequested = casesResponse.data.payload.cases
-            // // console.log('res: ', casesResponse.data.payload.cases)
+            try {
+                this.loading = !this.loading
 
-            // this.filterTopicSubtopicName();
+                let casesResponse = await this.$axios.get(`/getCasesRequested`, {
+                    params: {
+                        topic_bubble: this.topicBubbleSelected,
+                        subtopic_bubble: this.subtopicBubbleSelected
+                    }
+                });
+    
+                this.casesRequested = casesResponse.data.payload.cases
+                this.totalCases = casesResponse.data.payload.length
+                this.filterTopicSubtopicName();
 
-            var bubble_topic_selected = ''
-            let bubble_subotopic_selected = ''
-            if (this.topicSelected)
-                bubble_topic_selected = this.topicSelected.bubble_id
-
-            // if (this.subtopicSelected)
-            //     bubble_subotopic_selected = this.subtopicSelected.subtopic
-            console.log('subtopicSelected: ', this.subtopicSelected)
-            let casesResponse = await this.$axios.get(`/getCasesRequested`, { params: { topic_bubble: bubble_topic_selected, subtopic_bubble: this.subtopicSelected }})
-            this.casesRequested = casesResponse.data.payload.cases
-            console.log('res: ', casesResponse.data.payload.cases)
+                this.loading = !this.loading
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        filterSubtopics(topic_bubble) {
+            let topic = this.topics.filter(top => top.bubble_id == topic_bubble)
+            this.subtopics = topic[0].subtopics
             
-            console.log('topselect', this.topicSelected)
-            console.log('subselect', this.subtopicSelected)
-
-            this.filterTopicSubtopicName();
-        },
-
-        async reloadCasesRequested() {
-            var bubble_topic_selected = ''
-            let bubble_subotopic_selected = ''
-            if (this.topicSelected)
-                bubble_topic_selected = this.topicSelected.bubble_id
-
-            if (this.subtopicSelected)
-                bubble_subotopic_selected = this.subtopicSelected.subtopic
-
-            let casesResponse = await this.$axios.get(`/getCasesRequested`, { params: { topic_bubble: bubble_topic_selected, subtopic_bubble: bubble_subotopic_selected }})
-            this.casesRequested = casesResponse.data.payload.cases
-            console.log('res: ', casesResponse.data.payload.cases)
-            
-            console.log('topselect', this.topicSelected)
-            console.log('subselect', this.subtopicSelected)
-
-            this.filterTopicSubtopicName();
-        },
-        acceptConfirm(caseToConfirmId) {
-            this.titleModal = 'Aceptar caso solicitado';
-            this.bodyModal = 'Al aceptar esta petición, el caso aparecerá en la sección \"Mis casos\" donde podrás crear el contenido que fue solicitado.'
-            this.caseToAcceptId = caseToConfirmId;
-            this.isShowModalAccept = !this.isShowModalAccept;
-        },
-        rejectConfirm(caseToRejectId) {
-            this.titleModal = 'Rechazar caso';
-            this.bodyModal = 'Al rechazar esta petición ya no podrás crea contenido para este caso y se asignará a otro usuario.';
-            this.caseToRejectId = caseToRejectId;
-            this.isShowModalReject = !this.isShowModalReject;
-        },
-        filterSubtopics(topic) {
-            this.subtopics = topic.subtopics;
             this.getCasesRequested();
         },
         filterTopicSubtopicName() {
@@ -243,13 +199,34 @@ export default {
 
             this.casesRequested = casesUpdated;
         },
+        
+        acceptConfirm(case_id) {
+            console.log('accept', case_id)
+            this.titleModal = 'Aceptar caso solicitado';
+            this.bodyModal = 'Al aceptar esta petición, el caso aparecerá en la sección \"Mis casos\" donde podrás crear el contenido que fue solicitado.'
+            this.case_id = case_id;
+            this.button = 'Aceptar caso';
+            this.isShowModalAccept = !this.isShowModalAccept;
+        },
+        rejectConfirm(case_id) {
+            console.log('reject', case_id)
+            this.titleModal = 'Rechazar caso';
+            this.bodyModal = 'Al rechazar esta petición ya no podrás crea contenido para este caso y se asignará a otro usuario.';
+            this.case_id = case_id;
+            this.button = 'Rechazar caso';
+            this.isShowModalReject = !this.isShowModalReject;
+        },
         async acceptCase() {
             try {
+                this.busy = !this.busy
+
                 let assignResponse = await this.$axios.put('/assingCase', {
-                    case_id: this.caseToAcceptId
+                    case_id: this.case_id
                 })
 
                 this.isShowModalAccept = !this.isShowModalAccept;
+                alert(assignResponse.data.message)
+                this.busy = !this.busy
                 this.getCasesRequested();
             } catch (err) {
                 console.log(err);
@@ -257,23 +234,37 @@ export default {
         },
         async rejectCase() {
             try {
+                this.busy = !this.busy
+
                 let rejectResponse = await this.$axios.put('/rejectCaseRequested', {
-                    case_id: this.caseToRejectId
+                    case_id: this.case_id
                 })
 
                 this.isShowModalReject = !this.isShowModalReject;
+                alert(rejectResponse.data.message)
+                this.busy = !this.busy
                 this.getCasesRequested();
             } catch (err) {
                 console.log(err);
             }
         },
-        closeModal() {
-            this.isShowModalAccept = false;
-            this.isShowModalReject = false;
+        closeAcceptModal() {
+            this.isShowModalAccept = !this.isShowModalAccept;
             this.caseToAcceptId = '';
+        },
+        closeRejectModal() {
+            this.isShowModalReject = !this.isShowModalReject;
             this.caseToRejectId = '';
-            // this.isShowModal = !this.isShowModal;
-        }
+        },
+        rowsChange() {
+            this.getCasesRequested()
+        },
+        before() {
+            alert('Logica para esta asunto')
+        },
+        after() {
+            alert('Logica para esta asunto')
+        },
     }
 }
 </script>
@@ -349,16 +340,6 @@ export default {
         -webkit-border-radius: 15px 0px 0px 0px;
     }
 
-    .accept {
-        color: #20B000;
-        font-size: 24px;
-    }
-
-    .reject {
-        color: #DB1212;
-        font-size: 24px;
-    }
-
     .actions-btn {
         display: flex;
         flex-direction: row;
@@ -369,22 +350,41 @@ export default {
         display: flex;
         justify-content: flex-end;
         align-items: center;
+        height: 56px;
+        margin: 10px 0px;
     }
 
-    .pagination {
-        margin: 0;
-    }
-
-    .loco {
+    .select-container {
         display: flex;
         align-items: center;
-    }
-
-    .arrows {
         margin: 0px 40px;
     }
-    .arrow {
-        border: none;
+
+    .select-container span {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        margin: 0px 10px;
+        color: #212529;
+    }
+
+    .arrows-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 0px 40px;
+    }
+
+    .arrows-container span {
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        color: #212529;
+    }
+
+    .arrows-container button {
         color: #FE9400;
     }
 </style>
