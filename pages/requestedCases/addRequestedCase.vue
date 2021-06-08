@@ -54,30 +54,29 @@
                         </div>
                     </div>
 
-                    <div class="inp-cont">
-                        <Input
-                            type="text"
-                            placeholder="Español"
-                            v-model="language"
-                            title="Idioma" />
+                    <div class="language-container">
+                        <h3>Idioma</h3>
+                        <select v-model="languageSelected" class="js-example-basic-single">
+                            <option value="" selected disabled>Idioma</option>
+                            <option value="Español">Español</option>
+                            <option value="Ingles">Ingles</option>
+                        </select>
                     </div>
                 </div>
 
                 <div class="inputs-container">
                     <div class="description">
                         <h3>Descripción</h3>
-                        <textarea
-                                name="description"
-                                id="description"
-                                v-model="description"
-                                rows="7"
-                                placeholder="Lorem ipsum dolor, sit amet consectetur adipisicing elit. Veniam, nobis expedita provident eveniet distinctio odio iusto recusandae facere. Molestiae, consectetur. Corporis temporibus voluptate velit quis quae animi cumque nobis tenetur."></textarea>
+                        <quill-editor
+                            v-model="contentDescription"
+                            :options="editorOptionAnswer" />
                     </div>
                 </div>
                 
                 <div class="assign">
-                    <h3>Asignar caso a: {{ selected }}</h3>
-                    <select v-model="selected" class="js-example-basic-single" name="state" @change="setSelectedUser(selected)">
+                    <h3>Asignar caso a: {{ nameSpotlighter }}</h3>
+                    <select v-model="spotlighterSelected" class="js-example-basic-single" name="state" @change="setSelectedUser(spotlighterSelected)">
+                        <option :value="''" selected>No asignar a alguien</option>
                         <option :value="spot.spotlighter_id" v-for="spot in spotlighters" :key="spot.spotlighter_id">{{spot.name}} {{spot.last_name}}</option>
                     </select>
                 </div>
@@ -118,21 +117,31 @@ export default {
         return {
             loading: true,
             busy: false,
+
             topicBubbleSelected: '',
             subtopicBubbleSelected: '',
+            languageSelected: '',
+
             textModal: '',
             textTitle: '',
-            admin_data: {},
+
             spotlighters: [],
             topics: [],
             subtopics: [],
-            selected: '',
+            admin_data: {},
+            spotlighterSelected: '',
+            nameSpotlighter: '',
+
             case_name: '',
             case_id: '',
             topic: '',
             subtopic: '',
-            language: '',
-            description: ''
+
+            contentDescription: '',
+            editorOptionAnswer: {
+                theme: 'bubble',
+                placeholder: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
+            }
         }
     },
     async created() {
@@ -162,7 +171,13 @@ export default {
             }
         },
         setSelectedUser(spotlighter) {
-            console.log('selected: ', spotlighter);
+            if (spotlighter == '') {
+                this.nameSpotlighter = ''
+            } else {
+                let spotlighterData = this.spotlighters.filter(spot => spot.spotlighter_id == spotlighter)[0];
+                console.log(spotlighterData)
+                this.nameSpotlighter = spotlighterData.name + " " + spotlighterData.last_name;
+            }
         },
         filterSubtopics(topic) {
             let topicFiltered = this.topics.filter(top => top.bubble_id == topic)
@@ -172,34 +187,27 @@ export default {
             try {
                 this.busy = !this.busy;
 
-                console.log({
-                    admin_user: this.admin_data.admin_id,
-                    pending_case_id: this.case_id,
-                    name: this.case_name,
-                    topic_bubble: this.topicBubbleSelected,
-                    subtopic_bubble: this.subtopicBubbleSelected,
-                    language: this.language,
-                    requested: true,
-                    request_description: this.description,
-                    spotlighter_id: this.selected,
-                })
-                
                 let case_response = await this.$axios.post('/createPendingCase', {
                     admin_user: this.admin_data.admin_id,
                     pending_case_id: this.case_id,
                     name: this.case_name,
                     topic_bubble: this.topicBubbleSelected,
                     subtopic_bubble: this.subtopicBubbleSelected,
-                    language: this.language,
+                    language: this.languageSelected,
                     requested: true,
-                    request_description: this.description,
-                    spotlighter_id: this.selected,
+                    request_description: {
+                        content: this.contentDescription.replace(/(<([^>]+)>)/ig, ''),
+                        html: this.contentDescription
+                    },
+                    spotlighter_id: this.spotlighterSelected,
                 })
 
                 this.busy = !this.busy;
                 alert(case_response.data.message)
+                
                 this.$router.push({ path: '/requestedCases' })
             } catch (err) {
+                this.busy = false;
                 console.log(err)
                 alert(err.message)
             }
@@ -277,7 +285,8 @@ export default {
     }
 
     .topic-container {
-        display: flex;
+        /* display: flex; */
+        margin: 10px 0px;
         width: 30%;
     }
 
@@ -302,7 +311,8 @@ export default {
     }
 
     .subtopic-container {
-        display: flex;
+        /* display: flex; */
+        margin: 10px 0px;
         width: 30%;
     }
 
@@ -313,6 +323,27 @@ export default {
         font-size: 16px;
         line-height: 20px;
         margin-bottom: 12px;
+    }
+
+    .language-container {
+        width: 30%;
+        margin: 10px 0px;
+    }
+
+    .language-container h3 {
+        color: #1CA4FC;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
+        margin-bottom: 12px;
+    }
+
+    .language-container select {
+        width: 100%;
+        border: 0px;
+        outline: 0px;
+        border-bottom: 1px solid lightgray;
     }
 
     .name {
@@ -358,16 +389,12 @@ export default {
         margin-bottom: 0;
     }
 
-    textarea {
+    .quill-editor {
         margin-top: 1%;
         border: 1px solid #000000;
         box-sizing: border-box;
         border-radius: 10px;
         padding: 10px;
-    }
-
-    textarea:focus {
-        outline: none;
     }
     
     .select-users {

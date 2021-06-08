@@ -6,7 +6,7 @@
                 <p>{{topicName}} <i class="fas fa-circle icon"></i> {{subtopicName}}</p>
             </div>
             <div class="description-container">
-                <p>{{requestDescription}}</p>
+                <p>{{requestDescription.content}}</p>
             </div>
             <div class="edit-container">
                 <button class="btn fas fa-check-circle accept" @click="$emit('aceptCase', id)"></button>
@@ -53,7 +53,10 @@ export default {
         font-size: 8px;
         color: #1CA4FC;
         margin: 4px 4px;
+    }
 
+    .title-container {
+        width: 30%;
     }
 
     .title-container h3 {
@@ -75,7 +78,7 @@ export default {
     }
 
     .description-container {
-        width: 65%;
+        width: 60%;
     }
 
     .description-container p {
@@ -87,9 +90,9 @@ export default {
         margin: 0px 20px;
     }
 
-    /* .edit-container button {
-        font-size: 1rem;
-    } */
+    .edit-container {
+        width: 10%;
+    }
 
     .accept {
         color: #20B000;

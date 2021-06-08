@@ -48,13 +48,12 @@
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
-                            <td>{{ theCase.request_description }}</td>
+                            <td>{{ theCase.request_description.content }}</td>
                             <td>{{ theCase.status }}</td>
-                            <td>{{ theCase.admin_user.name }} {{ theCase.admin_user.last_name }}</td>
+                            <td>{{ theCase.spotlighter_id ? theCase.admin_user.name + " " + theCase.admin_user.last_name : 'Sin asignar' }}</td>
                             <td class="act">
                                 <div class="op">
-                                    
-                                    <button class="btn op"><i class="fas fa-list-alt"></i> Ver caso</button>
+                                    <button class="btn op" @click="caseDetails(theCase._id)"><i class="fas fa-list-alt"></i> Ver caso</button>
                                 </div>
                             </td>
                         </tr>
@@ -77,9 +76,9 @@
                 </div>
 
                 <div class="arrows-container">
-                    <span>1 - {{pageResults}} of {{totalCases}} casos</span>
-                    <button class="btn fas fa-chevron-left" @click="before"></button>
-                    <button class="btn fas fa-chevron-right" @click="after"></button>
+                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalCases ? totalCases : (page * pageResults) > totalCases ? totalCases : page * pageResults }} of {{totalCases}} casos</span>
+                    <button class="btn fas fa-chevron-left" @click="before" :disabled="disbaledBefore == 1"></button>
+                    <button class="btn fas fa-chevron-right" @click="after" :disabled="disabledAfter == 1"></button>
                 </div>
             </div>
         </div>
@@ -101,9 +100,12 @@ export default {
         return {
             cases: [],
             topics: [],
+            subtopics: [],
             selected: '',
             loading: false,
             showModal: false,
+            disbaledBefore: 0,
+            disabledAfter: 0,
 
             totalCases: 0,
             pageResults: 5,
@@ -115,6 +117,7 @@ export default {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
 
         await this.getCases()
+        this.before();
         // this.loading = !this.loading
     },
     methods: {
@@ -164,14 +167,45 @@ export default {
                 console.log(err);
             }
         },
+        caseDetails(case_id) {
+            this.$router.push({ path: `/requestedCases/${case_id}` });
+        },
         rowsChange() {
+            this.page = 1;
+
+            if (this.pageResults > this.totalCases) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 1
+            } else {
+                this.disbaledBefore = 1
+                this.disabledAfter = 0
+            }
+
             this.getCases()
         },
         before() {
-            alert('Logica para esta asunto')
+            if (this.page == 1) {
+                this.disbaledBefore = 1
+            } else if (this.page > 1) {
+                this.page -= 1;
+                this.disabledAfter = 0
+
+                if (this.page == 1)
+                    this.disbaledBefore = 1
+            }
+            this.getCases();
         },
         after() {
-            alert('Logica para esta asunto')
+            this.page += 1;
+            if (this.page * this.pageResults > this.totalCases) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 0
+            } else {
+                if (this.page > 1)
+                    this.disbaledBefore = 0
+            }
+
+            this.getCases();
         },
         changeStatus(new_status) {
             console.log(new_status);
@@ -292,7 +326,15 @@ export default {
     }
 
     .tbody {
-        font-size: 12px
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 18px;
+        color: #212529;
+    }
+
+    td {
+        vertical-align: middle;
     }
 
     .act {

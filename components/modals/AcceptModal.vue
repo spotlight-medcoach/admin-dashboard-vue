@@ -54,6 +54,7 @@ export default {
         justify-content: space-between;
         border-top: 0;
         padding: 0;
+        margin: 15px 0px;
     }
 
     .modal-container {

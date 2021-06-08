@@ -59,7 +59,7 @@
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
-                            <td>{{ theCase.request_description }}</td>
+                            <td>{{ theCase.request_description.content }}</td>
                             <td>{{ theCase.status }}</td>
                             <td class="td-style">
                                 <button class="btn op" @click="viewCase(myCases[index])"><i class="fas fa-list-alt"></i> Ver caso</button>
