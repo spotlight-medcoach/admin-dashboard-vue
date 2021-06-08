@@ -211,7 +211,7 @@ export default {
             this.caseDetails.name_subtopic = this.filterSubtopic(this.caseDetails.topic_bubble, this.caseDetails.subtopic_bubble)
             
             this.questions = this.caseDetails.pending_questions;
-            this.content = this.caseDetails.description.html;
+            this.content = this.caseDetails.request_description.html;
 
             this.loading = !this.loading;
         },

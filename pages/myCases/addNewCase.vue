@@ -226,6 +226,10 @@ export default {
                         },
                         status: 'In edit',
                         requested: false,
+                        request_description: {
+                            content: '',
+                            html: ''
+                        },
                         spotlighter_id: this.userData.spotlighter_id.spotlighter_id
                     });
 
@@ -276,7 +280,7 @@ export default {
                     this.dataCase = caseResponse.data.payload;
                     console.log('caseCreated', this.dataCase);
 
-                    alert(caseResponse.data.payload)
+                    alert(caseResponse.data.message)
                 }
 
                 setTimeout(() => {
