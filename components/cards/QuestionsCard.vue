@@ -15,7 +15,7 @@
 
 <script>
 export default {
-    props: ['question', 'ind', 'updateQuestion', 'deleteQuestion']
+    props: ['question', 'ind']
 }
 </script>
 

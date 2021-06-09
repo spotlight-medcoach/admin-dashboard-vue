@@ -173,7 +173,7 @@ export default {
         rowsChange() {
             this.page = 1;
 
-            if (this.pageResults > this.totalCases) {
+            if (this.pageResults > this.totalCases || this.totalCases == 0) {
                 this.disabledAfter = 1
                 this.disbaledBefore = 1
             } else {
@@ -186,6 +186,8 @@ export default {
         before() {
             if (this.page == 1) {
                 this.disbaledBefore = 1
+                if (this.totalCases == 0)
+                    this.disabledAfter = 1
             } else if (this.page > 1) {
                 this.page -= 1;
                 this.disabledAfter = 0
