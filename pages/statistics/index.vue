@@ -33,6 +33,8 @@ export default {
                 await this.getUniversities()
             if (!localStorage.getItem('topics'))
                 await this.getTopics()
+            if (!localStorage.getItem('types'))
+                await this.getTypes()
         }
             
         this.loading = !this.loading;

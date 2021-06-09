@@ -65,7 +65,7 @@
                 </table>
             </div>
 
-            <div v-if="!loading" class="pagination-container">
+            <!-- <div v-if="!loading" class="pagination-container">
                 <div class="select-container">
                     <span>Rows per page: </span>
                     <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
@@ -83,6 +83,27 @@
                     <span>1 - {{pageResults}} of {{totalAdmins}} Administradores</span>
                     <button class="btn fas fa-chevron-left" @click="before"></button>
                     <button class="btn fas fa-chevron-right" @click="after"></button>
+                </div>
+            </div> -->
+
+            <div v-if="!loading" class="pagination-container">
+                <div class="select-container">
+                    <span>Rows per page: </span>
+                    <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
+                        <option value=1>1</option>
+                        <option value=2>2</option>
+                        <option value=3>3</option>
+                        <option value=5>5</option>
+                        <option value=10>10</option>
+                        <option value=15>15</option>
+                        <option value=20>20</option>
+                    </select>
+                </div>
+
+                <div class="arrows-container">
+                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalAdmins ? totalAdmins : (page * pageResults) > totalAdmins ? totalAdmins : page * pageResults }} of {{totalAdmins}} administradores</span>
+                    <button class="btn fas fa-chevron-left" @click="before" :disabled="disbaledBefore == 1"></button>
+                    <button class="btn fas fa-chevron-right" @click="after" :disabled="disabledAfter == 1"></button>
                 </div>
             </div>
             
@@ -130,11 +151,15 @@ export default {
             isShowModalInactive: false,
             isShowModalActive: false,
             selected: 'true',
+
             searchText: '',
             titleModal: '',
             bodyModal: '',
             nameUser: '',
+
             administrators: [],
+            disbaledBefore: 0,
+            disabledAfter: 0,
             totalAdmins: 0,
             userIdToDelete: '',
             userIdToActive: '',
@@ -171,9 +196,9 @@ export default {
         selectedChange() {
             this.getAdministrators()
         },
-        rowsChange() {
-            this.getAdministrators()
-        },
+        // rowsChange() {
+        //     this.getAdministrators()
+        // },
         confirmModalActive(admin_data) {
             this.titleModal = 'Habilitar usuario';
             this.bodyModal = '¿Deseas habilitar el siguiente usuario?'
@@ -220,11 +245,45 @@ export default {
 
             this.getAdministrators();
         },
+        rowsChange() {
+            this.page = 1;
+
+            if (this.pageResults > this.totalCases || this.totalCases == 0) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 1
+            } else {
+                this.disbaledBefore = 1
+                this.disabledAfter = 0
+            }
+
+            this.getAdministrators()
+        },
         before() {
-            alert('Logica para esta asunto')
+            if (this.page == 1) {
+                this.disbaledBefore = 1
+                if (this.totalCases == 0)
+                    this.disabledAfter = 1
+            } else if (this.page > 1) {
+                this.page -= 1;
+                this.disabledAfter = 0
+
+                if (this.page == 1)
+                    this.disbaledBefore = 1
+            }
+            
+            this.getAdministrators()
         },
         after() {
-            alert('Logica para esta asunto')
+            this.page += 1;
+            if (this.page * this.pageResults > this.totalCases) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 0
+            } else {
+                if (this.page > 1)
+                    this.disbaledBefore = 0
+            }
+
+            this.getAdministrators()
         },
         closeModalInactive() {
             this.isShowModalInactive = !this.isShowModalInactive;
