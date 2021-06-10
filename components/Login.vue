@@ -37,22 +37,32 @@
                 <button type="button" class="btn forgot-button">Olvidé mi contraseña</button>
             </div>
         </div>
+
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleModal" />
+        
     </div>
 </template>
 
 <script>
 import InputIcon from '../components/inputs/InputIcon';
+import SuccessToast from '../components/toasts/SuccessToast';
 // import InputTitle from './inputs/InputTitle';
 // import Input from './inputs/Input';
 
 export default {
     components: {
-        InputIcon
+        InputIcon,
+        SuccessToast
         // InputTitle,
         // Input
     },
     data() {
         return {
+            showSuccessToast: false,
+            titleModal: '',
+
             userData: {},
             checked: false,
             email: '',
@@ -85,16 +95,23 @@ export default {
                     this.$store.commit('setToken', loginResponse.data.token);
                     this.$store.commit('setRememberMe', this.checked);
                 }
-                
+
+                this.titleModal = loginResponse.data.message 
+                this.showSuccessToast = !this.showSuccessToast;
+                // setTimeout(() => {
+                //     this.showSuccessToast = !this.showSuccessToast;
+                // }, 1500)
                 this.busy = !this.busy;
 
                 setTimeout(() => {
                     if (this.userData.role == 'Administrador') {
                         // agregar los topic y las universidades al localStorage
-                        alert(loginResponse.data.message)
+                        // alert(loginResponse.data.message)
+                        this.showSuccessToast = !this.showSuccessToast;
                         this.$router.push({ path: '/statistics' })
                     } else {
-                        alert(loginResponse.data.message)
+                        // alert(loginResponse.data.message)
+                        this.showSuccessToast = !this.showSuccessToast;
                         this.$router.push({ path: '/requestedQuestions'})
                     }
                 }, 1500);
