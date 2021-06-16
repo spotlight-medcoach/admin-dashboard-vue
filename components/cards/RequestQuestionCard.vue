@@ -6,7 +6,7 @@
                 <p>{{topicName}} <i class="fas fa-circle icon"></i> {{subtopicName}}</p>
             </div>
             <div class="description-container">
-                <p>{{requestDescription.content}}</p>
+                <p>{{requestDescription}}</p>
             </div>
             <div class="edit-container">
                 <button class="btn fas fa-check-circle accept" @click="$emit('aceptCase', id)"></button>

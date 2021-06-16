@@ -12,7 +12,7 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn accept" data-dismiss="modal" @click="$emit('close')">{{textButton}}</button>
+                        <button class="btn" @click="$emit('close')">{{textButton}}</button>
                     </div>
                 </div>
             </div>
@@ -44,12 +44,19 @@ export default {
         vertical-align: middle;
     }
 
+    .modal-footer {
+        justify-content: space-between;
+        border-top: 0;
+        padding: 0;
+        margin: 15px 0px;
+    }
+
     .modal-container {
         display: flex;
         flex-direction: column;
         justify-content: center;
         width: 35%;
-        /* height: 221px; */
+        /* height: 318px; */
         margin: 0px auto;
         padding: 24px 24px;
         background-color: #fff;
@@ -59,27 +66,22 @@ export default {
         font-family: Montserrat;
     }
 
-    .modal-footer {
-        border-top: 0;
-        padding: 0;
-        margin: 15px 0px;
-        justify-content: center;
-    }
-
     .modal-footer button {
         width: 100%;
-        height: 48px;
-        font-size: 1rem;
+        color: #FFF;
+        padding: 14px 20px;
+        background: #1CA4FC;
+        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
+        border-radius: 10px;
+        margin: 0px 24px;
     }
 
     .close-btn {
         color: #DB1212;
     }
 
-    .accept {
-        background: #20B000;
-        color: #FFF;
-        border-radius: 10px;
+    .modal-header {
+        border-bottom: 0;
     }
 
     .modal-title {
@@ -114,39 +116,5 @@ export default {
     .modal-leave-active .modal-container {
         -webkit-transform: scale(1.1);
         transform: scale(1.1);
-    }
-
-    /* estilos para el loading predeterminado */
-    .load-container {
-        display: flex;
-        justify-content: center;
-        /* margin: 0px auto; */
-    }
-
-    .lds-dual-ring {
-        display: inline-block;
-        width: 50px;
-        height: 50px;
-    }
-
-    .lds-dual-ring:after {
-        content: " ";
-        display: block;
-        width: 44px;
-        height: 44px;
-        /* margin: 8px; */
-        border-radius: 50%;
-        border: 6px solid #FE9400;
-        border-color: #FE9400 transparent #FE9400 transparent;
-        animation: lds-dual-ring 1.2s linear infinite;
-    }
-
-    @keyframes lds-dual-ring {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(360deg);
-        }
     }
 </style>

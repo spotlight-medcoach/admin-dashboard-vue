@@ -2,8 +2,7 @@
     <div>
         <Navigation />
 
-        <Loading v-if="loading" />
-        <div v-else class="details-container">
+        <div class="details-container">
             <div class="back-btn">
                 <nuxt-link to="/requestedCases">
                     <i class="fas fa-chevron-left"></i>
@@ -13,55 +12,97 @@
 
             <div class="cancel-container">
                 <h1>Detalles del caso</h1>
-                <div class="buttons">
-                    <button type="button" class="btn cancel" @click="discardCaseConfirm"><i class="fas fa-trash mr-5 pr-5"></i> Descartar caso</button>
-                    <button type="button" class="btn retro-btn" @click="retroAlert"><i class="fas fa-exclamation"></i> Dar retroalimentación</button>
+                <div v-if="!loading" class="buttons">
+                    <div v-if="caseDetails.case_status == 'Pending'">
+                        <button type="button" class="btn cancel" @click="discardCaseConfirm"><i class="fas fa-trash px-2"></i>Eliminar caso</button>
+                    </div>
+
+                    <div v-else-if="caseDetails.case_status == 'Pending review'">
+                        <button type="button" class="btn retro-btn" @click="retroAlert"><i class="fas fa-exclamation"></i> Dar retroalimentación</button>
+                    </div>
+
+                    <div v-else-if="caseDetails.case_status == 'With feedback'">
+                        <button type="button" class="btn retro-btn" @click="retroAlert"><i class="fas fa-exclamation"></i> Dar retroalimentación</button>
+                    </div>
                 </div>
             </div>
 
-            <DescriptionCard
+            <Loading v-if="loading" />
+
+            <!-- Card con los detalles del caso -->
+            <CaseDetailsReviewCard
+                v-if="!loading"
                 :caseName="caseDetails.name"
                 :id="caseDetails.pending_case_id"
                 :language="caseDetails.language"
-                :theStatus="caseDetails.status"
-                :request_description="caseDetails.request_description"
-                :feedback="caseDetails.feedback"
+                :theStatus="caseDetails.case_status"
+                :request_description="caseDetails.request_description.content.ops[0].insert"
                 :topic="caseDetails.name_topic"
-                :subtopic="caseDetails.name_subtopic" />
+                :subtopic="caseDetails.name_subtopic"
+                :user="caseDetails.admin_user.name + ' ' + caseDetails.admin_user.last_name" />
             
-            <div class="description-container">
+            <div v-if="!loading" class="description-container">
                 <h1>Descripción del caso</h1>
+                <span v-if="caseDetails.status == 'Pending'" class="my-3 text-danger">Aún no hay información sobre este caso.</span>
                 <quill-editor
-                    v-model="content"
-                    :options="editorOption" />
+                    v-else
+                    :options="editorOption"
+                    @ready="onEditorReady($event)" 
+                    @change="onEditorChange($event)" />
             </div>
 
-            <div class="questions-container">
+            <div v-if="!loading" class="questions-container">
                 <h1>Preguntas</h1>
 
-                <!-- Loader -->
-                <div v-if="busy" class="load-container">
-                    <div class="lds-dual-ring"></div>
-                </div>
-
+                <span v-if="caseDetails.status == 'Pending'" class="my-3 text-danger">Aún no hay preguntas asignadas a este caso.</span>
+                
                 <div v-else class="each-question">
-                    <QuestionCard 
+                    <!-- Card de cada pregunta -->
+                    <QuestionReviewCard
+                        @view="viewQuestion(ques)"
                         v-for="(ques, index) in questions"
                         :key="ques._id"
-                        :question="ques"
                         :ind="index"
-                        :updateQuestion="updateQuestion"
-                        :deleteQuestion="deleteQuestion"
-                        @updateQuestion="updateQuestion(questions[index])"
-                        @deleteQuestion="deleteQuestionConfirm(questions[index])" />
+                        :question="ques.question.content.ops[0].insert" />
                 </div>
             </div>
 
-            <div class="buttons-container">
-                <button class="btn draft" @click="bankConfirm"><i class="fas fa-book"></i> Autorizar y agregar al banco</button>
-                <button class="btn send" @click="simulatorConfirm"><i class="fas fa-book-open"></i> Autorizar y agregar al simulador</button>
+            <div v-if="!loading" class="buttons-container">
+                <div v-if="caseDetails.case_status == 'Pending review' || caseDetails.case_status == 'With feedback'">
+                    <button class="btn draft" @click="bankConfirm"><i class="fas fa-book"></i> Autorizar y agregar al banco</button>
+                    <button class="btn send" @click="simulatorConfirm"><i class="fas fa-book-open"></i> Autorizar y agregar al simulador</button>
+                </div>
+
             </div>
         </div>
+
+        <!-- Ver detalles de pregunta -->
+        <QuestionDetailsReviewModalAdministrator 
+            v-if="isShowQuestionDetailsModal"
+            @close="closeQuestionDetailsModal"
+            :question="questionSelected" />
+
+        <!-- Modal de retroalimentación -->
+        <SetRetroModal 
+            v-if="isShowRetroModal"
+            @close="closeRetroModal"
+            @feed="updateFeedback"
+            :textTitle="titleModal"
+            :textBody="bodyModal"
+            :textButton="button"
+            :case_id="this.$route.params.id"
+            :feedback="caseDetails.feedback"
+            :data.sync="theFeedback" />
+
+        <!-- Modalo para agregar al banco -->
+        <AddToBankModal
+            v-if="isShowAddToBankModal"
+            @close="closeAddToBankModal"
+            @add="addTobank"
+            :textTitle="titleModal"
+            :textBody="bodyModal"
+            :textButton="button"
+            :isBusy="busyBank" />
 
         <!-- Descartar caso -->
         <RejectModal 
@@ -79,22 +120,34 @@
 <script>
 import Navigation from '../../components/navs/Navigation';
 import Loading from '../../components/modals/Loading';
-import DescriptionCard from '../../components/cards/DescriptionCard';
+import QuestionReviewCard from '../../components/cards/administrators/QuestionReviewCard';
+import QuestionDetailsReviewModalAdministrator from '../../components/modals/administrators/QuestionDetailsReviewModalAdministrator'
+import CaseDetailsReviewCard from '../../components/cards/administrators/CaseDetailsReviewCard';
+import SetRetroModal from '../../components/modals/administrators/SetRetroModal';
+import AddToBankModal from '../../components/modals/administrators/AddToBankModal';
 import RejectModal from '../../components/modals/RejectModal';
 
 export default {
     components: {
         Navigation,
         Loading,
-        DescriptionCard,
+        QuestionReviewCard,
+        QuestionDetailsReviewModalAdministrator,
+        CaseDetailsReviewCard,
+        SetRetroModal,
+        AddToBankModal,
         RejectModal
     },
     data() {
         return {
             loading: false,
             busy: false,
+            busyBank: false,
             isShowModalDiscardCase: false,
             busyDiscardCase: false,
+            isShowQuestionDetailsModal: false,
+            isShowRetroModal: false,
+            isShowAddToBankModal: false,
 
             titleModal: '',
             bodyModal: '',
@@ -103,27 +156,22 @@ export default {
 
             caseDetails: {},
             questions: [],
+            questionSelected: {},
             name: '',
             pending_case_id: '',
             language: '',
-            status: '',
+            // status: '',
             request_description: '',
             feedback: '',
             name_topic: '',
             name_subtopic: '',
+            theFeedback: '',
 
-            content: '',
+            contentDescription: '',
+            contentHtml: '',
             editorOption: {
-                theme: 'snow',
-                placeholder: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti veniam, illum esse sunt soluta iste deleniti, ab autem alias magnam sapiente, ipsam officiis eveniet laborum sint? Eum exercitationem alias maiores?',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline'], 
-                        [{ 'align': [] }, { 'list': 'ordered'}, { 'list': 'bullet' },{ 'indent': '-1'}, { 'indent': '+1' }, { 'script': 'sub'}, { 'script': 'super' }],
-                        ['link', 'image']
-                    ]
-                }
+                theme: 'bubble',
+                placeholder: 'Respuesta...',
             }
         }
     },
@@ -135,18 +183,35 @@ export default {
         }
 
         await this.getCaseDetails();
+        console.log('case', this.caseDetails)
     },
     methods: {
+        onEditorReady(quill) {
+            // Poner datos en el quill
+            quill.setContents(JSON.parse(JSON.stringify(this.caseDetails.description.content.ops)))
+        },
+        onEditorChange({ quill, html, text }) {
+            //  Obtener datos del quill
+            this.contentDescription = quill.getContents();
+            this.contentHtml = quill.root.innerHTML;
+        },
         async getCaseDetails() {
+            // Obtener datos del caso
             try {
                 this.loading = !this.loading;
 
                 let caseDetailsResponse = await this.$axios.get('/getDetails', { params: { case_id: this.$route.params.id } })
+                
+                // console.log('status: ', caseDetailsResponse.data.payload)
+                this.caseDetails = {
+                    ...caseDetailsResponse.data.payload,
+                    case_status: caseDetailsResponse.data.payload.status
+                };
+                
+                this.questions = caseDetailsResponse.data.payload.pending_questions;
 
-                this.caseDetails = caseDetailsResponse.data.payload;
-                this.content = caseDetailsResponse.data.payload.request_description.html;
                 this.caseDetails.name_topic = this.filterTopicName(this.caseDetails.topic_bubble);
-            this.caseDetails.name_subtopic = this.filterSubtopicName(this.caseDetails.topic_bubble, this.caseDetails.subtopic_bubble)
+                this.caseDetails.name_subtopic = this.filterSubtopicName(this.caseDetails.topic_bubble, this.caseDetails.subtopic_bubble)
                 // alert(caseDetailsResponse.data.message);
                 
                 this.loading = !this.loading
@@ -155,25 +220,30 @@ export default {
             }
         },
         filterTopicName(topic_bubble) {
-            let topic = '';
-            topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0].name
+            // Obtener el nombre del tema
+            let topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0].name
             return topic;
         },
         filterSubtopicName(topic_bubble, subtopic_bubble) {
-            var topic
-            var subtopic
-            topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0]
-            subtopic = topic.subtopics.filter(sub => sub.subtopic == subtopic_bubble);
+            // Obtener el nombre del subtema
+            let topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0]
+            let subtopic = topic.subtopics.filter(sub => sub.subtopic == subtopic_bubble);
 
             return subtopic[0].name
         },
         discardCaseConfirm() {
+            // Modal para eliminar el caso
+            if (this.caseDetails.case_status == 'Pending') {
+                console.log('here')
+                this.titleModal = 'Eliminar caso';
+                this.bodyModal = '¿Deseas eliminar este caso definitivamente? Esta acción no puede deshacerse.';
+                this.button = 'Sí, eliminar';
+            }
+            
             this.isShowModalDiscardCase = !this.isShowModalDiscardCase;
-            this.titleModal = 'Descartar caso';
-            this.bodyModal = 'Al descartar este caso, se eliminará toda la información relacionada con él. Esta acción no se puede deshacerse. ¿Deseas descartarlo?';
-            this.button = 'Descartar caso';
         },
         async discardCase() {
+            // Eliminar el caso
             try {
                 this.busyDiscardCase = !this.busyDiscardCase;
 
@@ -188,26 +258,69 @@ export default {
                 console.log(err);
             }
         },
+
         retroAlert() {
-            alert('Retroalimentaión')
-        },
-        requestQuestion() {
+            // Modal de retroalimentación para el caso
+            this.titleModal = 'Retroalimentación para el caso';
+            this.bodyModal = 'Escribe aquí los comentarios sobre el caso';
+            this.button = 'Enviar retroalimentación'
 
+            this.isShowRetroModal = !this.isShowRetroModal;
         },
-        updateQuestion() {
+        updateFeedback() {
+            // Actualizar el feedback sin API
+            this.caseDetails.feedback = this.theFeedback;
+        },
 
+        viewQuestion(question) {
+            // Ver detalles de preguntas
+            this.questionSelected = question;
+            this.isShowQuestionDetailsModal = !this.isShowQuestionDetailsModal;
         },
-        deleteQuestionConfirm() {
 
-        },
+
         bankConfirm() {
-            alert('Confirm to bank')
+            // Modal para agregar al banco
+            this.titleModal = 'Autorizar y agregar al banco'
+            this.bodyModal = 'Este caso se enviará al banco de preguntas. ¿Deseas autorizarlo?'
+            this.button = 'Agregar al banco'
+
+            this.isShowAddToBankModal = !this.isShowAddToBankModal
         },
+        async addTobank() {
+            try {
+                this.busyBank = !this.busyBank;
+
+                let bankResponse = await this.$axios.post('/addPendingToBank', {
+                    pending_case_id: this.$route.params.id
+                })
+
+                console.log(bankResponse);
+                alert(bankResponse.data.message);
+
+                this.busyBank = !this.busyBank;
+                this.isShowAddToBankModal = !this.isShowAddToBankModal;
+                this.$router.push({ path: `/requestedCases` });
+            } catch (err) {
+                console.log(err);
+            }
+        },
+
         simulatorConfirm() {
+            // Modal para agregar a simulador
             alert('Confirm to simulator')
         },
         closeRejectDiscardCaseModal() {
             this.isShowModalDiscardCase = false;
+        },
+        closeQuestionDetailsModal() {
+            this.isShowQuestionDetailsModal = false;
+        },
+        closeRetroModal() {
+            this.isShowRetroModal = false;
+        },
+        closeAddToBankModal() {
+            this.isShowAddToBankModal = false;
         }
     }
 }

@@ -23,7 +23,7 @@
             <div class="name-container">
                 <div v-if="theStatus != 'With feedback'">
                     <p class="title">Descripción requerida:</p>
-                    <span>{{request_description.content}}</span>
+                    <span>{{request_description}}</span>
                 </div>
 
                 <div v-else>

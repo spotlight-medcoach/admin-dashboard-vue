@@ -11,21 +11,13 @@
                     <div class="modal-body">
                         <div class="dificulty-type">
                             <div class="dificulty-container">
-                                <h3>Dificultad</h3>
-                                <select v-model="dificultySelected" name="" id="">
-                                    <option value="" selected disabled>Dificultad</option>
-                                    <option value="1">Baja</option>
-                                    <option value="2">Moderada</option>
-                                    <option value="3">Alta</option>
-                                </select>
+                                <h3>Dificultad: </h3>
+                                {{ question.importance == 1 ? 'Baja' : question.importance == 2 ? 'Moderada' : 'Alta' }}
                             </div>
 
                             <div class="type-container">
-                                <h3>Tipo</h3>
-                                <select v-model="typeSelected" name="" id="">
-                                    <option value="" disabled>Tipo</option>
-                                    <option :value="types.display" v-for="types in typ" :key="types._id">{{ types.display }}</option>
-                                </select>
+                                <h3>Tipo: </h3>
+                                {{question.type}}
                             </div>
                         </div>
 
@@ -33,67 +25,72 @@
                             <p>Pregunta</p>
 
                             <quill-editor
-                                class="editor"
+                                disabled
+                                v-model="contentQuestion"
                                 :options="editorOption"
-                                @change="onEditorChangeQuestion($event)"
                                 @ready="onEditorReadyQuestion($event)" />
                         </div>
 
                         <div class="answers-container">
                             <p>Respuestas</p>
+
                             <div class="answers">
-                                <div class="ans-cont">
+                                <div class="ans-cont" value="1">
                                     <p>A)</p>
                                     <quill-editor
+                                        disabled
                                         class="text"
-                                        :options="editorOptionAnswer"
-                                        @change="onEditorChangeAnswer1($event)"
+                                        v-model="contentQuestion"
+                                        :options="editorOption"
                                         @ready="onEditorReadyAnswer1($event)" />
-                                    
+
                                     <label class="radio-container">
-                                        <input type="radio" name="answer" v-model="correctAnswer" value="1">
+                                        <input disabled type="radio" name="answer" v-model="correctAnswer" value="1">
                                         <span class="checkmark"></span>
                                     </label>
                                 </div>
 
-                                <div class="ans-cont">
+                                <div class="ans-cont" value="2">
                                     <p>B)</p>
                                     <quill-editor
+                                        disabled
                                         class="text"
-                                        :options="editorOptionAnswer"
-                                        @change="onEditorChangeAnswer2($event)"
+                                        v-model="contentQuestion"
+                                        :options="editorOption"
                                         @ready="onEditorReadyAnswer2($event)" />
                                         
                                     <label class="radio-container">
-                                        <input type="radio" name="answer" v-model="correctAnswer" value="2">
+                                        <input disabled type="radio" name="answer" v-model="correctAnswer" value="2">
                                         <span class="checkmark"></span>
                                     </label>
                                 </div>
 
-                                <div class="ans-cont">
+                                <div class="ans-cont" value="3">
                                     <p>C)</p>
                                     <quill-editor
+                                        disabled
                                         class="text"
-                                        :options="editorOptionAnswer"
-                                        @change="onEditorChangeAnswer3($event)"
+                                        v-model="contentQuestion"
+                                        :options="editorOption"
                                         @ready="onEditorReadyAnswer3($event)" />
-                                        
+                                    
                                     <label class="radio-container">
-                                        <input type="radio" name="answer" v-model="correctAnswer" value="3">
+                                        <input disabled type="radio" name="answer" v-model="correctAnswer" value="3">
                                         <span class="checkmark"></span>
                                     </label>
                                 </div>
 
-                                <div class="ans-cont">
+                                <div class="ans-cont" value="4">
                                     <p>D)</p>
                                     <quill-editor
+                                        disabled
                                         class="text"
-                                        :options="editorOptionAnswer"
-                                        @change="onEditorChangeAnswer4($event)"
+                                        v-model="contentQuestion"
+                                        :options="editorOption"
                                         @ready="onEditorReadyAnswer4($event)" />
-                                    
+                                        
                                     <label class="radio-container">
-                                        <input type="radio" name="answer" v-model="correctAnswer" value="4">
+                                        <input disabled type="radio" name="answer" v-model="correctAnswer" value="4">
                                         <span class="checkmark"></span>
                                     </label>
                                 </div>
@@ -104,23 +101,20 @@
                             <p>Retroalimentación y referencia</p>
 
                             <quill-editor
-                                class="editor"
+                                disabled
+                                v-model="contentQuestion"
                                 :options="editorOption"
-                                @change="onEditorChangeRetro($event)"
                                 @ready="onEditorReadyRetro($event)" />
                         </div>
                     </div>
 
                     <div class="modal-footer">
                         <!-- Loader -->
-                        <div class="load-container">
+                        <!-- <div class="load-container">
                             <div class="lds-dual-ring" v-if="isBusy"></div>
-                        </div>
+                        </div> -->
 
-                        <button type="button" class="btn accept" data-dismiss="modal" @click="updateQuestion">
-                            <i class="fas fa-save"></i>
-                            Guardar y regresar al caso
-                        </button>
+                        <button type="button" class="btn accept" data-dismiss="modal" @click="$emit('close')">Regresar al caso</button>
                     </div>
                 </div>
             </div>
@@ -130,40 +124,17 @@
 
 <script>
 export default {
-    props: ['toUpdate', 'typ', 'case'],
+    props: ['question'],
     data() {
         return {
-            isBusy: false,
-            dificultySelected: '',
-            typeSelected: '',
-            correctAnswer: this.toUpdate.correct_answer,
+            contentQuestion: '',
             answer1: '',
-            answer1Html: '',
             answer2: '',
-            answer2Html: '',
             answer3: '',
-            answer3Html: '',
             answer4: '',
-            answer4Html: '',
-
-            questionContent: '',
-            questionHtml: '',
-
-            retroContent: '',
-            retroHtml: '',
+            retro: '',
+            correctAnswer: this.question.correct_answer,
             editorOption: {
-                theme: 'snow',
-                placeholder: 'Agrega contenido para este caso...',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline'], 
-                        [{ 'align': [] }, { 'list': 'ordered'}, { 'list': 'bullet' },{ 'indent': '-1'}, { 'indent': '+1' }, { 'script': 'sub'}, { 'script': 'super' }],
-                        ['link', 'image']
-                    ]
-                }
-            },
-            editorOptionAnswer: {
                 theme: 'bubble',
                 placeholder: 'Respuesta...',
             }
@@ -171,105 +142,23 @@ export default {
     },
     methods: {
         onEditorReadyQuestion(quill) {
-            quill.setContents(JSON.parse(JSON.stringify(this.toUpdate.question.content.ops)))
+            quill.setContents(JSON.parse(JSON.stringify(this.question.question.content.ops)))
         },
         onEditorReadyAnswer1(quill) {
-            quill.setContents(JSON.parse(JSON.stringify(this.toUpdate.answers[0].content.ops)))
+            quill.setContents(JSON.parse(JSON.stringify(this.question.answers[0].content.ops)))
         },
         onEditorReadyAnswer2(quill) {
-            quill.setContents(JSON.parse(JSON.stringify(this.toUpdate.answers[1].content.ops)))
+            quill.setContents(JSON.parse(JSON.stringify(this.question.answers[1].content.ops)))
         },
         onEditorReadyAnswer3(quill) {
-            quill.setContents(JSON.parse(JSON.stringify(this.toUpdate.answers[2].content.ops)))
+            quill.setContents(JSON.parse(JSON.stringify(this.question.answers[2].content.ops)))
         },
         onEditorReadyAnswer4(quill) {
-            quill.setContents(JSON.parse(JSON.stringify(this.toUpdate.answers[3].content.ops)))
+            quill.setContents(JSON.parse(JSON.stringify(this.question.answers[3].content.ops)))
         },
         onEditorReadyRetro(quill) {
-            quill.setContents(JSON.parse(JSON.stringify(this.toUpdate.retro.content.ops)))
+            quill.setContents(JSON.parse(JSON.stringify(this.question.retro.content.ops)))
         },
-        onEditorChangeQuestion({ quill, html, text }) {
-            this.questionContent = quill.getContents();
-            this.questionHtml = quill.root.innerHTML;
-        },
-        onEditorChangeAnswer1({ quill, html, text }) {
-            this.answer1 = quill.getContents();
-            this.answer1Html = quill.root.innerHTML;
-        },
-        onEditorChangeAnswer2({ quill, html, text }) {
-            this.answer2 = quill.getContents();
-            this.answer2Html = quill.root.innerHTML;
-        },
-        onEditorChangeAnswer3({ quill, html, text }) {
-            this.answer3 = quill.getContents();
-            this.answer3Html = quill.root.innerHTML;
-        },
-        onEditorChangeAnswer4({ quill, html, text }) {
-            this.answer4 = quill.getContents();
-            this.answer4Html = quill.root.innerHTML;
-        },
-        onEditorChangeRetro({ quill, html, text }) {
-            this.retroContent = quill.getContents();
-            this.retroHtml = quill.root.innerHTML;
-        },
-        async updateQuestion() {
-            try {
-                this.isBusy = !this.isBusy;
-                
-                let updateQuestionResponse = await this.$axios.put('/updatePendingQuestion', {
-                    case_id: this.case,
-                    question_id: this.toUpdate._id,
-                    index: this.toUpdate.index,
-                    importance: this.dificultySelected,
-                    type: this.typeSelected,
-                    question: {
-                        content: this.questionContent,
-                        html: this.questionHtml
-                    },
-                    answers: [
-                        {
-                            id: this.toUpdate.answers[0].id,
-                            content: this.answer1,
-                            html: this.answer1Html
-                        },
-                        {
-                            id: this.toUpdate.answers[1].id,
-                            content: this.answer2,
-                            html: this.answer2Html
-                        },
-                        {
-                            id: this.toUpdate.answers[2].id,
-                            content: this.answer3,
-                            html: this.answer3Html
-                        },
-                        {
-                            id: this.toUpdate.answers[3].id,
-                            content: this.answer4,
-                            html: this.answer4Html
-                        }
-                    ],
-                    correct_answer: this.correctAnswer,
-                    retro: {
-                        content: this.retroContent,
-                        html: this.retroHtml
-                    }
-                })
-    
-                console.log(updateQuestionResponse)
-                alert(updateQuestionResponse.data.message);
-
-                this.$emit('update:data', {
-                    updated: updateQuestionResponse.data.payload,
-                    indexInArray: this.toUpdate.indexInArray
-                });
-
-                this.isBusy = !this.isBusy;
-                this.$emit('reload');
-                this.$emit('close');
-            } catch (err) {
-                console.log(err)
-            }
-        }
     }
 }
 </script>
@@ -335,7 +224,8 @@ export default {
     }
 
     .dificulty-container {
-        width: 30%;
+        display: flex;
+        flex-direction: row;
         margin: 10px 20px;
     }
 
@@ -346,17 +236,12 @@ export default {
         font-size: 16px;
         line-height: 20px;
         margin-bottom: 12px;
-    }
-
-    .dificulty-container select {
-        width: 100%;
-        border: 0px;
-        outline: 0px;
-        border-bottom: 1px solid lightgray;
+        margin-right: 8px;
     }
 
     .type-container {
-        width: 30%;
+        display: flex;
+        flex-direction: row;
         margin: 10px 20px;
     }
 
@@ -367,19 +252,13 @@ export default {
         font-size: 16px;
         line-height: 20px;
         margin-bottom: 12px;
-    }
-
-    .type-container select {
-        width: 100%;
-        border: 0px;
-        outline: 0px;
-        border-bottom: 1px solid lightgray;
+        margin-right: 8px;
     }
 
     .editor-container {
         display: flex;
         flex-direction: column;
-        height: 250px;
+        /* height: 250px; */
     }
 
     .editor-container p {
@@ -432,11 +311,14 @@ export default {
 
 
 
+
+
+
+
+
     .radio-container {
         display: block;
         position: relative;
-        /* padding-left: 35px;
-        margin-bottom: 12px; */
         cursor: pointer;
         font-size: 22px;
         -webkit-user-select: none;
@@ -502,6 +384,11 @@ export default {
 
 
 
+
+
+
+
+
     .text {
         width: 97%;
         outline: none;
@@ -536,7 +423,7 @@ export default {
 
     .modal-footer button {
         color: #FFF;
-        background: #20B000;
+        background: #1CA4FC;
         box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
         border-radius: 10px;
         padding: 12px 20px;
@@ -559,39 +446,5 @@ export default {
     .modal-leave-active .modal-container {
         -webkit-transform: scale(1.1);
         transform: scale(1.1);
-    }
-
-    /* estilos para el loading predeterminado */
-    .load-container {
-        display: flex;
-        justify-content: center;
-    }
-
-    .lds-dual-ring {
-        display: inline-block;
-        width: 50px;
-        height: 50px;
-        margin: 0px auto;
-    }
-
-    .lds-dual-ring:after {
-        content: " ";
-        display: block;
-        width: 44px;
-        height: 44px;
-        /* margin: 8px; */
-        border-radius: 50%;
-        border: 6px solid #FE9400;
-        border-color: #FE9400 transparent #FE9400 transparent;
-        animation: lds-dual-ring 1.2s linear infinite;
-    }
-
-    @keyframes lds-dual-ring {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(360deg);
-        }
     }
 </style>

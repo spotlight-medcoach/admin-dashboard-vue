@@ -62,21 +62,21 @@
                 <h3>Descripción del caso</h3>
 
                 <quill-editor
-                    v-model="content"
                     class="editor"
-                    :options="editorOption" />
+                    :options="editorOption"
+                    @change="onEditorChangeDescription($event)" />
             </div>
 
             <div class="questions-container">
                 <h3>Preguntas</h3>
                 <div class="each-question">
-                    <QuestionCard
+                    <QuestionCardSpotlighter
                         v-for="(ques, index) in questions"
                         :key="ques._id"
-                        :question="ques"
+                        :question="ques.question.content.ops[0].insert"
                         :ind="index"
-                        :updateQuestion="updateQuestion"
-                        :deleteQuestion="deleteQuestion" />
+                        @updateQuestion="updateQuestion(questions[index], index)"
+                        @deleteQuestion="deleteQuestionConfirm(questions[index])" />
                 </div>
 
                 <div class="add-question-container">
@@ -93,6 +93,7 @@
             </div>
         </div>
 
+        <!-- Agregar pregunta al caso -->
         <AddQuestionSpotlighter
             v-if="isShowModalAddQuestion"
             :typ="types"
@@ -100,6 +101,17 @@
             :data.sync="questionData"
             @addQues="addQuestion" />
 
+        <!-- Detalle de pregunta para actualizar -->
+        <CaseQuestionDetailsModalSpotlighter
+            v-if="isShowModalQuestionDetails"
+            @close="closeUpdateQuestionModal"
+            @reload="reloadQuestions"
+            :toUpdate="questionToUpdate"
+            :typ="types"
+            :case="dataCase._id"
+            :data.sync="questionUpdated" />
+
+        <!-- Guardar como borrador -->
         <AcceptModal 
             v-if="isShowModalAcceptDraft"
             @close="closeAcceptModal"
@@ -109,6 +121,7 @@
             :textButton="button"
             :isBusy="busyDraft" />
 
+        <!-- Enviar a revisión -->
         <AcceptModal 
             v-if="isShowModalAcceptSend"
             @close="closeAcceptModal"
@@ -118,6 +131,7 @@
             :textButton="button"
             :isBusy="busySend" />
 
+        <!-- Descartar caso -->
         <RejectModal 
             v-if="isShowModalReject"
             @close="closeRejectModal"
@@ -126,6 +140,16 @@
             :action="discardCase"
             :textButton="button"
             :isBusy="busyReject" />
+
+        <!-- Eliminar pregunta -->
+        <RejectModal 
+            v-if="isShowModalDeleteQuestion"
+            @close="closeRejectDeleteQuestionModal"
+            :textTitle="titleModal"
+            :textBody="bodyModal"
+            :action="deleteQuestion"
+            :textButton="button"
+            :isBusy="busyDeleteQuestion" />
         
     </div>
 </template>
@@ -133,8 +157,9 @@
 <script>
 import SpotlighterNavigation from '../../components/navs/SpotlighterNavigation';
 import Input from '../../components/inputs/Input';
-import QuestionCard from '../../components/cards/QuestionsCard';
-import AddQuestionSpotlighter from '../../components/modals/AddQuestionSpotlighter';
+import QuestionCardSpotlighter from '../../components/cards/spotlighters/QuestionCardSpotlighter';
+import AddQuestionSpotlighter from '../../components/modals/spotlighters/AddQuestionSpotlighter';
+import CaseQuestionDetailsModalSpotlighter from '../../components/modals/spotlighters/CaseQuestionDetailsModalSpotlighter';
 import AcceptModal from '../../components/modals/AcceptModal';
 import RejectModal from '../../components/modals/RejectModal';
 
@@ -142,8 +167,9 @@ export default {
     components: {
         SpotlighterNavigation,
         Input,
-        QuestionCard,
+        QuestionCardSpotlighter,
         AddQuestionSpotlighter,
+        CaseQuestionDetailsModalSpotlighter,
         AcceptModal,
         RejectModal
     },
@@ -153,10 +179,13 @@ export default {
             busyDraft: false,
             busySend: false,
             busyReject: false,
+            busyDeleteQuestion: false,
             isShowModalAddQuestion: false,
             isShowModalAcceptDraft: false,
             isShowModalAcceptSend: false,
             isShowModalReject: false,
+            isShowModalQuestionDetails: false,
+            isShowModalDeleteQuestion: false,
 
             userData: {},
             dataCase: {},
@@ -167,7 +196,8 @@ export default {
             indexQuestion: 0,
             types: [],
             caseIdCreated: '',
-
+// Caso creado como spotlighter, para actualizar preguntas desde creación
+// Paciente de 25 años se anda paletiando por lo que hace.
             name: '',
             id: '',
             topicBubbleSelected: '',
@@ -175,14 +205,19 @@ export default {
             languageSelected: '',
             statusCase: '',
 
+            questionToUpdate: {},
+            questionUpdated: {},
+            questionToDelete: '',
+
             titleModal: '',
             bodyModal: '',
             button: '',
 
-            content: '',
+            contentDescription: '',
+            contentHtml: '',
             editorOption: {
                 theme: 'snow',
-                placeholder: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti veniam, illum esse sunt soluta iste deleniti, ab autem alias magnam sapiente, ipsam officiis eveniet laborum sint? Eum exercitationem alias maiores?',
+                placeholder: 'Descripción del caso...',
                 modules: {
                     toolbar: [
                         [{ 'header': [1, 2, 3, false] }],
@@ -204,6 +239,10 @@ export default {
         }
     },
     methods: {
+        onEditorChangeDescription({ quill, html, text }) {
+            this.contentDescription = quill.getContents();
+            this.contentHtml = quill.root.innerHTML;
+        },
         async requestCase() {
             try {
                 // Mostramos el modal para agregar la pregunta y creamos el caso en la BD
@@ -221,13 +260,25 @@ export default {
                         subtopic_bubble: this.subtopicBubbleSelected,
                         language: this.languageSelected,
                         description: {
-                            content: this.content.replace(/(<([^>]+)>)/ig, ''),
-                            html: this.content
+                            content: this.contentDescription,
+                            html: this.contentHtml
                         },
                         status: 'In edit',
                         requested: false,
                         request_description: {
-                            content: '',
+                            content: {
+                                ops: [{
+                                    insert: ''
+                                }]
+                            },
+                            html: ''
+                        },
+                        feedback: {
+                            content: {
+                                ops: [{
+                                    insert: ''
+                                }]
+                            },
                             html: ''
                         },
                         spotlighter_id: this.userData.spotlighter_id.spotlighter_id
@@ -235,6 +286,7 @@ export default {
 
                     this.indexQuestion += 1
                     this.dataCase = caseResponse.data.payload;
+                    alert(caseResponse.data.message)
                     console.log('caseCreated', this.dataCase);
                 } else {
                     this.indexQuestion += 1
@@ -269,8 +321,8 @@ export default {
                         subtopic_bubble: this.subtopicBubbleSelected,
                         language: this.languageSelected,
                         description: {
-                            content: this.content.replace(/(<([^>]+)>)/ig, ''),
-                            html: this.content
+                            content: this.contentDescription,
+                            html: this.contentHtml
                         },
                         status: 'In edit',
                         requested: false,
@@ -391,33 +443,71 @@ export default {
             this.subtopics = topicFiltered[0].subtopics
         },
         async addQuestion() {
-            // Agregar y crear las pending questions
-            let questionsResponse = await this.$axios.post('/createPendingQuestion', {
-                case_id: this.dataCase._id,
-                index: this.indexQuestion,
-                importance: this.questionData.dificulty,
-                type: this.questionData.type,
-                question: {
-                    content: this.questionData.question.content,
-                    html: this.questionData.question.html
-                },
-                answers: this.questionData.answers,
-                correct_answer: this.questionData.correct_answer,
-                retro: {
-                    content: this.questionData.retro.content,
-                    html: this.questionData.retro.html
-                }
-            });
+            try {
+                // Agregar y crear las pending questions
+                let questionsResponse = await this.$axios.post('/createPendingQuestion', {
+                    case_id: this.dataCase._id,
+                    index: this.indexQuestion,
+                    importance: this.questionData.dificulty,
+                    type: this.questionData.type,
+                    question: {
+                        content: this.questionData.question.content,
+                        html: this.questionData.question.html
+                    },
+                    answers: this.questionData.answers,
+                    correct_answer: this.questionData.correct_answer,
+                    retro: {
+                        content: this.questionData.retro.content,
+                        html: this.questionData.retro.html
+                    }
+                });
+    
+                alert(questionsResponse.data.message);
+                this.questions.push(questionsResponse.data.payload.question_created);
+                console.log('responseQuestion', questionsResponse);    
+            } catch (err) {
+                console.log(err)
+            }
+        },
 
-            alert(questionsResponse.data.message);
-            this.questions.push(questionsResponse.data.payload.question_created);
-            console.log('responseQuestion', questionsResponse);
+        updateQuestion(question, index) {
+            this.questionToUpdate = question;
+            this.questionToUpdate.indexInArray = index;
+            this.isShowModalQuestionDetails = !this.isShowModalQuestionDetails;
         },
-        updateQuestion() {
-            alert('Update question')
+        reloadQuestions() {
+            this.questions[this.questionUpdated.indexInArray] = this.questionUpdated.updated;
         },
-        deleteQuestion() {
-            alert('Delete question')
+
+
+        deleteQuestionConfirm(question) {
+            this.questionToDelete = question._id
+            this.titleModal = 'Eliminar pregunta'
+            this.bodyModal = '¿Deseas eliminar esta pregunta? Esta acción eliminará la pregunta junto con las respuestas y puede deshacerse.'
+            this.button = 'Eliminar'
+            this.isShowModalDeleteQuestion = !this.isShowModalDeleteQuestion;
+        },
+        async deleteQuestion() {
+            try {
+                console.log('delete')
+                this.busyDeleteQuestion = !this.busyDeleteQuestion;
+
+                let deleteQuestionResponse = await this.$axios.delete('/deleteQuestion', {
+                    params: {
+                        case_id: this.dataCase._id,
+                        question_id: this.questionToDelete
+                    }
+                })
+
+                alert(deleteQuestionResponse.data.message);
+                this.questions = this.questions.filter(ques => ques._id != this.questionToDelete)
+                console.log('new ques', this.questions)
+
+                this.busyDeleteQuestion = !this.busyDeleteQuestion;
+                this.isShowModalDeleteQuestion = !this.isShowModalDeleteQuestion;
+            } catch (err) {
+                console.log(err)
+            }
         },
 
         closeModal() {
@@ -432,6 +522,12 @@ export default {
         closeRejectModal() {
             this.isShowModalReject = false;
         },
+        closeUpdateQuestionModal() {
+            this.isShowModalQuestionDetails = false;
+        },
+        closeRejectDeleteQuestionModal() {
+            this.isShowModalDeleteQuestion = false;
+        }
     }
 }
 </script>
@@ -574,6 +670,7 @@ export default {
         display: flex;
         flex-direction: column;
         width: 100%;
+        height: 200px;
         /* background: gray; */
     }
 
@@ -593,10 +690,7 @@ export default {
     }
 
     .quill-editor {
-        /* background: hotpink; */
-        filter: drop-shadow(0px 0px 20px #D4D5D7);
-        border-radius: 10px;
-        border: 0px;
+        height: 50%;
     }
 
     .questions-container {

@@ -56,11 +56,6 @@
                     </tbody>
                 </table>
             </div>
-    <!-- v-model="contentDescription" -->
-    <!-- {{contentDescription}}
-<quill-editor
-    :options="editorOptionAnswer"
-    @change="onEditorChange($event)" /> -->
 
             <div v-if="!loading" class="pagination-container">
                 <div class="select-container">
@@ -72,7 +67,7 @@
                         <option value=5>5</option>
                         <option value=10>10</option>
                         <option value=15>15</option>
-                        <option value=20>20</option>
+                        <option value=210>210</option>
                     </select>
                 </div>
 
@@ -163,7 +158,7 @@ export default {
             disabledAfter: 0,
             totalCases: 0,
             page: 1,
-            pageResults: 5,
+            pageResults: 210,
 
             // contentDescription: '',
             // editorOptionAnswer: {
@@ -182,12 +177,9 @@ export default {
         await this.getSimulators();
     },
     methods: {
-        // onEditorChange({ quill, html, text }) {
-        //     this.contentDescription = quill.getContents()
-        // },
         filterTopicName(topic_bubble) {
-            let topic = '';
-            topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0].name
+            let topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0].name
+
             return topic;
         },
         filterSubtopicName(topic_bubble, subtopic_bubble) {
@@ -213,6 +205,7 @@ export default {
                 })
 
                 this.cases = casesResponse.data.payload.cases;
+
                 this.cases.forEach(theCase => {
                     theCase.name_topic = this.filterTopicName(theCase.topic);
                     theCase.name_subtopic = this.filterSubtopicName(theCase.topic, theCase.subtopic)
@@ -467,17 +460,18 @@ export default {
 
     .td-actions button {
         font-size: 24px;
+        color: #000;
     }
 
-    .pencil {
+    .pencil:hover {
         color: #1CA4FC;
     }
 
-    .plus {
-        color: #000000;
+    .plus:hover {
+        color: #20B000;
     }
 
-    .trash {
+    .trash:hover {
         color: #DB1212;
     }
 

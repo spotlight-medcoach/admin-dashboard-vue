@@ -34,7 +34,7 @@
                     :name="oneCase.name"
                     :topicName="oneCase.topic_name"
                     :subtopicName="oneCase.subtopic_name"
-                    :requestDescription="oneCase.request_description"
+                    :requestDescription="oneCase.request_description.content.ops[0].insert"
                     :id="oneCase._id" />
             </div>
 
@@ -221,7 +221,8 @@ export default {
                 this.busy = !this.busy
 
                 let assignResponse = await this.$axios.put('/assingCase', {
-                    case_id: this.case_id
+                    case_id: this.case_id,
+                    new_status: 'Accepted by Spotlighter'
                 })
 
                 this.isShowModalAccept = !this.isShowModalAccept;

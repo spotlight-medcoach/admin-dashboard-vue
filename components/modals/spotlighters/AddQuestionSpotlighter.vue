@@ -4,7 +4,7 @@
             <div class="modal-wrapper" role="document">
                 <div class="modal-container">
                     <div class="modal-header">
-                        <h3>Detalles de pregunta</h3>
+                        <h3>Agregar pregunta</h3>
                         <button class="fas fa-times btn close-btn" @click="$emit('close')"></button>
                     </div>
 
@@ -33,9 +33,9 @@
                             <p>Pregunta</p>
 
                             <quill-editor
-                                v-model="questionContent"
                                 class="editor"
-                                :options="editorOption" />
+                                :options="editorOption"
+                                @change="onEditorChangeQuestion($event)" />
                         </div>
 
                         <div class="answers-container">
@@ -44,41 +44,53 @@
                                 <div class="ans-cont">
                                     <p>A)</p>
                                     <quill-editor
-                                        v-model="answer1"
                                         class="text"
-                                        :options="editorOptionAnswer" />
+                                        :options="editorOptionAnswer"
+                                        @change="onEditorChangeAnswer1($event)" />
                                         
-                                    <input type="radio" v-model="correctAnswer" value="1" name="answer">
+                                    <label class="radio-container">
+                                        <input type="radio" name="answer" v-model="correctAnswer" value="1">
+                                        <span class="checkmark"></span>
+                                    </label>
                                 </div>
 
                                 <div class="ans-cont">
                                     <p>B)</p>
                                     <quill-editor
-                                        v-model="answer2"
                                         class="text"
-                                        :options="editorOptionAnswer" />
+                                        :options="editorOptionAnswer"
+                                        @change="onEditorChangeAnswer2($event)" />
                                         
-                                    <input type="radio" v-model="correctAnswer" value="2" name="answer">
+                                    <label class="radio-container">
+                                        <input type="radio" name="answer" v-model="correctAnswer" value="2">
+                                        <span class="checkmark"></span>
+                                    </label>
                                 </div>
 
                                 <div class="ans-cont">
                                     <p>C)</p>
                                     <quill-editor
-                                        v-model="answer3"
                                         class="text"
-                                        :options="editorOptionAnswer" />
+                                        :options="editorOptionAnswer"
+                                        @change="onEditorChangeAnswer3($event)" />
                                         
-                                    <input type="radio" v-model="correctAnswer" value="3" name="answer">
+                                    <label class="radio-container">
+                                        <input type="radio" name="answer" v-model="correctAnswer" value="3">
+                                        <span class="checkmark"></span>
+                                    </label>
                                 </div>
 
                                 <div class="ans-cont">
-                                    <p>B)</p>
+                                    <p>D)</p>
                                     <quill-editor
-                                        v-model="answer4"
                                         class="text"
-                                        :options="editorOptionAnswer" />
+                                        :options="editorOptionAnswer"
+                                        @change="onEditorChangeAnswer4($event)" />
                                         
-                                    <input type="radio" v-model="correctAnswer" value="4" name="answer">
+                                    <label class="radio-container">
+                                        <input type="radio" name="answer" v-model="correctAnswer" value="4">
+                                        <span class="checkmark"></span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -87,9 +99,9 @@
                             <p>Retroalimentación y referencia</p>
 
                             <quill-editor
-                                v-model="retroContent"
                                 class="editor"
-                                :options="editorOption" />
+                                :options="editorOption"
+                                @change="onEditorChangeRetro($event)" />
                         </div>
                     </div>
 
@@ -99,7 +111,7 @@
                             <div class="lds-dual-ring" v-if="isBusy"></div>
                         </div>
 
-                        <button type="button" class="btn accept" data-dismiss="modal" @click="updateQuestion">
+                        <button type="button" class="btn accept" data-dismiss="modal" @click="addQuestion">
                             <i class="fas fa-save"></i>
                             Guardar y regresar al caso
                         </button>
@@ -112,7 +124,7 @@
 
 <script>
 export default {
-    props: ['toUpdate', 'typ', 'case'],
+    props: ['typ', 'topicBubble', 'subtopicBubble', 'case_id'],
     data() {
         return {
             isBusy: false,
@@ -120,15 +132,22 @@ export default {
             typeSelected: '',
             correctAnswer: '',
             answer1: '',
+            answer1Html: '',
             answer2: '',
+            answer2Html: '',
             answer3: '',
+            answer3Html: '',
             answer4: '',
+            answer4Html: '',
 
             questionContent: '',
+            questionHtml: '',
+
             retroContent: '',
+            retroHtml: '',
             editorOption: {
                 theme: 'snow',
-                placeholder: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti veniam, illum esse sunt soluta iste deleniti, ab autem alias magnam sapiente, ipsam officiis eveniet laborum sint? Eum exercitationem alias maiores?',
+                placeholder: 'Agrega contenido para este caso...',
                 modules: {
                     toolbar: [
                         [{ 'header': [1, 2, 3, false] }],
@@ -140,78 +159,80 @@ export default {
             },
             editorOptionAnswer: {
                 theme: 'bubble',
-                placeholder: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
+                placeholder: 'Respuesta...',
             }
         }
     },
-    created() {
-        console.log(this.toUpdate)
-        this.dificultySelected = this.toUpdate.importance;
-        this.typeSelected = this.toUpdate.type;
-        this.correctAnswer = this.toUpdate.correct_answer;
-        this.answer1 = this.toUpdate.answers[0].html;
-        this.answer2 = this.toUpdate.answers[1].html;
-        this.answer3 = this.toUpdate.answers[2].html;
-        this.answer4 = this.toUpdate.answers[3].html;
-        this.questionContent = this.toUpdate.question.html;
-        this.retroContent = this.toUpdate.retro.html;
-    },
     methods: {
-        async updateQuestion() {
+        onEditorChangeQuestion({ quill, html, text }) {
+            this.questionContent = quill.getContents();
+            this.questionHtml = quill.root.innerHTML;
+        },
+        onEditorChangeAnswer1({ quill, html, text }) {
+            this.answer1 = quill.getContents();
+            this.answer1Html = quill.root.innerHTML;
+        },
+        onEditorChangeAnswer2({ quill, html, text }) {
+            this.answer2 = quill.getContents();
+            this.answer2Html = quill.root.innerHTML;
+        },
+        onEditorChangeAnswer3({ quill, html, text }) {
+            this.answer3 = quill.getContents();
+            this.answer3Html = quill.root.innerHTML;
+        },
+        onEditorChangeAnswer4({ quill, html, text }) {
+            this.answer4 = quill.getContents();
+            this.answer4Html = quill.root.innerHTML;
+        },
+        onEditorChangeRetro({ quill, html, text }) {
+            this.retroContent = quill.getContents();
+            this.retroHtml = quill.root.innerHTML;
+        },
+        async addQuestion() {
             try {
                 this.isBusy = !this.isBusy;
                 
-                let updateQuestionResponse = await this.$axios.put('/updateBankQuestion', {
-                    question_id: this.toUpdate._id,
-                    index: this.toUpdate.index,
-                    importance: this.dificultySelected,
+                this.$emit('update:data', {
+                    dificulty: parseInt(this.dificultySelected),
                     type: this.typeSelected,
                     question: {
-                        content: this.questionContent.replace(/(<([^>]+)>)/ig, ''),
-                        html: this.questionContent
+                        content: this.questionContent,
+                        html: this.questionHtml
                     },
                     answers: [
                         {
-                            id: this.toUpdate.answers[0].id,
-                            content: this.answer1.replace(/(<([^>]+)>)/ig, ''),
-                            html: this.answer1
+                            id: 1,
+                            content: this.answer1,
+                            html: this.answer1Html
                         },
                         {
-                            id: this.toUpdate.answers[1].id,
-                            content: this.answer2.replace(/(<([^>]+)>)/ig, ''),
-                            html: this.answer2
+                            id: 2,
+                            content: this.answer2,
+                            html: this.answer2Html
                         },
                         {
-                            id: this.toUpdate.answers[2].id,
-                            content: this.answer3.replace(/(<([^>]+)>)/ig, ''),
-                            html: this.answer3
+                            id: 3,
+                            content: this.answer3,
+                            html: this.answer3Html
                         },
                         {
-                            id: this.toUpdate.answers[3].id,
-                            content: this.answer4.replace(/(<([^>]+)>)/ig, ''),
-                            html: this.answer4
+                            id: 4,
+                            content: this.answer4,
+                            html: this.answer4Html
                         }
                     ],
-                    correct_answer: this.correctAnswer,
+                    correct_answer: parseInt(this.correctAnswer),
                     retro: {
-                        content: this.retroContent.replace(/(<([^>]+)>)/ig, ''),
-                        html: this.retroContent
+                        content: this.retroContent,
+                        html: this.retroHtml
                     }
                 })
+                this.$emit('addQues');
 
-                this.$emit('update:data', {
-                    updated: updateQuestionResponse.data.payload,
-                    indexInArray: this.toUpdate.indexInArray
-                })
-    
-                // console.log(updateQuestionResponse)
-                alert(updateQuestionResponse.data.message);
-
-                // setTimeout(() => {
+                setTimeout(() => {
                     this.isBusy = !this.isBusy;
-                    this.$emit('reload')
                     this.$emit('close');
-                // }, 1500);
+                }, 2000)
             } catch (err) {
                 console.log(err)
             }
@@ -375,6 +396,76 @@ export default {
     .ans-cont p {
         margin: 0;
     }
+
+
+
+    .radio-container {
+        display: block;
+        position: relative;
+        cursor: pointer;
+        font-size: 22px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        width: 0;
+        margin: 0px 25px;
+        margin-bottom: 20px;
+    }
+
+    /* Hide the browser's default radio button */
+    .radio-container input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    /* Create a custom radio button */
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 25px;
+        width: 25px;
+        background-color: #eee;
+        border-radius: 50%;
+    }
+
+    /* On mouse-over, add a grey background color */
+    .radio-container:hover input ~ .checkmark {
+        background-color: #ccc;
+    }
+
+    /* When the radio button is checked, add a blue background */
+    .radio-container input:checked ~ .checkmark {
+        background-color: hsl(109, 100%, 35%);
+    }
+
+    /* Create the indicator (the dot/circle - hidden when not checked) */
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    /* Show the indicator (dot/circle) when checked */
+    .radio-container input:checked ~ .checkmark:after {
+        display: block;
+    }
+
+    /* Style the indicator (dot/circle) */
+    .radio-container .checkmark:after {
+        top: 9px;
+        left: 9px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: white;
+    }
+
+
+
+
 
     .text {
         width: 97%;

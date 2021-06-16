@@ -1,13 +1,12 @@
 <template>
-    <div class="question-container">
+    <div class="aech-container">
         <div class="question-body">
             <div class="question-title">
                 <h3 class="index">{{ind + 1}}.</h3>
                 <h3 class="content">{{question}}</h3>
             </div>
             <div class="icons">
-                <button class="btn fas fa-pencil-alt edit" @click="$emit('updateQuestion')"></button>
-                <button class="btn fas fa-trash delete" @click="$emit('deleteQuestion')"></button>
+                <button class="btn fas fa-eye view" @click="$emit('view')"></button>
             </div>
         </div>
     </div>
@@ -15,16 +14,17 @@
 
 <script>
 export default {
-    props: ['question', 'ind']
+    props: ['ind', 'question']
 }
 </script>
 
 <style scoped>
-    .question-container {
+    .aech-container {
         display: flex;
         flex-direction: column;
         margin: 10px 0px;
     }
+
     .question-body {
         display: flex;
         flex-direction: row;
@@ -48,7 +48,6 @@ export default {
         font-size: 16px;
         line-height: 20px;
         color: #212529;
-        /* margin: 0px 12px; */
     }
 
     .index {
@@ -61,16 +60,8 @@ export default {
         margin: 0px 12px;
     }
 
-    .edit {
+    .view {
         color: #1CA4FC;
         font-size: 24px;
     }
-
-    .delete {
-        color: #DB1212;
-        font-size: 24px;
-    }
-    /* .icons {
-        font-size: 24px;
-    } */
 </style>

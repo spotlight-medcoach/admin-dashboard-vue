@@ -91,7 +91,7 @@
                                         :options="editorOptionAnswer"
                                         @change="onEditorChangeAnswer4($event)"
                                         @ready="onEditorReadyAnswer4($event)" />
-                                    
+                                        
                                     <label class="radio-container">
                                         <input type="radio" name="answer" v-model="correctAnswer" value="4">
                                         <span class="checkmark"></span>
@@ -153,7 +153,7 @@ export default {
             retroHtml: '',
             editorOption: {
                 theme: 'snow',
-                placeholder: 'Agrega contenido para este caso...',
+                placeholder: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti veniam, illum esse sunt soluta iste deleniti, ab autem alias magnam sapiente, ipsam officiis eveniet laborum sint? Eum exercitationem alias maiores?',
                 modules: {
                     toolbar: [
                         [{ 'header': [1, 2, 3, false] }],
@@ -165,7 +165,7 @@ export default {
             },
             editorOptionAnswer: {
                 theme: 'bubble',
-                placeholder: 'Respuesta...',
+                placeholder: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
             }
         }
     },
@@ -216,8 +216,7 @@ export default {
             try {
                 this.isBusy = !this.isBusy;
                 
-                let updateQuestionResponse = await this.$axios.put('/updatePendingQuestion', {
-                    case_id: this.case,
+                let updateQuestionResponse = await this.$axios.put('/updateBankQuestion', {
                     question_id: this.toUpdate._id,
                     index: this.toUpdate.index,
                     importance: this.dificultySelected,
@@ -254,18 +253,20 @@ export default {
                         html: this.retroHtml
                     }
                 })
-    
-                console.log(updateQuestionResponse)
-                alert(updateQuestionResponse.data.message);
 
                 this.$emit('update:data', {
                     updated: updateQuestionResponse.data.payload,
                     indexInArray: this.toUpdate.indexInArray
-                });
+                })
+    
+                // console.log(updateQuestionResponse)
+                alert(updateQuestionResponse.data.message);
 
-                this.isBusy = !this.isBusy;
-                this.$emit('reload');
-                this.$emit('close');
+                // setTimeout(() => {
+                    this.isBusy = !this.isBusy;
+                    this.$emit('reload')
+                    this.$emit('close');
+                // }, 1500);
             } catch (err) {
                 console.log(err)
             }
@@ -435,8 +436,6 @@ export default {
     .radio-container {
         display: block;
         position: relative;
-        /* padding-left: 35px;
-        margin-bottom: 12px; */
         cursor: pointer;
         font-size: 22px;
         -webkit-user-select: none;
@@ -500,7 +499,7 @@ export default {
 
 
 
-
+    
 
     .text {
         width: 97%;

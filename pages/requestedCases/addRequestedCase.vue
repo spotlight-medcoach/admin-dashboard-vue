@@ -39,7 +39,7 @@
                         <div class="input">
                             <h3>Tema</h3>
                             <select v-model="topicBubbleSelected" class="js-example-basic-single" @change="filterSubtopics(topicBubbleSelected)">
-                                <option value="" disabled selected>Tema</option>
+                                <option :value="''" disabled selected>Tema</option>
                                 <option :value="top.bubble_id" v-for="top in topics" :key="top._id">{{top.name}}</option>
                             </select>
                         </div>
@@ -48,7 +48,7 @@
                         <div class="input">
                             <h3>Subtema</h3>
                             <select v-model="subtopicBubbleSelected" class="js-example-basic-single">
-                                <option value="" selected>Elegir subtema</option>
+                                <option :value="''" selected>Elegir subtema</option>
                                 <option :value="sub.subtopic" v-for="sub in subtopics" :key="sub._id">{{sub.name}}</option>
                             </select>
                         </div>
@@ -66,19 +66,21 @@
 
                 <div class="inputs-container">
                     <div class="description">
-                        <h3>Descripción</h3>
+                        <h3>Descripción requerida</h3>
                         <quill-editor
-                            v-model="contentDescription"
-                            :options="editorOptionAnswer" />
+                            :options="editorOptionAnswer"
+                            @change="onEditorChange($event)" />
                     </div>
                 </div>
                 
                 <div class="assign">
                     <h3>Asignar caso a: {{ nameSpotlighter }}</h3>
-                    <select v-model="spotlighterSelected" class="js-example-basic-single" name="state" @change="setSelectedUser(spotlighterSelected)">
-                        <option :value="''" selected>No asignar a alguien</option>
-                        <option :value="spot.spotlighter_id" v-for="spot in spotlighters" :key="spot.spotlighter_id">{{spot.name}} {{spot.last_name}}</option>
-                    </select>
+                    <div class="input">
+                        <select v-model="spotlighterSelected" class="js-example-basic-single" name="state" @change="setSelectedUser(spotlighterSelected)">
+                            <option :value="''" selected>No asignar a alguien</option>
+                            <option :value="spot.spotlighter_id" v-for="spot in spotlighters" :key="spot.spotlighter_id">{{spot.name}} {{spot.last_name}}</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="load-container">
@@ -138,9 +140,10 @@ export default {
             subtopic: '',
 
             contentDescription: '',
+            contentHtml: '',
             editorOptionAnswer: {
                 theme: 'bubble',
-                placeholder: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
+                placeholder: 'Descripción requerida para el caso.',
             }
         }
     },
@@ -156,6 +159,10 @@ export default {
         console.log('topics: ', this.topics);
     },
     methods: {
+        onEditorChange({ quill, html, text }) {
+            this.contentDescription = quill.getContents();
+            this.contentHtml = quill.root.innerHTML;
+        },
         async getSpotlighters() {
             try {
                 let spotlighters_response = await this.$axios.get('/getAllSpotlighters?status=true');
@@ -186,7 +193,8 @@ export default {
         async addPendingCase() {
             try {
                 this.busy = !this.busy;
-
+                console.log('spot: ', this.spotlighterSelected)
+                
                 let case_response = await this.$axios.post('/createPendingCase', {
                     admin_user: this.admin_data.admin_id,
                     pending_case_id: this.case_id,
@@ -196,10 +204,35 @@ export default {
                     language: this.languageSelected,
                     requested: true,
                     request_description: {
-                        content: this.contentDescription.replace(/(<([^>]+)>)/ig, ''),
-                        html: this.contentDescription
+                        content: this.contentDescription,
+                        html: this.contentHtml
+                    },
+                    description: {
+                        content: {
+                            ops: [{
+                                insert: ''
+                            }]
+                        },
+                        html: ''
+                    },
+                    // retro: {
+                    //     content: {
+                    //         ops: [{
+                    //             insert: ''
+                    //         }]
+                    //     },
+                    //     html: ''
+                    // },
+                    feedback: {
+                        content: {
+                            ops: [{
+                                insert: ''
+                            }]
+                        },
+                        html: ''
                     },
                     spotlighter_id: this.spotlighterSelected,
+                    status: this.spotlighterSelected ? 'Accepted by Spotlighter' : 'Pending'
                 })
 
                 this.busy = !this.busy;

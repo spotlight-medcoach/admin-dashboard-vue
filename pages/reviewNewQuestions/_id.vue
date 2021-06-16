@@ -1,63 +1,97 @@
 <template>
     <div>
         <Navigation />
-        <h1>Detalles del caso</h1>
-        {{this.$route.params.id}}
-        <!-- <Loading v-if="loading" />
-        <div v-else class="details-container">
+        <!-- {{this.$route.params.id}} -->
+        <div class="details-container">
             <div class="back-btn">
-                <nuxt-link to="/myCases">
+                <nuxt-link to="/reviewNewQuestions">
                     <i class="fas fa-chevron-left"></i>
                     Volver
                 </nuxt-link>
             </div>
 
-            <div class="cancel-container">
+            <div class="title-container">
                 <h1>Detalles del caso</h1>
-                <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash mr-5 pr-5"></i> Descartar caso</button>
+                
+                <div v-if="!loading" class="buttons">
+                    <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash mr-5 pr-5"></i> Descartar caso</button>
+                    <button type="button" class="btn retro-btn" @click="retroAlert"><i class="fas fa-exclamation"></i> Dar retroalimentación</button>
+                </div>
             </div>
 
-            <DescriptionCard
+            <Loading v-if="loading" />
+
+            <!-- Card con los detalles del caso -->
+            <CaseDetailsReviewCard
+                v-if="!loading"
                 :caseName="caseDetails.name"
                 :id="caseDetails.pending_case_id"
                 :language="caseDetails.language"
                 :theStatus="caseDetails.status"
-                :request_description="caseDetails.request_description"
+                :request_description="caseDetails.request_description.content.ops[0].insert"
                 :topic="caseDetails.name_topic"
-                :subtopic="caseDetails.name_subtopic" />
+                :subtopic="caseDetails.name_subtopic"
+                :user="caseDetails.admin_user.name + ' ' + caseDetails.admin_user.last_name" />
             
-            <div class="description-container">
+            <div v-if="!loading" class="description-container">
                 <h1>Descripción del caso</h1>
                 <quill-editor
+                    disabled
                     v-model="content"
-                    :options="editorOption" />
+                    :options="editorOption"
+                    @ready="onEditorReady($event)" />
             </div>
 
-            <div class="questions-container">
+            <div v-if="!loading" class="questions-container">
                 <h1>Preguntas</h1>
 
                 <div class="each-question">
-                    <QuestionCard 
+                    <QuestionReviewCard
+                        @view="viewQuestion(ques)"
                         v-for="(ques, index) in questions"
                         :key="ques._id"
-                        :question="ques"
                         :ind="index"
-                        :updateQuestion="updateQuestion"
-                        :deleteQuestion="deleteQuestion" />
+                        :question="ques.question.content.ops[0].insert" />
                 </div>
 
-                <div class="add-question-container">
-                    <button class="btn" @click="addQuestion"><i class="fas fa-plus-circle"></i> Agregar pregunta</button>
-                </div>
             </div>
 
-            <div class="buttons-container">
-                <button class="btn draft" @click="draftConfirm"><i class="fas fa-save"></i> Guardar como borrador</button>
-                <button class="btn send" @click="saveAndSendConfirm"><i class="fas fa-paper-plane"></i> Guardar y enviar caso</button>
+            <div v-if="!loading" class="buttons-container">
+                <button class="btn bank" ><i class="fas fa-save" @click="addToBankConfirm"></i> Agregar al banco</button>
+                <button class="btn send" ><i class="fas fa-paper-plane" @click="addToSimulatorConfirm"></i> Agregar al simulador</button>
             </div>
         </div>
 
-        <AcceptModal 
+        <!-- Modal para eliminar spotlighter del caso -->
+        <RejectModal 
+            v-if="isShowModalReject"
+            @close="closeRejectModal"
+            :textTitle="titleModal"
+            :textBody="bodyModal"
+            :action="deleteSpotlighterFromCase"
+            :textButton="button"
+            :isBusy="busyReject" />
+
+        <!-- Modal de retroalimentación -->
+        <SetRetroModal 
+            v-if="isShowRetroModal"
+            @close="closeRetroModal"
+            @feed="updateFeedback"
+            :textTitle="titleModal"
+            :textBody="bodyModal"
+            :textButton="button"
+            :case_id="this.$route.params.id"
+            :feedback="caseDetails.feedback"
+            :data.sync="theFeedback" />
+
+        <!-- Ver detalle de pregunta -->
+        <QuestionDetailsReviewModalAdministrator 
+            v-if="isShowQuestionDetailsModal"
+            @close="closeQuestionDetailsModal"
+            :question="questionSelected" />
+
+
+        <!-- <AcceptModal 
             v-if="isShowModalAccept"
             @close="closeAcceptModal"
             :textTitle="titleModal"
@@ -75,14 +109,7 @@
             :textButton="button"
             :isBusy="busySend" />
 
-        <RejectModal 
-            v-if="isShowModalReject"
-            @close="closeRejectModal"
-            :textTitle="titleModal"
-            :textBody="bodyModal"
-            :action="discardCase"
-            :textButton="button"
-            :isBusy="busyReject" /> -->
+         -->
 
     </div>
 </template>
@@ -90,10 +117,154 @@
 <script>
 import Navigation from '../../components/navs/Navigation';
 import Loading from '../../components/modals/Loading';
+import CaseDetailsReviewCard from '../../components/cards/administrators/CaseDetailsReviewCard';
+import QuestionReviewCard from '../../components/cards/administrators/QuestionReviewCard';
+import RejectModal from '../../components/modals/RejectModal'
+import SetRetroModal from '../../components/modals/administrators/SetRetroModal';
+import QuestionDetailsReviewModalAdministrator from '../../components/modals/administrators/QuestionDetailsReviewModalAdministrator';
 
 export default {
     components: {
-        Navigation
+        Navigation,
+        Loading,
+        CaseDetailsReviewCard,
+        QuestionReviewCard,
+        RejectModal,
+        SetRetroModal,
+        QuestionDetailsReviewModalAdministrator
+    },
+    data() {
+        return {
+            loading: false,
+            isShowModalReject: false,
+            busyReject: false,
+            isShowRetroModal: false,
+            busyRetro: false,
+            isShowQuestionDetailsModal: false,
+
+            titleModal: '',
+            bodyModal: '',
+            button: '',
+            theFeedback: '',
+            questionSelected: {},
+
+            caseDetails: {},
+            questions: [],
+            topics: [],
+
+            content: '',
+            editorOption: {
+                theme: 'bubble',
+                placeholder: 'Respuesta...',
+            }
+        }
+    },
+    async created() {
+        if (process.browser) {
+            this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
+            this.topics = JSON.parse(localStorage.getItem('topics'));
+        }
+
+        await this.getCaseDetails();
+    },
+    methods: {
+        onEditorReady(quill) {
+            quill.setContents(JSON.parse(JSON.stringify(this.caseDetails.description.content.ops)))
+        },
+        async getCaseDetails() {
+            try {
+                this.loading = !this.loading;
+
+                let caseResponse = await this.$axios.get('/getDetails', { params: { case_id: this.$route.params.id } })
+                this.caseDetails = caseResponse.data.payload;
+                this.questions = caseResponse.data.payload.pending_questions;
+                this.caseDetails.name_topic = this.filterTopicName(this.caseDetails.topic_bubble);
+                this.caseDetails.name_subtopic = this.filterSubtopicName(this.caseDetails.topic_bubble, this.caseDetails.subtopic_bubble)
+
+                console.log('case', this.caseDetails)
+
+                this.loading = !this.loading;
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        filterTopicName(topic_bubble) {
+            let topic = '';
+            topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0].name
+            return topic;
+        },
+        filterSubtopicName(topic_bubble, subtopic_bubble) {
+            var topic
+            var subtopic
+            topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0]
+            subtopic = topic.subtopics.filter(sub => sub.subtopic == subtopic_bubble);
+
+            return subtopic[0].name
+        },
+
+        retroAlert() {
+            this.isShowRetroModal = !this.isShowRetroModal;
+            
+            this.titleModal = 'Retroalimentación';
+            this.bodyModal = 'Escribe aquí los comentarios sobre el caso';
+            this.button = 'Enviar retroalimentación'
+
+        },
+        updateFeedback() {
+            this.caseDetails.feedback = this.theFeedback
+        },
+
+        viewQuestion(question) {
+            this.questionSelected = question;
+            this.isShowQuestionDetailsModal = !this.isShowQuestionDetailsModal;
+        },
+
+
+
+        addToBankConfirm() {
+            alert('Modal para agregar al bank')
+        },
+        async addToBank() {
+
+        },
+
+        addToSimulatorConfirm() {
+            alert('Modal para agregar al simulador')
+        },
+        async addToSimulator() {
+
+        },
+
+
+
+        discardConfirm() {
+            this.isShowModalReject = !this.isShowModalReject;
+            this.titleModal = 'Descartar caso';
+            this.bodyModal = 'Al descartar caso, únicamente se eliminará la información del usuario actual y podrá volver a ser asignado a alguien más.'
+            this.button = 'Descartar caso'
+        },
+        async deleteSpotlighterFromCase() {
+            this.busyReject = !this.busyReject;
+
+            let deleteResponse = await this.$axios.delete('/deletePendingCase', {
+                case_id: this.$route.params.id
+            })
+
+            setTimeout(() => {
+                this.busyReject = !this.busyReject;
+                alert(deleteResponse.data.message)
+                this.$router.push({ path: '/reviewNewQuestions'});
+            })
+        },
+        closeRejectModal() {
+            this.isShowModalReject = false;
+        },
+        closeRetroModal() {
+            this.isShowRetroModal = false;
+        },
+        closeQuestionDetailsModal() {
+            this.isShowQuestionDetailsModal = false
+        }
     }
 }
 </script>
@@ -111,18 +282,40 @@ export default {
         text-decoration: none;
     }
 
-    .cancel-container {
+    .title-container {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        align-items: center;
         margin: 20px 0px;
     }
 
-    .cancel-container h1 {
+    .title-container h1 {
         font-style: normal;
-        font-weight: 500;
+        font-weight: bold;
         font-size: 32px;
         line-height: 39px;
+        color: #000000;
+        margin: 0;
+    }
+
+    .buttons {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        width: 40%;
+    }
+
+    .retro-btn {
+        padding: 12px 20px;
+        background: #1CA4FC;
+        color: #FFF;
+        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
+        border-radius: 10px;
+    }
+
+    .retro-btn i {
+        margin: 0px 10px;
     }
 
     .cancel {
@@ -132,53 +325,33 @@ export default {
         font-size: 16px;
         line-height: 20px;
         color: #DB1212;
-        margin-right: 2%;
+        margin: 0px 40px;
     }
 
-    .description-container {
-        display: flex;
-        flex-direction: column;
+    .description-container h1 {
+        font-weight: bold;
+        font-size: 20px;
+        line-height: 24px;
+        color: #000000;
         margin: 20px 0px;
     }
 
-    .details-container h1 {
-        font-style: normal;
-        font-weight: 500;
-        font-size: 20px;
-        line-height: 24px;
+    .ql-editor {
+        padding: 0px 0px !important;
     }
 
     .questions-container {
         display: flex;
         flex-direction: column;
+        margin: 20px 0px;
     }
 
     .questions-container h1 {
         font-style: normal;
-        font-weight: 500;
+        font-weight: bold;
         font-size: 20px;
         line-height: 24px;
         margin: 0;
-    }
-
-    .each-question {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .add-question-container i {
-        color: #FFF;
-        font-size: 20px;
-        margin: 0px 6px;
-    }
-
-    .add-question-container button {
-        padding: 12px 20px;
-        color: #FFF;
-        background: #FE9400;
-        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
-        border-radius: 10px;
-        margin: 20px 0px;
     }
 
     .buttons-container {
@@ -204,7 +377,7 @@ export default {
         margin: 0px 8px;
     }
 
-    .draft {
+    .bank {
         border: 1px solid #1CA4FC;
         color: #1CA4FC;
     }

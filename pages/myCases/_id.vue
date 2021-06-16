@@ -16,21 +16,26 @@
                 <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash mr-5 pr-5"></i> Descartar caso</button>
             </div>
 
-            <DescriptionCard
+            <!-- Card con los detalles del caso -->
+            <CaseDetailsCardSpotlighter
+                v-if="!loading"
                 :caseName="caseDetails.name"
                 :id="caseDetails.pending_case_id"
                 :language="caseDetails.language"
                 :theStatus="caseDetails.status"
-                :request_description="caseDetails.request_description"
-                :feedback="caseDetails.feedback"
+                :request_description="caseDetails.request_description.content.ops[0].insert"
+                :feedback="caseDetails.feedback.content.ops[0].insert"
                 :topic="caseDetails.name_topic"
-                :subtopic="caseDetails.name_subtopic" />
+                :subtopic="caseDetails.name_subtopic"
+                :user="caseDetails.admin_user.name + ' ' + caseDetails.admin_user.last_name" />
             
             <div class="description-container">
                 <h1>Descripción del caso</h1>
+                    <!-- v-model="contentDescription" -->
                 <quill-editor
-                    v-model="content"
-                    :options="editorOption" />
+                    :options="editorOption"
+                    @ready="onEditorReady($event)" 
+                    @change="onEditorChange($event)" />
             </div>
 
             <div class="questions-container">
@@ -42,14 +47,12 @@
                 </div>
 
                 <div v-else class="each-question">
-                    <QuestionCard 
+                    <QuestionCardSpotlighter 
                         v-for="(ques, index) in questions"
                         :key="ques._id"
-                        :question="ques"
+                        :question="ques.question.content.ops[0].insert"
                         :ind="index"
-                        :updateQuestion="updateQuestion"
-                        :deleteQuestion="deleteQuestion"
-                        @updateQuestion="updateQuestion(questions[index])"
+                        @updateQuestion="updateQuestion(questions[index], index)"
                         @deleteQuestion="deleteQuestionConfirm(questions[index])" />
                 </div>
 
@@ -72,14 +75,15 @@
             :data.sync="questionData"
             @addQues="addQuestion" />
 
-        <!-- Detalled de pregunta -->
-        <QuestionDetailsModal
+        <!-- Detalle de pregunta -->
+        <CaseQuestionDetailsModalSpotlighter
             v-if="isShowModalQuestionDetails"
+            @close="closeUpdateQuestionModal"
+            @reload="reloadQuestions"
             :toUpdate="questionToUpdate"
             :typ="types"
-            :case="this.$route.params.id"
-            @reload="reloadQuestions"
-            @close="closeModal" />
+            :case="caseDetails._id"
+            :data.sync="questionUpdated" />
 
         <!-- Guardar como borrador -->
         <AcceptModal 
@@ -126,22 +130,22 @@
 
 <script>
 import SpotlighterNavigation from '../../components/navs/SpotlighterNavigation';
-import DescriptionCard from '../../components/cards/DescriptionCard';
-import QuestionCard from '../../components/cards/QuestionsCard';
+import QuestionCardSpotlighter from '../../components/cards/spotlighters/QuestionCardSpotlighter';
+import CaseDetailsCardSpotlighter from '../../components/cards/spotlighters/CaseDetailsCardSpotlighter';
 import Loading from '../../components/modals/Loading';
-import AddQuestionSpotlighter from '../../components/modals/AddQuestionSpotlighter';
-import QuestionDetailsModal from '../../components/modals/QuestionDetailsModal';
+import AddQuestionSpotlighter from '../../components/modals/spotlighters/AddQuestionSpotlighter';
+import CaseQuestionDetailsModalSpotlighter from '../../components/modals/spotlighters/CaseQuestionDetailsModalSpotlighter';
 import AcceptModal from '../../components/modals/AcceptModal';
 import RejectModal from '../../components/modals/RejectModal';
 
 export default {
     components: {
         SpotlighterNavigation,
-        DescriptionCard,
-        QuestionCard,
+        QuestionCardSpotlighter,
+        CaseDetailsCardSpotlighter,
         Loading,
         AddQuestionSpotlighter,
-        QuestionDetailsModal,
+        CaseQuestionDetailsModalSpotlighter,
         AcceptModal,
         RejectModal
     },
@@ -168,16 +172,18 @@ export default {
             topics: [],
             types: [],
             questionToUpdate: {},
+            questionUpdated: {},
             questionToDelete: '',
 
             titleModal: '',
             bodyModal: '',
             button: '',
             
-            content: '',
+            contentDescription: '',
+            contentHtml: '',
             editorOption: {
                 theme: 'snow',
-                placeholder: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti veniam, illum esse sunt soluta iste deleniti, ab autem alias magnam sapiente, ipsam officiis eveniet laborum sint? Eum exercitationem alias maiores?',
+                placeholder: 'Descripción del caso...',
                 modules: {
                     toolbar: [
                         [{ 'header': [1, 2, 3, false] }],
@@ -202,6 +208,14 @@ export default {
         console.log('questions: ', this.questions)
     },
     methods: {
+        onEditorReady(quill) {
+            quill.setContents(JSON.parse(JSON.stringify(this.caseDetails.description.content.ops)))
+        },
+        onEditorChange({ quill, html, text }) {
+            this.contentDescription = quill.getContents();
+            // this.contentHtml = quill.root.innerHTML;
+            this.contentHtml = html;
+        },
         async getCaseDetails() {
             this.loading = !this.loading;
             
@@ -211,21 +225,27 @@ export default {
             this.caseDetails.name_subtopic = this.filterSubtopic(this.caseDetails.topic_bubble, this.caseDetails.subtopic_bubble)
             
             this.questions = this.caseDetails.pending_questions;
-            this.content = this.caseDetails.request_description.html;
+            this.contentDescription = this.caseDetails.description.content.ops[0].insert;
+            this.contentHtml = this.caseDetails.description.html;
 
             this.loading = !this.loading;
         },
-        async updateCaseDraft() {
+        async updateCaseDraft(newStatus) {
             try {
                 let updateCaseResponse = await this.$axios.put('/updatePendingCase', {
                     case_id: this.caseDetails._id,
+                    status: newStatus,
                     description: {
-                        content: this.content.replace(/(<([^>]+)>)/ig, ''),
-                        html: this.content
+                        content: this.contentDescription,
+                        html: this.contentHtml
                     }
                 })
 
-                // console.log('drafy updated', updateCaseResponse)
+                setTimeout(() => {
+                    alert(updateCaseResponse.data.message)
+                }, 2000)
+
+                console.log('drafy updated', updateCaseResponse)
             } catch (err) {
                 console.log(err);
             }
@@ -261,30 +281,20 @@ export default {
                 console.log(err)
             }
         },
-        updateQuestion(question) {
-            this.isShowModalQuestionDetails = !this.isShowModalQuestionDetails;
+        updateQuestion(question, index) {
             this.questionToUpdate = question;
+            this.questionToUpdate.indexInArray = index;
+            this.isShowModalQuestionDetails = !this.isShowModalQuestionDetails;
         },
-        async reloadQuestions() {
-            try {
-                this.isBusyQuestions = !this.isBusyQuestions;
-
-                let reloadResponse = await this.$axios.get('/getAllQuestionsByCase', {
-                    params: { case_id: this.$route.params.id }
-                })
-                
-                this.questions = reloadResponse.data.payload;
-                this.isBusyQuestions = !this.isBusyQuestions;
-            } catch (err) {
-                console.log(err);
-            }
+        reloadQuestions() {
+            this.questions[this.questionUpdated.indexInArray] = this.questionUpdated.updated;
         },
         deleteQuestionConfirm(question) {
             this.questionToDelete = question._id
-            this.isShowModalDeleteQuestion = !this.isShowModalDeleteQuestion;
             this.titleModal = 'Eliminar pregunta'
             this.bodyModal = '¿Deseas eliminar esta pregunta? Esta acción eliminará la pregunta junto con las respuestas y puede deshacerse.'
             this.button = 'Eliminar'
+            this.isShowModalDeleteQuestion = !this.isShowModalDeleteQuestion;
         },
         async deleteQuestion() {
             try {
@@ -328,14 +338,14 @@ export default {
             
             this.isShowModalAcceptDraft = !this.isShowModalAcceptDraft;
         },
-        saveAsDraft() {
+        async saveAsDraft() {
             this.busyDraft = !this.busyDraft;
 
             setTimeout(() => {
                 this.busyDraft = !this.busyDraft;
                 this.isShowModalAcceptDraft = !this.isShowModalAcceptDraft;
 
-                this.updateCaseDraft();
+                this.updateCaseDraft('In edit');
                 this.$router.push({ path: '/myCases'});
             }, 1500)
         },
@@ -348,11 +358,18 @@ export default {
         },
         async saveAndSend() {
             this.busySend = !this.busySend;
-            let sendToReviewResponse = await this.$axios.put('/sendToReview', {
-                case_id: this.$route.params.id
-            });
 
-            console.log(sendToReviewResponse)
+            this.updateCaseDraft('Pending review');
+
+            // let sendToReviewResponse = await this.$axios.put('/sendToReview', {
+            //     case_id: this.$route.params.id,
+            //     description: {
+            //         content: this.contentDescription,
+            //         html: this.contentHtml
+            //     }
+            // });
+
+            // console.log(sendToReviewResponse)
 
             setTimeout(() => {
                 this.busySend = !this.busySend;
@@ -380,7 +397,6 @@ export default {
             this.isShowModalAddQuestion = false;
             this.isShowModalAcceptDraft = false;
             this.isShowModalAcceptSend = false;
-            this.isShowModalQuestionDetails = false;
         },
         closeAcceptModal() {
             this.isShowModalAcceptDraft = false;
@@ -391,6 +407,9 @@ export default {
         },
         closeRejectDeleteQuestionModal() {
             this.isShowModalDeleteQuestion = false;
+        },
+        closeUpdateQuestionModal() {
+            this.isShowModalQuestionDetails = false;
         }
     }
 }
@@ -437,6 +456,11 @@ export default {
         display: flex;
         flex-direction: column;
         margin: 20px 0px;
+        height: 200px;
+    }
+
+    .quill-editor {
+        height: 50%;
     }
 
     .details-container h1 {
