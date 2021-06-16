@@ -59,9 +59,10 @@
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
-                            <td>{{ theCase.request_description.content }}</td>
+                            <td>{{ theCase.request_description.content.ops[0].insert }}</td>
                             
                             <td v-if="theCase.status == 'In edit'"><div class="edit">En edición</div></td>
+                            <td v-else-if="theCase.status == 'Accepted by Spotlighter'"><div class="accepted">Aceptado</div></td>
                             <td v-else-if="theCase.status == 'Pending review'"><div class="review">Revisión pendiente</div></td>
                             <td v-else-if="theCase.status == 'With feedback'"><div class="feedback">Feedback</div></td>
                             <td v-else-if="theCase.status == 'Approved'"><div class="approved">Aprovado</div></td>
@@ -84,7 +85,7 @@
                         <option value=5>5</option>
                         <option value=10>10</option>
                         <option value=15>15</option>
-                        <option value=20>20</option>
+                        <option value=50>50</option>
                     </select>
                 </div>
 
@@ -141,8 +142,11 @@ export default {
             button: '',
 
             totalCases: 0,
-            pageResults: 5,
-            page: 1
+            pageResults: 50,
+            page: 1,
+            
+            disbaledBefore: 0,
+            disabledAfter: 0,
         }
     },
     async created() {
@@ -401,10 +405,18 @@ export default {
         padding: 4px 12px;
     }
 
+    .accepted {
+        font-weight: bold;
+        text-align: center;
+        background: #C6E8FE;
+        border-radius: 4px;
+        padding: 4px 12px;
+    }
+
     .review {
         font-weight: bold;
         text-align: center;
-        background: #b4b4b4;
+        background: #FBD6E9;
         border-radius: 4px;
         padding: 4px 12px;
     }

@@ -21,12 +21,12 @@
                 
                 <select v-model="selected" class="options" @change="changeStatus(selected)">
                     <option value="" selected>Filtrar por estado</option>
-                    <option value="Approved by Spotlighter" selected>Aprobado</option>
                     <option value="Pending">Pendiente</option>
                     <option value="Accepted by Spotlighter">Aceptado por spotlighter</option>
                     <option value="In edit">En edición</option>
-                    <option value="Pendign review">Pendiente de revisión</option>
+                    <option value="Pending review">Pendiente de revisión</option>
                     <option value="With feedback">Con retroalimentación</option>
+                    <option value="Approved" selected>Aprobado</option>
                 </select>
             </div>
 
@@ -34,10 +34,10 @@
                 <table class="table table-bordered">
                     <thead class="thead-admin">
                         <tr>
-                            <th scope="col">Caso</th>
+                            <th scope="col" class="th-case">Caso</th>
                             <th scope="col">Tema</th>
                             <th scope="col">Subtema</th>
-                            <th scope="col">Descripcion</th>
+                            <th scope="col" class="th-description">Descripcion</th>
                             <th scope="col">Estado</th>
                             <th scope="col">Usuario</th>
                             <th scope="col" class="act">Acciones</th>
@@ -48,11 +48,21 @@
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
-                            <td>{{ theCase.request_description.content }}</td>
-                            <td>{{ theCase.status }}</td>
-                            <td>{{ theCase.spotlighter_id ? theCase.admin_user.name + " " + theCase.admin_user.last_name : 'Sin asignar' }}</td>
+                            <td>{{ theCase.description.content.ops[0].insert }}</td>
+
+                            <td v-if="theCase.status == 'Pending'"><div class="pending">Pendiente</div></td>
+                            <td v-else-if="theCase.status == 'Accepted by Spotlighter'"><div class="accepted">Aceptado</div></td>
+                            <td v-else-if="theCase.status == 'In edit'"><div class="edit">En edición</div></td>
+                            <td v-else-if="theCase.status == 'Approved'"><div class="approved">Aprovado</div></td>
+                            <td v-else-if="theCase.status == 'With feedback'"><div class="feedback">Feedback</div></td>
+                            <td v-else-if="theCase.status == 'Pending review'"><div class="pendign-review">Revisión pendiente</div></td>
+
+                            <td>{{ theCase.spotlighter_id ? theCase.admin_user.name + " " + theCase.admin_user.last_name : 'No asignado/aceptado' }}</td>
                             <td class="act">
-                                <div class="op">
+                                <div v-if="theCase.status == 'Accepted by Spotlighter' || theCase.status == 'Pending' || theCase.status == 'In edit'" class="appro">
+                                    <button class="btn accep" @click="acceptedCaseModal(theCase.status)"><i class="fas fa-exclamation-circle"></i> Info</button>
+                                </div>
+                                <div v-else class="op">
                                     <button class="btn op" @click="caseDetails(theCase._id)"><i class="fas fa-list-alt"></i> Ver caso</button>
                                 </div>
                             </td>
@@ -71,7 +81,7 @@
                         <option value=5>5</option>
                         <option value=10>10</option>
                         <option value=15>15</option>
-                        <option value=20>20</option>
+                        <option value=50>50</option>
                     </select>
                 </div>
 
@@ -82,6 +92,15 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal para un caso que esta en "Pending" -->
+        <InfoModal 
+            v-if="isShowInfoModal"
+            @close="closeInfoModal"
+            :textTitle="titleModal"
+            :textBody="bodyModal"
+            :textButton="button" />
+
     </div>
 </template>
 
@@ -89,15 +108,23 @@
 import Navigation from '../../components/navs/Navigation';
 import ActionsModal from '../../components/modals/ActionsModal';
 import Loading from '../../components/modals/Loading';
+import InfoModal from '../../components/modals/administrators/InfoModal';
 
 export default {
     components: {
         Navigation,
         ActionsModal,
-        Loading
+        Loading,
+        InfoModal
     },
     data() {
         return {
+            isShowInfoModal: false,
+
+            titleModal: '',
+            bodyModal: '',
+            button: '',
+
             cases: [],
             topics: [],
             subtopics: [],
@@ -108,7 +135,7 @@ export default {
             disabledAfter: 0,
 
             totalCases: 0,
-            pageResults: 5,
+            pageResults: 50,
             page: 1
         }
     },
@@ -121,26 +148,8 @@ export default {
         // this.loading = !this.loading
     },
     methods: {
-        filterTopic(topic_bubble) {
-            var topic = '';
-            if (process.browser) {
-                let topics = JSON.parse(localStorage.getItem('topics'))
-                topic = topics.filter(top => top.bubble_id == topic_bubble)[0].name
-            }
-            return topic;
-        },
-        filterSubtopic(topic_bubble, subtopic_bubble) {
-            var topic
-            var subtopic
-            if (process.browser) {
-                let topics = JSON.parse(localStorage.getItem('topics'));
-                topic = topics.filter(top => top.bubble_id == topic_bubble)[0]
-                subtopic = topic.subtopics.filter(sub => sub.subtopic == subtopic_bubble);
-            }
-
-            return subtopic[0].name
-        },
         async getCases() {
+            // Obtener datos del caso
             try {
                 this.loading = !this.loading
 
@@ -151,10 +160,11 @@ export default {
                         pageResults: this.pageResults
                     }
                 });
+                
                 this.cases = cases_response.data.payload.cases;
                 this.totalCases = cases_response.data.payload.length;
-                // console.log('tot:', this.totalCases)
                 let cases = this.cases;
+
                 cases.forEach(oneCase => {
                     oneCase.topic_name = this.filterTopic(oneCase.topic_bubble)
                     oneCase.subtopic_name = this.filterSubtopic(oneCase.topic_bubble, oneCase.subtopic_bubble)
@@ -162,15 +172,59 @@ export default {
 
                 this.cases = cases;
                 this.loading = !this.loading
+
                 console.log(this.cases);
             } catch (err) {
                 console.log(err);
             }
         },
+
+        filterTopic(topic_bubble) {
+            // Traer los topics y filtrar el nombre
+            var topic = '';
+            if (process.browser) {
+                let topics = JSON.parse(localStorage.getItem('topics'))
+                topic = topics.filter(top => top.bubble_id == topic_bubble)[0].name
+            }
+            return topic;
+        },
+        filterSubtopic(topic_bubble, subtopic_bubble) {
+            // Traer los subtopics y filtrar el nombre
+            var topic
+            var subtopic
+            if (process.browser) {
+                let topics = JSON.parse(localStorage.getItem('topics'));
+                topic = topics.filter(top => top.bubble_id == topic_bubble)[0]
+                subtopic = topic.subtopics.filter(sub => sub.subtopic == subtopic_bubble);
+            }
+
+            return subtopic[0].name
+        },
+
         caseDetails(case_id) {
+            // Ver detalles de un caso
             this.$router.push({ path: `/requestedCases/${case_id}` });
         },
+        acceptedCaseModal(status) {
+            // Mostrar modal de caso que su estado es "Accepted by Spotlighter"
+            if (status == 'Pending') {
+                this.titleModal = 'Caso pendiente';
+                this.bodyModal = 'Este caso no ha sido asignido y aún no es aceptado por algún spotlighter.'
+                this.button = 'Entendido'
+            } else if (status == 'Accepted by Spotlighter') {
+                this.titleModal = 'Caso aceptado por spotlighter';
+                this.bodyModal = 'Cuando un caso ha sido aceptado no podrás ver su detalle hasta que el usuario lo mande a revisión.'
+                this.button = 'Entendido'
+            } else {
+                this.titleModal = 'Caso en edición';
+                this.bodyModal = 'Este caso esta en edición, podrás ver su contenido hasta que el spotlighter lo mande para revisión.'
+                this.button = 'Entendido'
+            }
+
+            this.isShowInfoModal = !this.isShowInfoModal;
+        },
         rowsChange() {
+            // Cambiar los resultados que se muestran
             this.page = 1;
 
             if (this.pageResults > this.totalCases || this.totalCases == 0) {
@@ -184,6 +238,7 @@ export default {
             this.getCases()
         },
         before() {
+            // Cambiar a página anterior
             if (this.page == 1) {
                 this.disbaledBefore = 1
                 if (this.totalCases == 0)
@@ -198,6 +253,7 @@ export default {
             this.getCases();
         },
         after() {
+            // Cambiar a página siguiente
             this.page += 1;
             if (this.page * this.pageResults > this.totalCases) {
                 this.disabledAfter = 1
@@ -210,8 +266,12 @@ export default {
             this.getCases();
         },
         changeStatus(new_status) {
+            // Filtrar por status case
             console.log(new_status);
             this.getCases()
+        },
+        closeInfoModal() {
+            this.isShowInfoModal = false;
         }
     }
 }
@@ -303,6 +363,14 @@ export default {
         border-bottom: 1px solid #000;
     }
 
+    .th-case {
+        width: 15%;
+    }
+
+    .th-description {
+        width: 20%;
+    }
+
     .table-container {
         margin: 20px 0px;
     }
@@ -337,10 +405,72 @@ export default {
 
     td {
         vertical-align: middle;
+        /* max-width: fit-content !important; */
+    }
+
+    .pending {
+        font-weight: bold;
+        text-align: center;
+        background: #E0E0E0;
+        border-radius: 4px;
+        padding: 4px 12px;
+    }
+
+    .accepted {
+        font-weight: bold;
+        text-align: center;
+        background: #C6E8FE;
+        border-radius: 4px;
+        padding: 4px 12px;
+    }
+
+    .edit {
+        font-weight: bold;
+        text-align: center;
+        background: #FFDE89;
+        border-radius: 4px;
+        padding: 4px 12px;
+    }
+
+    .approved {
+        font-weight: bold;
+        text-align: center;
+        background: #90DF7E;
+        border-radius: 4px;
+        padding: 4px 12px;
+    }
+
+    .feedback {
+        font-weight: bold;
+        text-align: center;
+        background: #61C0FD;
+        border-radius: 4px;
+        padding: 4px 12px;
+    }
+
+    .pendign-review {
+        font-weight: bold;
+        text-align: center;
+        background: #FBD6E9;
+        border-radius: 4px;
+        padding: 4px 12px;
     }
 
     .act {
         width: 10%;
+    }
+
+    .accep {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        color: #9E9E9E;
+        font-size: 12px;
+    }
+
+    .accep i {
+        font-size: 24px;
+        padding-right: 5px;
     }
 
     .op {

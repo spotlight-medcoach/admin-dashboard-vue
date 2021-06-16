@@ -9,10 +9,20 @@
                     </div>
                     <div class="modal-body">
                         <p>{{ textBody }}</p>
+
+                        <quill-editor
+                            :options="editorOptionAnswer"
+                            @change="onEditorChange($event)"
+                            @ready="onEditorReady($event)" />
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn accept" data-dismiss="modal" @click="$emit('close')">{{textButton}}</button>
+                        <!-- Loader -->
+                        <div class="load-container">
+                            <div class="lds-dual-ring" v-if="busy"></div>
+                        </div>
+
+                        <button type="button" class="btn accept" data-dismiss="modal" @click="setRetro"><i class="fas fa-check-circle"></i>{{textButton}}</button>
                     </div>
                 </div>
             </div>
@@ -22,7 +32,51 @@
 
 <script>
 export default {
-    props: ['textTitle', 'textBody', 'textButton']
+    props: ['textTitle', 'textBody', 'textButton', 'isBusy', 'case_id', 'feedback'],
+    data() {
+        return {
+            busy: false,
+
+            contentDescription: this.feedback,
+            contentHtml: '',
+            editorOptionAnswer: {
+                theme: 'bubble',
+                placeholder: 'Retroalimentación para el caso...',
+            }
+        }
+    },
+    methods: {
+        onEditorReady(quill) {
+            quill.setContents(JSON.parse(JSON.stringify(this.feedback.content.ops)))
+        },
+        onEditorChange({ quill, html, text }) {
+            this.contentDescription = quill.getContents();
+            this.contentHtml = quill.root.innerHTML;
+        },
+        async setRetro() {
+            this.busy = !this.busy;
+
+            console.log('retro', this.retro)
+            console.log('contentDescription', this.contentDescription)
+            let retroResponse = await this.$axios.put('/setFeedback', {
+                case_id: this.case_id,
+                feedback: {
+                    content: this.contentDescription,
+                    html: this.contentHtml
+                }
+            })
+
+            alert(retroResponse.data.message);
+
+            this.busy = !this.busy;
+            this.$emit('update:data', {
+                content: this.contentDescription,
+                html: this.contentHtml
+            })
+            this.$emit('feed')
+            this.$emit('close');
+        },
+    }
 }
 </script>
 
@@ -48,8 +102,7 @@ export default {
         display: flex;
         flex-direction: column;
         justify-content: center;
-        width: 35%;
-        /* height: 221px; */
+        width: 70%;
         margin: 0px auto;
         padding: 24px 24px;
         background-color: #fff;
@@ -59,15 +112,26 @@ export default {
         font-family: Montserrat;
     }
 
+    .quill-editor {
+        margin-top: 1%;
+        border: 1px solid #000000;
+        box-sizing: border-box;
+        border-radius: 10px;
+        height: 150px;
+    }
+
     .modal-footer {
         border-top: 0;
         padding: 0;
         margin: 15px 0px;
-        justify-content: center;
+    }
+
+    .modal-footer i {
+        margin: 0px 10px;
     }
 
     .modal-footer button {
-        width: 100%;
+        width: 30%;
         height: 48px;
         font-size: 1rem;
     }
@@ -80,6 +144,10 @@ export default {
         background: #20B000;
         color: #FFF;
         border-radius: 10px;
+    }
+
+    .modal-header {
+        border-bottom: 0;
     }
 
     .modal-title {
@@ -120,7 +188,7 @@ export default {
     .load-container {
         display: flex;
         justify-content: center;
-        /* margin: 0px auto; */
+        margin: 0px 40px;
     }
 
     .lds-dual-ring {

@@ -44,8 +44,8 @@
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
-                            <td>{{ theCase.description.content }}</td>
-                            <td>{{ new Date(theCase.approved_date).toLocaleDateString('es-ES') }}</td>
+                            <td>{{ theCase.description.content.ops[0].insert }}</td>
+                            <td>{{ theCase.approved_date ? new Date(theCase.approved_date).toLocaleDateString('es-ES') : 'Sin fecha de aceptación' }}</td>
                             <td>{{ theCase.spotlighter_id.admin_id.name }} {{ theCase.spotlighter_id.admin_id.last_name }}</td>
                             <td>
                                 <button class="btn options" @click="caseDetails(cases[index])"><i class="fas fa-list-alt"></i> Ver caso</button>
@@ -236,6 +236,10 @@ export default {
         margin: 0px 20px;
         border: none;
         border-bottom: 1px solid #000;
+    }
+
+    table {
+        table-layout:fixed;
     }
 
     .table-container {

@@ -11,8 +11,14 @@
                         <p>{{ textBody }}</p>
                     </div>
 
+                    <!-- Loader -->
+                    <div class="load-container">
+                        <div class="lds-dual-ring" v-if="isBusy"></div>
+                    </div>
+
                     <div class="modal-footer">
-                        <button type="button" class="btn accept" data-dismiss="modal" @click="$emit('close')">{{textButton}}</button>
+                        <button type="button" class="btn calcel" data-dismiss="modal" @click="$emit('close')">Cancelar</button>
+                        <button type="button" class="btn accept" data-dismiss="modal" @click="$emit('add')">{{textButton}}</button>
                     </div>
                 </div>
             </div>
@@ -22,7 +28,7 @@
 
 <script>
 export default {
-    props: ['textTitle', 'textBody', 'textButton']
+    props: ['textTitle', 'textBody', 'textButton', 'isBusy']
 }
 </script>
 
@@ -49,7 +55,7 @@ export default {
         flex-direction: column;
         justify-content: center;
         width: 35%;
-        /* height: 221px; */
+        /* height: 318px; */
         margin: 0px auto;
         padding: 24px 24px;
         background-color: #fff;
@@ -59,35 +65,8 @@ export default {
         font-family: Montserrat;
     }
 
-    .modal-footer {
-        border-top: 0;
-        padding: 0;
-        margin: 15px 0px;
-        justify-content: center;
-    }
-
-    .modal-footer button {
-        width: 100%;
-        height: 48px;
-        font-size: 1rem;
-    }
-
-    .close-btn {
-        color: #DB1212;
-    }
-
-    .accept {
-        background: #20B000;
-        color: #FFF;
-        border-radius: 10px;
-    }
-
-    .modal-title {
-        margin: 0;
-        font-style: normal;
-        font-weight: bold;
-        font-size: 20px;
-        line-height: 24px;
+    .modal-header {
+        border-bottom: 0;
     }
 
     .modal-body {
@@ -96,6 +75,42 @@ export default {
 
     .modal-body p {
         margin: 0;
+    }
+
+    .modal-footer {
+        justify-content: space-between;
+        border-top: 0;
+        padding: 0;
+        margin: 15px 0px;
+    }
+
+    .modal-footer button {
+        width: 45%;
+        height: 48px;
+        font-size: 1rem;
+    }
+
+    .calcel {
+        font-weight: bold;
+    }
+
+    .accept {
+        color: #FFF;
+        background: #1CA4FC;
+        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
+        border-radius: 10px;
+    }
+
+    .close-btn {
+        color: #DB1212;
+    }
+
+    .modal-title {
+        margin: 0;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 20px;
+        line-height: 24px;
     }
 
     .modal-default-button {

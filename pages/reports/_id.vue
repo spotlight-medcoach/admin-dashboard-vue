@@ -69,7 +69,7 @@
             </div>
         </div>
 
-        <CaseQuestionDetailsModal
+        <CaseQuestionDetailsModalAdministrator
             v-if="isShowUpdateQuestionModal"
             @close="closeUpdateQuestionModal"
             @reload="reloadQuestions"
@@ -104,7 +104,7 @@ import Loading from '../../components/modals/Loading';
 import DescriptionCaseCard from '../../components/cards/DescriptionCaseCard';
 import ReportCard from '../../components/cards/ReportCard';
 import QuestionCard from '../../components/cards/QuestionsCard';
-import CaseQuestionDetailsModal from '../../components/modals/CaseQuestionDetailsModal';
+import CaseQuestionDetailsModalAdministrator from '../../components/modals/administrators/CaseQuestionDetailsModalAdministrator';
 import AcceptModal from '../../components/modals/AcceptModal';
 
 export default {
@@ -114,7 +114,7 @@ export default {
         DescriptionCaseCard,
         ReportCard,
         QuestionCard,
-        CaseQuestionDetailsModal,
+        CaseQuestionDetailsModalAdministrator,
         AcceptModal
     },
     data() {

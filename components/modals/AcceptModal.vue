@@ -62,7 +62,7 @@ export default {
         flex-direction: column;
         justify-content: center;
         width: 35%;
-        height: 318px;
+        /* height: 318px; */
         margin: 0px auto;
         padding: 24px 24px;
         background-color: #fff;
