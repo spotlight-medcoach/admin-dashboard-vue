@@ -49,7 +49,7 @@
                             <td></td>
                             <td>Falta hacer este calculo</td>
                             <td class="td-style">
-                                <button class="fas fa-dollar-sign btn dollar" @click="makePaymentConfirm(spotlighter)"></button>
+                                <button :disabled="spotlighter.payed" :class="spotlighter.request_payment ? 'fas fa-dollar-sign btn dollar-request' : spotlighter.payed ? 'fas fa-dollar-sign btn dollar-payed' : 'fas fa-dollar-sign btn dollar'" @click="makePaymentConfirm(spotlighter)"></button>
                                 <div class="dropleft">
                                     <button class="btn fas fa-ellipsis-v" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -181,7 +181,7 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
         await this.getSpotlighters()
-        // this.loading = !this.loading;
+        console.log(this.spotlighters)
     },
     methods: {
         async getSpotlighters() {
@@ -274,6 +274,14 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
 
                 let paymentResponse = await this.$axios.put('/cleanQuestions', { spotlighter_id: this.spotlighterIdToPay })
                 console.log('pay', paymentResponse.data.payload)
+                
+                let updated = this.spotlighters.filter(spot => spot.spotlighter_id == paymentResponse.data.payload)
+                let newInfoSpotlighter = updated[0]
+                newInfoSpotlighter.request_payment = false;
+                newInfoSpotlighter.payed = true;
+
+                // console.log('upd', newInfoSpotlighter)
+
                 this.busyPayment = !this.busyPayment;
                 alert(paymentResponse.data.message)
                 this.isShowPaymentModal = !this.isShowPaymentModal;
@@ -448,6 +456,26 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
         margin: 0 .5rem;
     }
 
+    .dollar-request {
+        color: #FFF;
+        background: #DB1212;
+        border-radius: 50%;
+        margin: 0 .5rem;
+    }
+
+    .dollar-request:hover {
+        color: #FFF;
+        background: #000;
+        border-radius: 50%;
+        margin: 0 .5rem;
+    }
+
+    .dollar-payed {
+        color: #FFF;
+        background: #8f8f8f;
+        border-radius: 50%;
+        margin: 0 .5rem;
+    }
     .pay-button button {
         display: flex;
         flex-direction: row;
