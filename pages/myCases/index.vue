@@ -9,10 +9,10 @@
                 </div>
 
                 <div v-if="!loading" class="pay-container">
-                    <p>Fecha de último pago...</p>
-                    <button class="btn" @click="requestPaymentConfirm"><i class="fas fa-dollar-sign"></i> Solicitar pago</button>
+                    <p>Fecha de último pago: </p>
+                    <p class="date-payment">{{userData.spotlighter_id.last_date_payment ? new Date(userData.spotlighter_id.last_date_payment).toLocaleDateString('es-ES') : 'Aún no has recibido un pago.'}}</p>
+                    <button class="btn" @click="requestPaymentConfirm" :disabled="userData.spotlighter_id.request_payment"><i class="fas fa-dollar-sign"></i> Solicitar pago</button>
                 </div>
-
             </div>
 
             <Loading v-if="loading" />
@@ -105,8 +105,8 @@
             :isBusy="busyPayment"
             :action="requestPayment"
             :textButton="button"
-            questions="123"
-            payment="123" />
+            :questions="userData.spotlighter_id.questions_created.length"
+            payment="calcular" />
 
     </div>
 </template>
@@ -114,7 +114,7 @@
 <script>
 import SpotlighterNavigation from '../../components/navs/SpotlighterNavigation';
 import Loading from '../../components/modals/Loading';
-import RequestPayment from '../../components/modals/RequestPayment';
+import RequestPayment from '../../components/modals/spotlighters/RequestPayment';
 
 export default {
     components: {
@@ -128,6 +128,7 @@ export default {
             isShowPaymentModal: false,
             busyPayment: false,
 
+            userData: {},
             myCases: [],
             topics: [],
             subtopics: [],
@@ -153,13 +154,15 @@ export default {
         if (process.browser) {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
 
-            if (!localStorage.getItem('universities'))
+            // Los metodos para hacer esto no están en este archivo
+            /* if (!localStorage.getItem('universities'))
                 await this.getUniversities()
             if (!localStorage.getItem('topics'))
-                await this.getTopics()
-            
+                await this.getTopics() */
+            this.userData = JSON.parse(localStorage.getItem('user'))
             this.topics = JSON.parse(localStorage.getItem('topics'));
             this.universities = JSON.parse(localStorage.getItem('universities'));
+
         }
 
         await this.getMyCases();
@@ -219,11 +222,19 @@ export default {
         async requestPayment() {
             this.busyPayment = !this.busyPayment;
 
-            setTimeout(() => {
-                alert('Make request payment');
-                this.busyPayment = !this.busyPayment;
-                // this.isShowPaymentModal = !this.isShowPaymentModal;
-            }, 1500)
+            let paymentResponse = await this.$axios.put('/requestPayment', { spotlighter_id: this.userData.spotlighter_id.spotlighter_id})
+
+            this.userData.spotlighter_id.request_payment = true;
+
+            if (process.browser) {
+                console.log('yes')
+                localStorage.setItem('user', JSON.stringify(this.userData));
+                this.$store.commit('setUserInfo', this.userData);
+            }
+
+            alert(paymentResponse.data.message);
+            this.busyPayment = !this.busyPayment;
+            this.isShowPaymentModal = !this.isShowPaymentModal;
         },
         rowsChange() {
             this.page = 1;
@@ -308,7 +319,16 @@ export default {
     }
 
     .pay-container p {
-        margin: 0;
+        margin-bottom: 0;
+    }
+
+    .date-payment {
+        font-style: normal;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 20px;
+        color: #1CA4FC;
+        margin: 0px 8px;
     }
 
     .pay-container button {
@@ -316,6 +336,7 @@ export default {
         box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
         border-radius: 10px;
         color: #FFF;
+        font-weight: bold;
         margin-left: 40px;
         padding: 12px 20px;
         width: 254px;
@@ -353,6 +374,7 @@ export default {
         border-radius: 10px;
         color: #1CA4FC;
         border: 1px solid #1CA4FC;
+        font-weight: bold;
         padding: 12px 20px;
         width: 254px;
         height: 48px;
