@@ -50,7 +50,7 @@
                     <QuestionCardSpotlighter 
                         v-for="(ques, index) in questions"
                         :key="ques._id"
-                        :question="ques.question.content.ops[0].insert"
+                        :question="ques"
                         :ind="index"
                         @updateQuestion="updateQuestion(questions[index], index)"
                         @deleteQuestion="deleteQuestionConfirm(questions[index])" />

@@ -18,10 +18,10 @@
             <div v-if="!loading" class="filter-conteiner">
                 <input type="searchText" placeholder="Buscar">
                 
-                <!-- <select v-model="selected" class="options" @change="selectedChange">
-                    <option value="true" selected>Activos</option>
-                    <option value="false">Inactivos</option>
-                </select> -->
+                <select v-model="resolvedSelected" class="options" @change="getReports">
+                    <option value=false>Sin resolver</option>
+                    <option value=true>Resueltos</option>
+                </select>
             </div>
 
             <div v-if="!loading" class="table-container">
@@ -86,7 +86,8 @@ export default {
     data() {
         return {
             loading: false,
-            reports: [], 
+            reports: [],
+            resolvedSelected: false,
 
             disabledAfter: 0,
             disbaledBefore: 0,
@@ -100,7 +101,7 @@ export default {
         if (process.browser) 
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
 
-        await this.getReports();
+        // await this.getReports();
         this.before();
     },
     methods: {
@@ -111,12 +112,13 @@ export default {
                 let reportsResponse = await this.$axios.get('/getAllReports', {
                     params: {
                         page: this.page,
-                        pageResults: this.pageResults
+                        pageResults: this.pageResults,
+                        resolved: this.resolvedSelected
                     }
                 });
                 this.reports = reportsResponse.data.payload.reports;
                 this.totalReports = reportsResponse.data.payload.length;
-                // console.log('reports', reportsResponse);
+                console.log('reports', reportsResponse.data.payload.reports);
 
                 this.loading = !this.loading;
             } catch (err) {
@@ -202,6 +204,14 @@ export default {
         border: 1px solid #D4D5D7;
         box-sizing: border-box;
         border-radius: 10px;
+    }
+
+    .filter-conteiner select {
+        font-family: Montserrat;
+        width: 15%;
+        margin: 0px 40px;
+        border: none;
+        border-bottom: 1px solid #000;
     }
 
     .table-container {

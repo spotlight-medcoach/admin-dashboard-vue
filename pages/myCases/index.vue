@@ -65,7 +65,7 @@
                             <td v-else-if="theCase.status == 'Accepted by Spotlighter'"><div class="accepted">Aceptado</div></td>
                             <td v-else-if="theCase.status == 'Pending review'"><div class="review">Revisión pendiente</div></td>
                             <td v-else-if="theCase.status == 'With feedback'"><div class="feedback">Feedback</div></td>
-                            <td v-else-if="theCase.status == 'Approved'"><div class="approved">Aprovado</div></td>
+                            <td v-else-if="theCase.status == 'Approved'"><div class="approved">Aprobado</div></td>
 
                             <td class="td-style">
                                 <button class="btn op" @click="viewCase(myCases[index])"><i class="fas fa-list-alt"></i> Ver caso</button>

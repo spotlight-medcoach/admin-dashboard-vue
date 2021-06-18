@@ -67,7 +67,7 @@
                         <option value=5>5</option>
                         <option value=10>10</option>
                         <option value=15>15</option>
-                        <option value=210>210</option>
+                        <option value=250>250</option>
                     </select>
                 </div>
 
@@ -117,7 +117,7 @@
 import Navigation from '../../components/navs/Navigation';
 import Loading from '../../components/modals/Loading';
 import InfoModal from '../../components/modals/InfoModal';
-import AddToSimulator from '../../components/modals/AddToSimulator';
+import AddToSimulator from '../../components/modals/administrators/AddToSimulator';
 import RejectModal from '../../components/modals/RejectModal';
 
 export default {
@@ -158,7 +158,7 @@ export default {
             disabledAfter: 0,
             totalCases: 0,
             page: 1,
-            pageResults: 210,
+            pageResults: 250,
 
             // contentDescription: '',
             // editorOptionAnswer: {

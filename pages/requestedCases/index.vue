@@ -53,7 +53,7 @@
                             <td v-if="theCase.status == 'Pending'"><div class="pending">Pendiente</div></td>
                             <td v-else-if="theCase.status == 'Accepted by Spotlighter'"><div class="accepted">Aceptado</div></td>
                             <td v-else-if="theCase.status == 'In edit'"><div class="edit">En edición</div></td>
-                            <td v-else-if="theCase.status == 'Approved'"><div class="approved">Aprovado</div></td>
+                            <td v-else-if="theCase.status == 'Approved'"><div class="approved">Aprobado</div></td>
                             <td v-else-if="theCase.status == 'With feedback'"><div class="feedback">Feedback</div></td>
                             <td v-else-if="theCase.status == 'Pending review'"><div class="pendign-review">Revisión pendiente</div></td>
 

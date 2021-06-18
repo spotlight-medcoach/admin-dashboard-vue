@@ -62,7 +62,7 @@
                 </div>
                 <div v-else-if="newStatus == 'Approved'">
                     <div class="approved">
-                        Aprovado
+                        Aprobado
                     </div>
                 </div>
             </div>  
