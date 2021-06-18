@@ -104,6 +104,18 @@
             :textButton="button"
             :isBusy="busyBank" />
 
+        <!-- Agregar al simulador -->
+        <AddToSimulator
+            v-if="isShowAddToSimulatorModal"
+            @close="closeAddToSimulatorModal"
+            @addSimu="addToSimulator"
+            :data.sync="simulatorSelected"
+            :textTitle="titleModal"
+            :textBody="bodyModal"
+            :textButton="button"
+            :allSimulators="simulators"
+            :isBusy="busySimulator" />
+
         <!-- Descartar caso -->
         <RejectModal 
             v-if="isShowModalDiscardCase"
@@ -125,6 +137,7 @@ import QuestionDetailsReviewModalAdministrator from '../../components/modals/adm
 import CaseDetailsReviewCard from '../../components/cards/administrators/CaseDetailsReviewCard';
 import SetRetroModal from '../../components/modals/administrators/SetRetroModal';
 import AddToBankModal from '../../components/modals/administrators/AddToBankModal';
+import AddToSimulator from '../../components/modals/administrators/AddToSimulator';
 import RejectModal from '../../components/modals/RejectModal';
 
 export default {
@@ -136,6 +149,7 @@ export default {
         CaseDetailsReviewCard,
         SetRetroModal,
         AddToBankModal,
+        AddToSimulator,
         RejectModal
     },
     data() {
@@ -148,11 +162,15 @@ export default {
             isShowQuestionDetailsModal: false,
             isShowRetroModal: false,
             isShowAddToBankModal: false,
+            isShowAddToSimulatorModal: false,
+            busySimulator: false,
 
             titleModal: '',
             bodyModal: '',
             button: '',
             topics: [],
+            simulators: [],
+            simulatorSelected: '',
 
             caseDetails: {},
             questions: [],
@@ -183,6 +201,7 @@ export default {
         }
 
         await this.getCaseDetails();
+        await this.getSimulators();
         console.log('case', this.caseDetails)
     },
     methods: {
@@ -215,6 +234,15 @@ export default {
                 // alert(caseDetailsResponse.data.message);
                 
                 this.loading = !this.loading
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        async getSimulators() {
+            try {
+                let simulatorsResponse = await this.$axios.get('/getAllSimulators');
+
+                this.simulators = simulatorsResponse.data.payload;
             } catch (err) {
                 console.log(err);
             }
@@ -308,7 +336,27 @@ export default {
 
         simulatorConfirm() {
             // Modal para agregar a simulador
-            alert('Confirm to simulator')
+            this.titleModal = 'Agregar caso al simulador'
+            this.bodyModal = ' Selecciona el simulador al que deseas enviar este caso.'
+            this.button = 'Agregar al simulador'
+            
+            this.isShowAddToSimulatorModal = !this.isShowAddToSimulatorModal;
+        },
+        async addToSimulator() {
+            try {
+                this.busySimulator = !this.busySimulator;
+
+                let addToSimulatorResponse = await this.$axios.post('/addToSimulator', { pending_case_id: this.$route.params.id })
+
+                alert(addToSimulatorResponse.data.message);
+                console.log(addToSimulatorResponse.data.payload);
+
+                this.busySimulator = !this.busySimulator;
+                this.isShowAddToSimulatorModal = !this.isShowAddToSimulatorModal;
+                this.$router.push({ path: `/requestedCases` });
+            } catch (err) {
+                console.log(err)
+            }
         },
         closeRejectDiscardCaseModal() {
             this.isShowModalDiscardCase = false;
@@ -321,6 +369,9 @@ export default {
         },
         closeAddToBankModal() {
             this.isShowAddToBankModal = false;
+        },
+        closeAddToSimulatorModal() {
+            this.isShowAddToSimulatorModal = false;
         }
     }
 }

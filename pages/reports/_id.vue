@@ -23,6 +23,7 @@
             <Loading v-if="loading" />
             
             <div class="description-card-container">
+                <!-- Descrición del caso -->
                 <DescriptionCaseCard 
                     v-if="!loading"
                     :caseName="caseDetails.name"
@@ -41,15 +42,17 @@
 
             <div v-if="!loading" class="case-description">
                 <h1>Descripción del caso</h1>
+
                 <quill-editor
-                    v-model="contentDescription"
-                    :options="editorOption" />
+                    :options="editorOption"
+                    @ready="onEditorReady($event)" 
+                    @change="onEditorChange($event)" />
             </div>
 
             <div v-if="!loading" class="questions-container">
                 <h1>Preguntas</h1>
                 <div class="each-question">
-                    <QuestionCard 
+                    <QuestionCardSpotlighter 
                         v-for="(ques, index) in questions"
                         :key="ques._id"
                         :question="ques"
@@ -69,6 +72,7 @@
             </div>
         </div>
 
+        <!-- Detalle de pregunta -->
         <CaseQuestionDetailsModalAdministrator
             v-if="isShowUpdateQuestionModal"
             @close="closeUpdateQuestionModal"
@@ -78,6 +82,7 @@
             :case="caseDetails._id"
             :data.sync="questionUpdated" />
 
+        <!-- Cambiar estado de reporte -->
         <AcceptModal 
             v-if="isShowUpdateReportModal"
             @close="closeAcceptModal"
@@ -86,14 +91,16 @@
             :action="updateCase"
             :textButton="button"
             :isBusy="isBusyUpdateReport" />
-        <!-- <RejectModal
-            v-if="isShowRejectModal"
-            @close="closeModal"
+
+        <!-- Eliminar pregunta -->
+        <RejectModal
+            v-if="isShowModalDeleteQuestion"
+            @close="closeDeleteQuestionModal"
             :textTitle="titleModal"
             :textBody="bodyModal"
             :action="deleteQuestion"
             :textButton="button"
-            :isBusy="isBusyRejectModal" /> -->
+            :isBusy="busyDeleteQuestion" />
 
     </div>
 </template>
@@ -103,9 +110,10 @@ import Navigation from '../../components/navs/Navigation';
 import Loading from '../../components/modals/Loading';
 import DescriptionCaseCard from '../../components/cards/DescriptionCaseCard';
 import ReportCard from '../../components/cards/ReportCard';
-import QuestionCard from '../../components/cards/QuestionsCard';
+import QuestionCardSpotlighter from '../../components/cards/spotlighters/QuestionCardSpotlighter';
 import CaseQuestionDetailsModalAdministrator from '../../components/modals/administrators/CaseQuestionDetailsModalAdministrator';
 import AcceptModal from '../../components/modals/AcceptModal';
+import RejectModal from '../../components/modals/RejectModal';
 
 export default {
     components: {
@@ -113,9 +121,10 @@ export default {
         Loading,
         DescriptionCaseCard,
         ReportCard,
-        QuestionCard,
+        QuestionCardSpotlighter,
         CaseQuestionDetailsModalAdministrator,
-        AcceptModal
+        AcceptModal,
+        RejectModal
     },
     data() {
         return {
@@ -123,6 +132,8 @@ export default {
             isShowUpdateQuestionModal: false,
             isShowUpdateReportModal: false,
             isBusyUpdateReport: false,
+            isShowModalDeleteQuestion: false,
+            busyDeleteQuestion: false,
 
             topics: [],
             types: [],
@@ -137,12 +148,14 @@ export default {
             questions: [],
             questionToUpdate: {},
             questionUpdated: {},
+            questionToDelete: '',
             studentDetails: {},
 
             contentDescription: '',
+            contentHtml: '',
             editorOption: {
                 theme: 'snow',
-                placeholder: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti veniam, illum esse sunt soluta iste deleniti, ab autem alias magnam sapiente, ipsam officiis eveniet laborum sint? Eum exercitationem alias maiores?',
+                placeholder: 'Descripción del caso...',
                 modules: {
                     toolbar: [
                         [{ 'header': [1, 2, 3, false] }],
@@ -162,12 +175,20 @@ export default {
         }
 
         await this.getReportDetails();
-        console.log('report: ', this.reportDetails);
+        // console.log('report: ', this.reportDetails);
         console.log('case: ', this.caseDetails);
-        console.log('questions: ', this.questions);
-        console.log('student:', this.studentDetails);
+        // console.log('questions: ', this.questions);
+        // console.log('student:', this.studentDetails);
     },
     methods: {
+        onEditorReady(quill) {
+            quill.setContents(JSON.parse(JSON.stringify(this.caseDetails.content.quill.ops)))
+        },
+        onEditorChange({ quill, html, text }) {
+            this.contentDescription = quill.getContents();
+            // this.contentHtml = quill.root.innerHTML;
+            this.contentHtml = html;
+        },
         async getReportDetails() {
             try {
                 this.loading = !this.loading;
@@ -183,7 +204,7 @@ export default {
 
                 this.caseDetails.name_topic = this.filterTopicName(this.caseDetails.topic);
                 this.caseDetails.name_subtopic = this.filterSubtopicName(this.caseDetails.topic, this.caseDetails.subtopic)
-                console.log(reportResponse);
+                // console.log(this.caseDetails);
 
                 this.loading = !this.loading;
             } catch (err) {
@@ -211,11 +232,32 @@ export default {
             // console.log('update the question', question)
             // alert('Actualizar pregunta')
         },
-        deleteQuestionConfirm() {
-            alert('eliminar pregunta')
+        deleteQuestionConfirm(question) {
+            this.questionToDelete = question._id
+            this.titleModal = 'Eliminar pregunta';
+            this.bodyModal = '¿Deseas eliminar esta pregunta? Esta acción eliminará la pregunta junto con las respuestas y puede deshacerse.'
+            this.button = 'Eliminar'
+            this.isShowModalDeleteQuestion = !this.isShowModalDeleteQuestion;
         },
-        deleteQuestion() {
-            alert('Eliminar pregunta')
+        async deleteQuestion() {
+            try {
+                this.busyDeleteQuestion = !this.busyDeleteQuestion;
+
+                let deleteQuestionResponse = await this.$axios.delete('/deleteBankQuestion', {
+                    params: {
+                        case_id: this.caseDetails._id,
+                        question_id: this.questionToDelete
+                    }
+                })
+
+                alert(deleteQuestionResponse.data.message)
+                this.questions = this.questions.filter(ques => ques._id != this.questionToDelete);
+
+                this.busyDeleteQuestion = !this.busyDeleteQuestion;
+                this.isShowModalDeleteQuestion = !this.isShowModalDeleteQuestion;
+            } catch (err) {
+                console.log(err)
+            }
         },
         reloadQuestions() {
             this.questions[this.questionUpdated.indexInArray] = this.questionUpdated.updated
@@ -225,19 +267,19 @@ export default {
             this.isShowUpdateReportModal = !this.isShowUpdateReportModal;
             this.titleModal = 'Actualizar caso y finalizar reporte'
             this.bodyModal = 'Al realizar esta acción indicas que el caso se ha corregido de acuerdo al reporte hecho por el usuario y se actualizará en la base de datos. El reporte cambiará de estado y corregido y se eliminará de la lista. ¿Deseas continuar?'
-            this.button = 'Actualizar y finalizar reporte'
+            this.button = 'Finalizar reporte'
         },
         async updateCase() {
             try {
                 this.isBusyUpdateReport = !this.isBusyUpdateReport;
 
-                // Actualizamos los daos del reporte
+                // Actualizamos los datos del caso del reporte
                 let caseUpdateResponse = await this.$axios.put('/updateBankCase', {
                     case_id: this.caseDetails._id,
                     questions: this.questions,
                     content: {
-                        quill: this.contentDescription.replace(/(<([^>]+)>)/ig, ''),
-                        html: this.contentDescription
+                        quill: this.contentDescription,
+                        html: this.contentHtml
                     }
                 })
                 alert(caseUpdateResponse.data.message)
@@ -266,6 +308,9 @@ export default {
         },
         closeAcceptModal() {
             this.isShowUpdateReportModal = !this.isShowUpdateReportModal;
+        },
+        closeDeleteQuestionModal() {
+            this.isShowModalDeleteQuestion = false;
         }
     }
 }

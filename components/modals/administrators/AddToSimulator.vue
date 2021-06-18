@@ -10,7 +10,7 @@
                     <div class="modal-body">
                         <p>{{ textBody }}</p>
                         <select name="" id="" v-model="simulatorSelected">
-                            <option :value="simulator._id" v-for="simulator in allSimulators" :key="simulator._id">{{simulator._id}}</option>
+                            <option :value="simulator._id" v-for="simulator in allSimulators" :key="simulator._id">{{simulator.name}}</option>
                         </select>
                     </div>
 
@@ -80,6 +80,10 @@ export default {
     }
 
     .modal-body select {
+        height: 32px;
+        width: 30%;
+        border: none;
+        border-bottom: 1px solid #000;
         margin-top: 20px;
     }
 
