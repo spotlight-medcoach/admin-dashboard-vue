@@ -16,7 +16,7 @@
             <Loading v-if="loading" />
             <div v-else class="filter-container">
                 <div class="search">
-                    <input type="searchText" placeholder="    Buscar">
+                    <input type="searchText" placeholder="Buscar">
                 </div>
                 
                 <div class="filter-drop">
@@ -49,7 +49,7 @@
                             <td></td>
                             <td>Falta hacer este calculo</td>
                             <td class="td-style">
-                                <button class="fas fa-dollar-sign btn dollar"></button>
+                                <button class="fas fa-dollar-sign btn dollar" @click="makePaymentConfirm(spotlighter)"></button>
                                 <div class="dropleft">
                                     <button class="btn fas fa-ellipsis-v" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -99,6 +99,19 @@
                 </div>
             </div>
 
+            <!-- Pagar a spotlighter -->
+            <MakePayment 
+                v-if="isShowPaymentModal"
+                @close="closePaymentModal"
+                @pay="makePayment"
+                :textTitle="titleModal"
+                :textBody="bodyModal"
+                :name="nameUser"
+                :money="total"
+                :textButton="button"
+                :isBusy="busyPayment" />
+
+            <!-- Eliminar spotlighter -->
             <DeleteUserModal 
                 v-if="isShowModalInactive"
                 @close="closeModalInactive"
@@ -108,6 +121,7 @@
                 :action="inactivateUser"
                 :isBusy="busy" />
 
+            <!-- Activar spotlighter -->
             <ActiveUserModal 
                 v-if="isShowModalActive"
                 @close="closeModalActive"
@@ -124,6 +138,7 @@
 import Navigation from '../../components/navs/Navigation';
 import Loading from '../../components/modals/Loading';
 import ActionsModal from '../../components/modals/ActionsModal';
+import MakePayment from '../../components/modals/administrators/MakePayment';
 import DeleteUserModal from '../../components/modals/DeleteUserModal';
 import ActiveUserModal from '../../components/modals/ActiveUserModal';
 
@@ -132,6 +147,7 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
         Navigation,
         Loading,
         ActionsModal,
+        MakePayment,
         DeleteUserModal,
         ActiveUserModal
     },
@@ -141,12 +157,19 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
             loading: false,
             isShowModalInactive: false,
             isShowModalActive: false,
+            isShowPaymentModal: false,
+            busyPayment: false,
+
             selected: 'true',
             searchText: '',
             titleModal: '',
             bodyModal: '',
             nameUser: '',
+            total: '',
+            button: '',
+
             spotlighters: [],
+            spotlighterIdToPay: '',
             totalSpotlighters: 0,
             userIdToDelete: '',
             userIdToActive: '',
@@ -235,6 +258,29 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
             
             this.getSpotlighters()
         },
+        makePaymentConfirm(user) {
+            this.spotlighterIdToPay = user.spotlighter_id;
+            this.titleModal = 'Pagar y saldar cuenta'
+            this.bodyModal = 'Al indicar que se realizó este pago a este usuario, su saldo quedará en ceros y se reiniciará el conteo de preguntas.'
+            this.nameUser = user.name + " " + user.last_name;
+            this.total = "$1234.00"
+            this.button = 'Pago realizado'
+
+            this.isShowPaymentModal = !this.isShowPaymentModal;
+        },
+        async makePayment() {
+            try {
+                this.busyPayment = !this.busyPayment;
+
+                let paymentResponse = await this.$axios.put('/cleanQuestions', { spotlighter_id: this.spotlighterIdToPay })
+                console.log('pay', paymentResponse.data.payload)
+                this.busyPayment = !this.busyPayment;
+                alert(paymentResponse.data.message)
+                this.isShowPaymentModal = !this.isShowPaymentModal;
+            } catch (err) {
+                console.log(err);
+            }
+        },
         selectedChange() {
             this.getSpotlighters()
         },
@@ -254,6 +300,9 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
         closeModalActive() {
             this.isShowModalActive = !this.isShowModalActive;
             this.userIdToActive = ''
+        },
+        closePaymentModal() {
+            this.isShowPaymentModal = false;
         }
     }
 }
@@ -316,6 +365,7 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
         border: 1px solid #D4D5D7;
         box-sizing: border-box;
         border-radius: 10px;
+        padding: 0px 15px;
     }
 
     .filter-drop {
@@ -387,6 +437,13 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
     .dollar {
         color: #FFF;
         background: #FE9400;
+        border-radius: 50%;
+        margin: 0 .5rem;
+    }
+
+    .dollar:hover {
+        color: #FFF;
+        background: #000;
         border-radius: 50%;
         margin: 0 .5rem;
     }
