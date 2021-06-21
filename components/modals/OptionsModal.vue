@@ -3,16 +3,10 @@
         <div class="modal-mask" @click="close" v-show="show">
             <div class="modal-container" @click.stop>
                 <div class="modal-body">
-                    <div class="notifications">
-                        <button type="button" class="btn" @click="notf">
-                            <i class="fas fa-bell"></i>
-                            Notificaciones
-                        </button>
-                    </div>
-                    <div class="configuration">
-                        <button type="button" class="btn" @click="conf">
-                            <i class="fas fa-cog"></i>
-                            Configuración
+                    <div class="profile">
+                        <button type="button" class="btn" @click="profile">
+                            <i class="fas fa-user-alt"></i>
+                            Perfil
                         </button>
                     </div>
                     <div class="logout">
@@ -32,18 +26,24 @@ export default {
     props: ['show'],
     data() {
         return {
-
+            userData: {}
         }
     },
     methods: {
         close() {
             this.$emit('close');
         },
-        notf() {
-            alert('Notificaciones');
-        },
-        conf() {
-            alert('Configuración');
+        profile() {
+            if (process.browser) {
+            // this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
+                this.userData = JSON.parse(localStorage.getItem('user'));
+            }
+            console.log(this.userData.role)
+            if (this.userData.role == 'Administrador') {
+                this.$router.push({ path: '/administratorsPages/profile' });
+            } else {
+                this.$router.push({ path: '/spotlightersPages/profile' });
+            }
         },
         logout() {
             setTimeout(() => {
@@ -73,7 +73,6 @@ export default {
     .modal-container {
         display: flex;
         position: absolute;
-        width: 16%;
         margin: 5%;
         justify-content: space-evenly;
         background-color: #fff;
