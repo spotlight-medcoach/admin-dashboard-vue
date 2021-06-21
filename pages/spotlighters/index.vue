@@ -178,8 +178,9 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
         }
     }, // Instituto de Estudios Superiores de Tamaulipas (IEST Anáhuac) Escuela de Medicina
     async created() {
-        if (process.browser)
+        if (process.browser) {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
+        }
         await this.getSpotlighters()
         console.log(this.spotlighters)
     },

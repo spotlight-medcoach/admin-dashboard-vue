@@ -3,13 +3,13 @@
         <div class="title">
             <h3>{{ title }}</h3>
         </div>
-        <input :type="type" :placeholder="placeholder" v-model="localValue">
+        <input :type="type" :placeholder="placeholder" v-model="localValue" :disabled="dis">
     </div>
 </template>
 
 <script>
 export default {
-    props: ['type', 'placeholder', 'model', 'val', 'title'],
+    props: ['type', 'placeholder', 'model', 'val', 'title', 'dis'],
     data() {
         return {
             localValue: this.val

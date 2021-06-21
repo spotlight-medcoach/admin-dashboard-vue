@@ -28,7 +28,7 @@
                 :subtopic="caseDetails.name_subtopic" />
 
             <div v-if="!loading" class="description-container">
-                <h1>Descrición del caso</h1>
+                <h1>Descripción del caso</h1>
 
                 <quill-editor
                     :options="editorOption"

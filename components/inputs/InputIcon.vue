@@ -4,13 +4,13 @@
             <i :class="icon"></i>
             <h3>{{ title }}</h3>
         </div>
-        <input :type="type" :placeholder="placeholder" v-model="localValue" class="inp">
+        <input :type="type" :placeholder="placeholder" v-model="localValue" class="inp" :disabled="dis">
     </div>
 </template>
 
 <script>
 export default {
-    props: ['type', 'placeholder', 'model', 'val', 'icon', 'title'],
+    props: ['type', 'placeholder', 'model', 'val', 'icon', 'title', 'dis'],
     data() {
         return {
             localValue: this.val

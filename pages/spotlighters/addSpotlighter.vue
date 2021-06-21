@@ -69,12 +69,13 @@
 
                     <div class="inputs">
                         <div class="int-cont">
-                            <InputIcon
-                                type="text"
-                                placeholder="Universidad"
-                                v-model="university"
-                                icon="fas fa-university"
-                                title="Universidad" />
+                            <div class="input">
+                                <h3><i class="fas fa-university"></i> Universidad</h3>
+                                <select v-model="university" class="js-example-basic-single">
+                                    <option :value="''" disabled selected>Universidad</option>
+                                    <option :value="university._id" v-for="university in universities" :key="university._id">{{university.name}}</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="int-cont">
                             <InputIcon
@@ -148,6 +149,7 @@ export default {
         return {
             busy: false,
             loading: false,
+
             name: '',
             last_name: '',
             email: '',
@@ -158,6 +160,9 @@ export default {
             account_number: '',
             password: '',
             confirm_password: '',
+
+            universities: [],
+            
             typePassword: 'password',
             classPassword: 'btn fas fa-eye',
 
@@ -166,8 +171,11 @@ export default {
         }
     },
     async created() {
-        if (process.browser)
+        if (process.browser) {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
+            
+            this.universities = JSON.parse(localStorage.getItem('universities'));
+        }
     },
     methods: {
         async addSpotlighter() {
@@ -268,6 +276,31 @@ export default {
         align-items: center;
         /* width: 90%; */
         width: 960px;
+    }
+
+    .input {
+        width: 100%;
+    }
+
+    .input i {
+        font-size: 24px;
+        margin-right: 8px;
+    }
+
+    .input h3 {
+        color: #1CA4FC;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
+        margin-bottom: 12px;
+    }
+
+    .input select {
+        width: 100%;
+        border: 0px;
+        outline: 0px;
+        border-bottom: 2px solid lightgray;
     }
 
     .int-cont {
