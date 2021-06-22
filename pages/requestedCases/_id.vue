@@ -346,7 +346,10 @@ export default {
             try {
                 this.busySimulator = !this.busySimulator;
 
-                let addToSimulatorResponse = await this.$axios.post('/addToSimulator', { pending_case_id: this.$route.params.id })
+                let addToSimulatorResponse = await this.$axios.post('/addToSimulator', {
+                    pending_case_id: this.$route.params.id,
+                    simulator_id: this.simulatorSelected
+                })
 
                 alert(addToSimulatorResponse.data.message);
                 console.log(addToSimulatorResponse.data.payload);

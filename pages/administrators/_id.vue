@@ -153,10 +153,11 @@ export default {
             try {
                 this.busy = !this.busy
                 let updated_response = await this.$axios.put('/updateUser', {
-                    user_id: this.user_data.admin_id,
+                    user_id: this.user_data.admi_id,
                     name: this.new_name,
                     last_name: this.new_last_name,
-                    email: this.new_email
+                    email: this.new_email,
+                    password: this.new_password
                 });
 
                 this.busy = !this.busy

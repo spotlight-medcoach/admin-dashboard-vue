@@ -25,6 +25,18 @@ export default {
 				{ src: "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js", integrity: "sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q", crossorigin: "anonymous" },
 				{ src: "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js", integrity: "sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl", crossorigin: "anonymous" },
 				{ src: "https://unpkg.com/select2@4.0.3/dist/js/select2.js" },
+				
+				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.min.js", integrity: "sha512-VCHVc5miKoln972iJPvkQrUYYq7XpxXzvqNfiul1H4aZDwGBGC0lq373KNleaB2LpnC2a/iNfE5zoRYmB4TRDQ==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
+				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.esm.js", integrity: "sha512-BDFtEx2x2jFpby9cxkGumnmLpRnaFqw8Y1c2y8rCYOCBBBFibmcNeL5MnvKbZOZxuqs1/qMsnmQvPu89d8epTA==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
+				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.esm.min.js", integrity: "sha512-viBARNC43u175Exx9Fhcm985ysTEIrKagpWCl62NkxyVm9/Y7BylO+eVH8Kdsf7mKmyuF07Zypv2QQRYMmdNmw==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
+				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.js", integrity: "sha512-CAv0l04Voko2LIdaPmkvGjH3jLsH+pmTXKFoyh5TIimAME93KjejeP9j7wSeSRXqXForv73KUZGJMn8/P98Ifg==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
+				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/helpers.esm.js", integrity: "sha512-DiXUm6brTaeEIei9FvCPPLvxLcf3ufH8g+aRTpSqhFhf+mSvndawwfaZiKx3Fqj1hbFua7OSXhb4ynoM9REc/Q==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
+				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/helpers.esm.min.js", integrity: "sha512-4OeC7P+qUXB7Kpyeu1r5Y209JLXfCkwGKDpk8vnXzeNGMnpTr6hzOz2lMm7h0oxRBVu2ZCPRkCBPMmIlWsbaHg==", crossorigin: "anonymous", referrerpolicy: "no-referrer" }
+
+				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js" },
+				// { src: "https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js" }
+
+
 			],
 	},
 
