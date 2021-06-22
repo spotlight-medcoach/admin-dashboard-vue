@@ -57,8 +57,8 @@
             </div>
 
             <div v-if="!loading" class="buttons-container">
-                <button class="btn bank" ><i class="fas fa-save" @click="addToBankConfirm"></i> Agregar al banco</button>
-                <button class="btn send" ><i class="fas fa-paper-plane" @click="addToSimulatorConfirm"></i> Agregar al simulador</button>
+                <button class="btn bank" @click="addToBankConfirm"><i class="fas fa-save"></i> Agregar al banco</button>
+                <button class="btn send" @click="addToSimulatorConfirm"><i class="fas fa-paper-plane"></i> Agregar al simulador</button>
             </div>
         </div>
 
@@ -89,6 +89,28 @@
             v-if="isShowQuestionDetailsModal"
             @close="closeQuestionDetailsModal"
             :question="questionSelected" />
+
+        <!-- Modalo para agregar al banco -->
+        <AddToBankModal
+            v-if="isShowAddToBankModal"
+            @close="closeAddToBankModal"
+            @add="addToBank()"
+            :textTitle="titleModal"
+            :textBody="bodyModal"
+            :textButton="button"
+            :isBusy="busyBank" />
+
+        <!-- Agregar al simulador -->
+        <AddToSimulator
+            v-if="isShowAddToSimulatorModal"
+            @close="closeAddToSimulatorModal"
+            @addSimu="addToSimulator"
+            :data.sync="simulatorSelected"
+            :textTitle="titleModal"
+            :textBody="bodyModal"
+            :textButton="button"
+            :allSimulators="simulators"
+            :isBusy="busySimulator" />
 
 
         <!-- <AcceptModal 
@@ -122,6 +144,8 @@ import QuestionReviewCard from '../../components/cards/administrators/QuestionRe
 import RejectModal from '../../components/modals/RejectModal'
 import SetRetroModal from '../../components/modals/administrators/SetRetroModal';
 import QuestionDetailsReviewModalAdministrator from '../../components/modals/administrators/QuestionDetailsReviewModalAdministrator';
+import AddToBankModal from '../../components/modals/administrators/AddToBankModal';
+import AddToSimulator from '../../components/modals/administrators/AddToSimulator';
 
 export default {
     components: {
@@ -131,7 +155,9 @@ export default {
         QuestionReviewCard,
         RejectModal,
         SetRetroModal,
-        QuestionDetailsReviewModalAdministrator
+        QuestionDetailsReviewModalAdministrator,
+        AddToBankModal,
+        AddToSimulator
     },
     data() {
         return {
@@ -141,16 +167,22 @@ export default {
             isShowRetroModal: false,
             busyRetro: false,
             isShowQuestionDetailsModal: false,
+            isShowAddToBankModal: false,
+            busyBank: false,
+            isShowAddToSimulatorModal: false,
+            busySimulator: false,
 
             titleModal: '',
             bodyModal: '',
             button: '',
             theFeedback: '',
             questionSelected: {},
+            simulatorSelected: '',
 
             caseDetails: {},
             questions: [],
             topics: [],
+            simulators: [],
 
             content: '',
             editorOption: {
@@ -166,6 +198,7 @@ export default {
         }
 
         await this.getCaseDetails();
+        await this.getSimulators();
     },
     methods: {
         onEditorReady(quill) {
@@ -184,6 +217,15 @@ export default {
                 console.log('case', this.caseDetails)
 
                 this.loading = !this.loading;
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        async getSimulators() {
+            try {
+                let simulatorsResponse = await this.$axios.get('/getAllSimulators');
+
+                this.simulators = simulatorsResponse.data.payload;
             } catch (err) {
                 console.log(err);
             }
@@ -222,17 +264,59 @@ export default {
 
 
         addToBankConfirm() {
-            alert('Modal para agregar al bank')
+            console.log('yes')
+            // Modal para agregar al banco
+            this.titleModal = 'Autorizar y agregar al banco'
+            this.bodyModal = 'Este caso se enviará al banco de preguntas. ¿Deseas autorizarlo?'
+            this.button = 'Agregar al banco'
+
+            this.isShowAddToBankModal = !this.isShowAddToBankModal
         },
         async addToBank() {
+            try {
+                this.busyBank = !this.busyBank;
 
+                let bankResponse = await this.$axios.post('/addPendingToBank', {
+                    pending_case_id: this.$route.params.id
+                })
+
+                console.log(bankResponse);
+                alert(bankResponse.data.message);
+
+                this.busyBank = !this.busyBank;
+                this.isShowAddToBankModal = !this.isShowAddToBankModal;
+                this.$router.push({ path: `/requestedCases` });
+            } catch (err) {
+                console.log(err);
+            }
         },
 
         addToSimulatorConfirm() {
-            alert('Modal para agregar al simulador')
+            // Modal para agregar a simulador
+            this.titleModal = 'Agregar caso al simulador'
+            this.bodyModal = ' Selecciona el simulador al que deseas enviar este caso.'
+            this.button = 'Agregar al simulador'
+            
+            this.isShowAddToSimulatorModal = !this.isShowAddToSimulatorModal;
         },
         async addToSimulator() {
+            try {
+                this.busySimulator = !this.busySimulator;
 
+                let addToSimulatorResponse = await this.$axios.post('/addToSimulator', {
+                    pending_case_id: this.$route.params.id,
+                    simulator_id: this.simulatorSelected
+                })
+
+                alert(addToSimulatorResponse.data.message);
+                console.log(addToSimulatorResponse.data.payload);
+
+                this.busySimulator = !this.busySimulator;
+                this.isShowAddToSimulatorModal = !this.isShowAddToSimulatorModal;
+                this.$router.push({ path: `/requestedCases` });
+            } catch (err) {
+                console.log(err)
+            }
         },
 
 
@@ -264,6 +348,12 @@ export default {
         },
         closeQuestionDetailsModal() {
             this.isShowQuestionDetailsModal = false
+        },
+        closeAddToBankModal() {
+            this.isShowAddToBankModal = false;
+        },
+        closeAddToSimulatorModal() {
+            this.isShowAddToSimulatorModal = false;
         }
     }
 }

@@ -116,8 +116,8 @@ export default {
                     }
                 }, 1500);
             } catch (err) {
-                alert(response.data.message)
                 const response = err.response;
+                alert(response.data.message)
                 console.log('Error: ', response.data.message);
                 this.busy = !this.busy;
             }
