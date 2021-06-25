@@ -36,31 +36,34 @@
                 </button>
                 <button type="button" class="btn forgot-button">Olvidé mi contraseña</button>
             </div>
-        </div>
+
+        </div>    
 
         <SuccessToast
             v-if="showSuccessToast"
             :textTitle="titleModal" />
-        
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleModal" />
     </div>
 </template>
 
 <script>
 import InputIcon from '../components/inputs/InputIcon';
 import SuccessToast from '../components/toasts/SuccessToast';
-// import InputTitle from './inputs/InputTitle';
-// import Input from './inputs/Input';
+import FailToast from '../components/toasts/FailToast';
 
 export default {
     components: {
         InputIcon,
-        SuccessToast
-        // InputTitle,
-        // Input
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
             showSuccessToast: false,
+            showFailToast: false,
             titleModal: '',
 
             userData: {},
@@ -98,28 +101,28 @@ export default {
 
                 this.titleModal = loginResponse.data.message 
                 this.showSuccessToast = !this.showSuccessToast;
-                // setTimeout(() => {
-                //     this.showSuccessToast = !this.showSuccessToast;
-                // }, 1500)
                 this.busy = !this.busy;
 
                 setTimeout(() => {
                     if (this.userData.role == 'Administrador') {
                         // agregar los topic y las universidades al localStorage
-                        // alert(loginResponse.data.message)
+                        this.$router.push({ path: '/statistics' });
                         this.showSuccessToast = !this.showSuccessToast;
-                        this.$router.push({ path: '/statistics' })
                     } else {
-                        // alert(loginResponse.data.message)
+                        this.$router.push({ path: '/requestedQuestions'});
                         this.showSuccessToast = !this.showSuccessToast;
-                        this.$router.push({ path: '/requestedQuestions'})
                     }
-                }, 1500);
+                }, 2000);
             } catch (err) {
-                const response = err.response;
-                alert(response.data.message)
-                console.log('Error: ', response.data.message);
                 this.busy = !this.busy;
+                this.showFailToast = !this.showFailToast;
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         closeModal() {
@@ -135,7 +138,7 @@ export default {
         align-items: center;
         justify-content: center;
         background: linear-gradient(#1D2B48, #85A5DB);
-        height: 100%;
+        height: 93.8vh;
         /* padding-bottom: 3%; */
     }
 
@@ -144,9 +147,8 @@ export default {
         flex-direction: column;
         align-items: center;
         width: 35%;
-        height: 100%;
+        /* height: 65%; */
         margin: 40px;
-
         background: #FFFFFF;
         box-shadow: 0px 0px 40px rgba(29, 43, 72, 0.5);
         border-radius: 20px;

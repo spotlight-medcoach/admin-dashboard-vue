@@ -1,5 +1,5 @@
 <template>
-    <div aria-live="polite" aria-atomic="true" style="position: relative; min-height: 200px;">
+    <transition aria-live="polite" aria-atomic="true" style="position: relative; min-height: 200px;">
         <div class="toast my-toast">
             <div class="toast-header">
                 <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
@@ -10,7 +10,7 @@
                 <span>{{textTitle}}</span>
             </div>
         </div>
-    </div>
+    </transition>
 </template>
 
 <script>
@@ -21,14 +21,14 @@ export default {
 
 <style scoped>
     .my-toast {
-        background: #D5FFCB;
+        background: #FFE0E0;
         position: fixed;
         top: 5%;
         right: 3%;
     }
 
     .toast:not(.showing):not(.show) {
-        opacity: 1;
+        opacity: .9;
         -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
         animation: fadein 0.5s, fadeout 0.5s 2.5s;
     }
@@ -36,7 +36,7 @@ export default {
     .toast-header {
         display: flex;
         justify-content: flex-end;
-        background-color: #D5FFCB;
+        background-color: #FFE0E0;
         padding: 0px;
     }
 
@@ -53,21 +53,21 @@ export default {
     /* Animations to fade the snackbar in and out */
     @-webkit-keyframes fadein {
         from {top: 5%; right: 3%; opacity: 0;}
-        to {top: 5%; right: 3%; opacity: 1;}
+        to {top: 5%; right: 3%; opacity: .9;}
     }
 
     @keyframes fadein {
         from {top: 5%; right: 3%; opacity: 0;}
-        to {top: 5%; right: 3%; opacity: 1;}
+        to {top: 5%; right: 3%; opacity: .9;}
     }
 
     @-webkit-keyframes fadeout {
-        from {top: 5%; right: 3%; opacity: 1;}
+        from {top: 5%; right: 3%; opacity: .9;}
         to {top: 5%; right: 3%; opacity: 0;}
     }
 
     @keyframes fadeout {
-        from {top: 5%; right: 3%; opacity: 1;}
+        from {top: 5%; right: 3%; opacity: .9;}
         to {top: 5%; right: 3%; opacity: 0;}
     }
 </style>
