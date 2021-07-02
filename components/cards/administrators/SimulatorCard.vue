@@ -8,7 +8,7 @@
             <p class="content">{{id}}</p>
         </div>
         <div class="questions-container">
-            <p class="title">Preguntas:</p>
+            <p class="title">Casos:</p>
             <p class="content">{{totalQuestions}}</p>
         </div>
         <div class="status-container">

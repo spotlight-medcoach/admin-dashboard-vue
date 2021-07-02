@@ -296,6 +296,8 @@ export default {
             this.questionToUpdate = question;
             this.questionToUpdate.indexInArray = index;
             this.isShowCaseQuestionDetailsModal = !this.isShowCaseQuestionDetailsModal;
+            console.log('questionToUpdate', this.questionToUpdate);
+            console.log('findCase questions', this.questions);
         },
         reloadQuestions() {
             this.questions[this.questionUpdated.indexInArray] = this.questionUpdated.updated;

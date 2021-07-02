@@ -18,7 +18,6 @@
         },
         mounted () {
             this.renderChart(this.chartData, this.options)
-            console.log('from component', this.chartData)
         }
     }
 </script>

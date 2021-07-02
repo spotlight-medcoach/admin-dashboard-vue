@@ -4,8 +4,8 @@
 
         <Loading v-if="loading" />
         
+        <!-- Vista cuando entras a ver los detalles del simulador -->
         <div v-else class="sim-container">
-            <!-- <h1>{{this.$route.params.id}}</h1> -->
             <nuxt-link to="/simulators" v-if="subtopicIdSelected == ''">
                 <i class="fas fa-chevron-left"></i>
                 Volver a simuladores
@@ -28,7 +28,7 @@
                     <label :class="simulatorStatus ? 'active' : 'inactive'">{{simulatorStatus ? 'Activo' : 'Activar'}}</label>
                 </div>
 
-                <button class="btn" @click="addQuestionsConfirm"><i class="fas fa-upload"></i> Enviar preguntas al banco</button>
+                <button class="btn" @click="addQuestionsConfirm"><i class="fas fa-upload mr-2"></i> Enviar preguntas al banco</button>
             </div>
 
             <div v-if="subtopicIdSelected == ''" class="body-container">
@@ -45,7 +45,7 @@
                                 @click="changeSubtopics(topic)" >
                                 {{topic.topic_name == "Gine&Obstetricia" ? 'Ginecología y obstetricia' : topic.topic_name}}
                                 <br>
-                                <span>{{topic.total_questions}}/{{simulatorData.questions.length}}</span>
+                                <span>{{topic.total_questions}}/450</span>
                             </button>
                         </div>
 
@@ -77,19 +77,20 @@
 
                     <span>Preguntas por dificultad</span>
                     <Chart
-                        height=180
+                        :height="180"
                         :chartData="chartDataDificulty" />
 
                     <span>Preguntas por tipo</span>
                     <Chart 
-                        height=180
+                        :height="180"
                         :chartData="chartDataType" />
                 </div>
             </div>
 
-            <div v-if="subtopicIdSelected != ''" class="filter-container">
+            <!-- Vista cuando seleccionas un subtema -->
+            <div v-if="subtopicIdSelected != '' && !('_id' in caseToView)" class="filter-container">
                 <div class="back">
-                    <button class="btn" @click="goBack"><i class="fas fa-chevron-left"></i>Volver a {{simulatorData.name}}</button>
+                    <button class="btn" @click="goBack"><i class="fas fa-chevron-left mr-2"></i>Volver a {{simulatorData.name}}</button>
                 </div>
 
                 <div class="head-container">
@@ -141,14 +142,64 @@
 
                         <span>Preguntas por dificultad</span>
                         <Chart
-                            height=180
+                            :height="180"
                             :chartData="chartSubtopicDificulty" />
 
                         <span>Preguntas por tipo</span>
                         <Chart 
-                            height=180
+                            :height="180"
                             :chartData="chartSubtopicType" />
                     </div>
+                </div>
+            </div>
+
+            <!-- Vista cuando seleccionas un caso de un subtema -->
+            <div v-if="('_id' in caseToView)" class="case-details-container">
+                <div class="back">
+                    <button class="btn" @click="goToSubtopics"><i class="fas fa-chevron-left mr-2"></i>Volver a casos por subtema</button>
+                </div>
+                
+                <div class="cancel-container">
+                    <h1>Detalles del caso</h1>
+                    <button class="btn">Eliminar caso del simulador</button>
+                </div>
+
+                <!-- Card con los detalles del caso -->
+                <CaseSimulatorDetailsCard
+                    :caseName="caseToView.name"
+                    :id="caseToView.spotlight_id"
+                    :language="caseToView.language"
+                    :topic="caseToView.topic_name"
+                    :subtopic="caseToView.subtopic_name" />
+                
+                <div class="description-container">
+                    <h1>Descripción del caso</h1>
+
+                    <quill-editor
+                        :options="editorOption"
+                        @ready="onEditorReady($event)" 
+                        @change="onEditorChange($event)" />
+                    
+                </div>
+
+                <div class="questions-container">
+                    <h3>Preguntas:</h3>
+
+                    <IndividualQuestionCard
+                        v-for="(ques, index) in caseToView.individual_questions"
+                        :key="ques._id"
+                        :question="ques"
+                        :ind="index"
+                        @update="updateQuestionModal(ques, index)"
+                        @delete="deleteQuestionConfirm(ques)" />
+
+                    <div class="add-question-container">
+                        <button class="btn" @click="addNewQuestion"><i class="fas fa-plus-circle"></i> Agregar pregunta</button>
+                    </div>
+                </div>
+
+                <div class="buttons-container">
+                    <button class="btn save" @click="saveCaseConfirm"><i class="fas fa-save"></i> Guardar caso</button>
                 </div>
             </div>
         </div>
@@ -162,6 +213,24 @@
             :action="sendQuestions"
             :textButton="button"
             :isBusy="busyQuestions" />
+        
+        <!-- Agregar una pregunta a un caso -->
+        <AddCaseQuestion
+            v-if="isShowAddQuestionModal"
+            :typ="types"
+            @close="closeAddQuestionModal"
+            :data.sync="questionData"
+            @addQues="addQuestion" />
+
+        <!-- Detalles de la pregunta -->
+        <CaseQuestionDetailsModal
+            v-if="isShowCaseQuestionDetailsModal"
+            @close="closeUpdateQuestionModal"
+            @reload="reloadQuestions"
+            :toUpdate="questionToUpdate"
+            :typ="types"
+            :case="caseToView._id"
+            :data.sync="questionUpdated" />
 
         <!-- Eliminar caso del simulador -->
         <RejectModal 
@@ -172,6 +241,14 @@
             :action="deleteCase"
             :textButton="button"
             :isBusy="busyDelete" />
+
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleModal" />
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleModal" />
     </div>
 </template>
 
@@ -179,8 +256,14 @@
 import Navigation from '../../components/navs/Navigation';
 import Loading from '../../components/modals/Loading';
 import Chart from '../../components/chart/Chart.vue';
+import CaseSimulatorDetailsCard from '../../components/cards/administrators/CaseSimulatorDetailsCard';
+import IndividualQuestionCard from '../../components/cards/administrators/IndividualQuestionCard';
+import AddCaseQuestion from '../../components/modals/administrators/AddCaseQuestion';
+import CaseQuestionDetailsModal from '../../components/modals/administrators/CaseQuestionDetailsModal';
 import AcceptModal from '../../components/modals/AcceptModal';
 import RejectModal from '../../components/modals/RejectModal';
+import SuccessToast from '../../components/toasts/SuccessToast';
+import FailToast from '../../components/toasts/FailToast';
 
 export default {
     
@@ -188,8 +271,14 @@ export default {
         Navigation,
         Loading,
         Chart,
+        CaseSimulatorDetailsCard,
+        IndividualQuestionCard,
+        AddCaseQuestion,
+        CaseQuestionDetailsModal,
         AcceptModal,
-        RejectModal
+        RejectModal,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
@@ -198,11 +287,16 @@ export default {
             busyQuestions: false,
             isShowDeleteCaseModal: false,
             busyDelete: false,
+            showSuccessToast: false,
+            showFailToast: false,
+            isShowAddQuestionModal: false,
+            isShowCaseQuestionDetailsModal: false,
 
             titleModal: '',
             bodyModal: '',
             button: '',
 
+            types: [],
             simulatorData: {},
             topics: [],
             topicSelected: '',
@@ -217,6 +311,8 @@ export default {
             chartDataType: {},
             chartSubtopicType: {},
             simulatorStatus: false,
+            
+            caseToView: {},
 
             questionsSubtopicType: [],
             questionsSubtopicDificulty: [],
@@ -226,13 +322,32 @@ export default {
             topicsInfo: [],
             topicBubble: '',
             subtopicBubble: '',
-            caseToDelete: {}
+            caseToDelete: {},
+            questionData: {},
+            questionToUpdate: {},
+            questionUpdated: {},
+
+            contentDescription: '',
+            contentHtml: '',
+            editorOption: {
+                theme: 'snow',
+                placeholder: 'Descripción del caso...',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline'], 
+                        [{ 'align': [] }, { 'list': 'ordered'}, { 'list': 'bullet' },{ 'indent': '-1'}, { 'indent': '+1' }, { 'script': 'sub'}, { 'script': 'super' }],
+                        ['link', 'image']
+                    ]
+                }
+            }
         }
     },
     async created() {
         if (process.browser) {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
             this.topicsInfo = JSON.parse(localStorage.getItem('topics'));
+            this.types = JSON.parse(localStorage.getItem('types'));
         }
 
         await this.getSimulator();
@@ -242,6 +357,14 @@ export default {
         // this.createDataForType();
     },
     methods: {
+        onEditorReady(quill) {
+            quill.setContents(JSON.parse(JSON.stringify(this.caseToView.question.content.ops)))
+        },
+        onEditorChange({ quill, html, text }) {
+            this.contentDescription = quill.getContents();
+            // this.contentHtml = quill.root.innerHTML;
+            this.contentHtml = html;
+        },
         async getSimulator() {
             try {
                 this.loading = !this.loading;
@@ -256,6 +379,8 @@ export default {
 
                 this.createDataForType();
                 this.createDataForDificulty();
+
+                console.log('simulator', this.simulatorData);
 
                 this.loading = !this.loading;
             } catch (err) {
@@ -449,25 +574,85 @@ export default {
         async sendQuestions() {
             try {
                 this.busyQuestions = !this.busyQuestions;
+
                 let sendQuestionsResponse = await this.$axios.delete('/deleteAllCasesFromSimulator', {
-                    simulator_id: this.$route.params.id,
-                    topic: this.topicBubble,
-                    subtopic: this.subtopicBubble
+                    params: {
+                        simulator_id: this.$route.params.id,
+                        topic: this.topicBubble,
+                        subtopic: this.subtopicBubble
+                    }
                 })
                 
                 console.log(sendQuestionsResponse);
-                alert(sendQuestionsResponse.data.message);
+                // alert(sendQuestionsResponse.data.message);
+                this.titleModal = sendQuestionsResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
 
-                // setTimeout(() => {
+                setTimeout(() => {
                     this.busyQuestions = !this.busyQuestions;
                     this.isShowAddQuestionsModal = !this.isShowAddQuestionsModal;
-                // })
+
+                    this.$router.push({ path: '/simulators' });
+                }, 2000)
+            } catch (err) {
+                this.isShowAddQuestionsModal = !this.isShowAddQuestionsModal;
+                this.busyQuestions = !this.busyQuestions;
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
+            }
+        },
+        viewCase(theCase) {
+            this.caseToView = theCase;
+            let topic = this.topicsInfo.filter(top => top.bubble_id == theCase.topic)[0];
+            this.caseToView.topic_name = topic.name;
+            let subtopic = topic.subtopics.filter(sub => sub.subtopic == theCase.subtopic)[0];
+            this.caseToView.subtopic_name = subtopic.name;
+            // console.log('top', topic)
+        },
+        addNewQuestion() {
+            this.isShowAddQuestionModal = !this.isShowAddQuestionModal;
+        },
+        async addQuestion() {
+            try {
+                console.log('caseToView', this.caseToView)
+                console.log('questionData', this.questionData);
+                // this.caseToView.individual_questions.push(this.questionData);
             } catch (err) {
                 console.log(err);
             }
         },
-        viewCase(theCase) {
-            alert('detalles del caso')
+        updateQuestionModal(question, index) {
+            console.log('theQuestion before', question)
+            
+            this.questionToUpdate = question;
+            this.questionToUpdate.indexInArray = index;
+            // this.questionToUpdate.type = this.types.filter(typ => typ.bubble_id == question.type)[0].display;
+            this.isShowCaseQuestionDetailsModal = !this.isShowCaseQuestionDetailsModal;
+            
+            console.log('questionToUpdate', this.questionToUpdate);
+            console.log('theQuestion after', question)
+        },
+        reloadQuestions() {
+
+        },
+        deleteQuestionConfirm(question) {
+            alert('Delete question');
+            console.log('questionToDelete', question);
+        },
+        goToSubtopics() {
+            this.caseToView = {}
+        },
+        saveCaseConfirm() {
+            alert('Save case')
+        },
+        async saveCase() {
+
         },
         deleteCaseConfirm(theCase) {
             this.titleModal = 'Eliminar caso';
@@ -484,16 +669,33 @@ export default {
                 this.busyDelete = !this.busyDelete;
 
                 let caseDeletedResponse = await this.$axios.delete('/deleteCaseFromSimulator', {
-                    simulator_id: this.$route.params.id,
-                    case_id: this.caseToDelete._id
+                    params: {
+                        simulator_id: this.$route.params.id,
+                        case_id: this.caseToDelete._id
+                    }
                 })
                 console.log(caseDeletedResponse);
                 alert(caseDeletedResponse.data.message);
+                this.casesFiltered = this.casesFiltered.filter(cases => cases._id != this.caseToDelete._id)
+                this.totalQuestionsBySubtopic -= this.caseToDelete.individual_questions.length;
+
+                this.simulatorData.questions = this.simulatorData.questions.filter(ques => ques._id != this.caseToDelete._id)
+
+                this.questionsSubtopicType = this.questionsSubtopicType.filter(ques => ques._id != this.caseToDelete._id);
+                this.questionsSubtopicDificulty = this.questionsSubtopicDificulty.filter(ques => ques._id != this.caseToDelete);
+
+                console.log('subtopic', this.subtopics);
 
                 this.busyDelete = !this.busyDelete;
                 this.isShowDeleteCaseModal = !this.isShowDeleteCaseModal;
             } catch (err) {
-                console.log(err);
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         closeAddQuestionsModal() {
@@ -501,6 +703,12 @@ export default {
         },
         closeDeleteCaseModal() {
             this.isShowDeleteCaseModal = false;
+        },
+        closeAddQuestionModal() {
+            this.isShowAddQuestionModal = false;
+        },
+        closeUpdateQuestionModal() {
+            this.isShowCaseQuestionDetailsModal = false;
         }
     }
 }
@@ -751,8 +959,7 @@ export default {
 
 
 
-
-
+    /* Estilos para los casos por subtema */
     .filter-container {
         display: flex;
         flex-direction: column;
@@ -892,6 +1099,79 @@ export default {
 
     .graphics span {
         margin-top: 40px;
+    }
+
+
+    /* Estilos para detalles del caso */
+    .case-details-container {
+        display: flex;
+        flex-direction: column;
+        margin: 20px 40px;
+        font-family: Montserrat;
+    }
+
+    .cancel-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        margin: 20px 0px;
+    }
+
+    .case-details-container h1 {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 39px;
+    }
+
+    .description-container {
+        display: flex;
+        flex-direction: column;
+        margin: 20px 0px;
+        /* height: 200px; */
+    }
+
+    .add-question-container i {
+        color: #FFF;
+        font-size: 20px;
+        margin: 0px 6px;
+    }
+
+    .add-question-container button {
+        padding: 12px 20px;
+        color: #FFF;
+        background: #FE9400;
+        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
+        border-radius: 10px;
+        margin: 20px 0px;
+    }
+
+    .buttons-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .buttons-container button {
+        padding: 12px 20px;
+        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
+        border-radius: 10px;
+        margin: 0px 20px;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
+        align-items: center;
+    }
+
+    .buttons-container i {
+        margin: 0px 8px;
+    }
+
+    .save {
+        background: #20B000;
+        color: #FFF;
     }
 
 
