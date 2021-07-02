@@ -13,7 +13,7 @@
 
             <div class="cancel-container">
                 <h1>Detalles del caso</h1>
-                <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash mr-5 pr-5"></i> Descartar caso</button>
+                <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash mr-1"></i> Descartar caso</button>
             </div>
 
             <!-- Card con los detalles del caso -->
