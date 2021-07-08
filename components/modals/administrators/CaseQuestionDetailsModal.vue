@@ -24,7 +24,7 @@
                                 <h3>Tipo</h3>
                                 <select v-model="typeSelected" name="" id="">
                                     <option value="" disabled>Tipo</option>
-                                    <option :value="types.display" v-for="types in typ" :key="types._id">{{ types.display }}</option>
+                                    <option :value="types.bubble_id" v-for="types in typ" :key="types._id">{{ types.display }}</option>
                                 </select>
                             </div>
                         </div>
@@ -130,7 +130,7 @@
 
 <script>
 export default {
-    props: ['toUpdate', 'typ', 'case'],
+    props: ['toUpdate', 'typ', 'case', 'simulatorFlag'],
     data() {
         return {
             isBusy: false,
@@ -215,58 +215,100 @@ export default {
         async updateQuestion() {
             try {
                 this.isBusy = !this.isBusy;
-                
-                let updateQuestionResponse = await this.$axios.put('/updateBankQuestion', {
-                    question_id: this.toUpdate._id,
-                    index: this.toUpdate.index,
-                    importance: this.dificultySelected,
-                    type: this.typeSelected,
-                    question: {
-                        content: this.questionContent,
-                        html: this.questionHtml
-                    },
-                    answers: [
-                        {
-                            id: this.toUpdate.answers[0].id,
-                            content: this.answer1,
-                            html: this.answer1Html
+                let updateQuestionResponse;
+
+                if (this.simulatorFlag) {
+                    console.log('yes', this.simulatorFlag)
+                    updateQuestionResponse = await this.$axios.put('/updateIndividualQuestion', {
+                        case_id: this.toUpdate.case_id,
+                        individual_id: this.toUpdate._id,
+                        index: this.toUpdate.index,
+                        importance: this.dificultySelected,
+                        type: this.typeSelected,
+                        question: {
+                            content: this.questionContent,
+                            html: this.questionHtml
                         },
-                        {
-                            id: this.toUpdate.answers[1].id,
-                            content: this.answer2,
-                            html: this.answer2Html
-                        },
-                        {
-                            id: this.toUpdate.answers[2].id,
-                            content: this.answer3,
-                            html: this.answer3Html
-                        },
-                        {
-                            id: this.toUpdate.answers[3].id,
-                            content: this.answer4,
-                            html: this.answer4Html
+                        answers: [
+                            {
+                                id: this.toUpdate.answers[0].id,
+                                content: this.answer1,
+                                html: this.answer1Html
+                            },
+                            {
+                                id: this.toUpdate.answers[1].id,
+                                content: this.answer2,
+                                html: this.answer2Html
+                            },
+                            {
+                                id: this.toUpdate.answers[2].id,
+                                content: this.answer3,
+                                html: this.answer3Html
+                            },
+                            {
+                                id: this.toUpdate.answers[3].id,
+                                content: this.answer4,
+                                html: this.answer4Html
+                            }
+                        ],
+                        correct_answer: this.correctAnswer,
+                        retro: {
+                            content: this.retroContent,
+                            html: this.retroHtml
                         }
-                    ],
-                    correct_answer: this.correctAnswer,
-                    retro: {
-                        content: this.retroContent,
-                        html: this.retroHtml
-                    }
-                })
+                    })
+                } else {
+                    console.log('no', this.simulatorFlag)
+                    updateQuestionResponse = await this.$axios.put('/updateBankQuestion', {
+                        question_id: this.toUpdate._id,
+                        index: this.toUpdate.index,
+                        importance: this.dificultySelected,
+                        type: this.typeSelected,
+                        question: {
+                            content: this.questionContent,
+                            html: this.questionHtml
+                        },
+                        answers: [
+                            {
+                                id: this.toUpdate.answers[0].id,
+                                content: this.answer1,
+                                html: this.answer1Html
+                            },
+                            {
+                                id: this.toUpdate.answers[1].id,
+                                content: this.answer2,
+                                html: this.answer2Html
+                            },
+                            {
+                                id: this.toUpdate.answers[2].id,
+                                content: this.answer3,
+                                html: this.answer3Html
+                            },
+                            {
+                                id: this.toUpdate.answers[3].id,
+                                content: this.answer4,
+                                html: this.answer4Html
+                            }
+                        ],
+                        correct_answer: this.correctAnswer,
+                        retro: {
+                            content: this.retroContent,
+                            html: this.retroHtml
+                        }
+                    })
+                }
 
                 this.$emit('update:data', {
-                    updated: updateQuestionResponse.data.payload,
+                    updated: updateQuestionResponse.data.payload.individual,
                     indexInArray: this.toUpdate.indexInArray
                 })
     
-                console.log(updateQuestionResponse.data.payload)
+                // console.log(updateQuestionResponse.data.payload)
                 alert(updateQuestionResponse.data.message);
 
-                // setTimeout(() => {
-                    this.isBusy = !this.isBusy;
-                    this.$emit('reload')
-                    this.$emit('close');
-                // }, 1500);
+                this.isBusy = !this.isBusy;
+                this.$emit('reload')
+                this.$emit('close');
             } catch (err) {
                 console.log(err)
             }

@@ -13,7 +13,7 @@
             <div v-else class="form-container">
                 <div class="title-container">
                     <h1>Solicitar nuevo caso</h1>
-                    <button type="button" class="btn cancel" @click="discardCase"><i class="fas fa-trash mr-5 pr-5"></i> Descartar caso</button>
+                    <button type="button" class="btn cancel" @click="discardCase"><i class="fas fa-trash"></i> Descartar caso</button>
                 </div>
 
                 <div class="inputs-container">

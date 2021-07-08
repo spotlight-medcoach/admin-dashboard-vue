@@ -24,7 +24,7 @@
                                 <h3>Tipo</h3>
                                 <select v-model="typeSelected" name="" id="">
                                     <option value="" disabled>Tipo</option>
-                                    <option :value="types.display" v-for="types in typ" :key="types._id">{{ types.display }}</option>
+                                    <option :value="types.bubble_id" v-for="types in typ" :key="types._id">{{ types.display }}</option>
                                 </select>
                             </div>
                         </div>

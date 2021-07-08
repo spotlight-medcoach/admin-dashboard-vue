@@ -3,13 +3,13 @@
 
     export default {
         extends: Doughnut,
-        props: ['chartData'],
+        props: ['chartData', 'pos', 'render'],
         data () {
             return {
                 options: {
                     legend: {
                         display: true,
-                        position: 'right'
+                        position: this.pos ? this.pos : 'right'
                     },
                     responsive: true,
                     maintainAspectRatio: false,
@@ -18,6 +18,11 @@
         },
         mounted () {
             this.renderChart(this.chartData, this.options)
+        },
+        watch: {
+            render: function(oldVal, newVal) {
+                this.renderChart(this.chartData, this.options)
+            }
         }
     }
 </script>

@@ -14,7 +14,7 @@
                 <h1>Detalles del caso</h1>
                 
                 <div v-if="!loading" class="buttons">
-                    <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash mr-5 pr-5"></i> Descartar caso</button>
+                    <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash"></i> Descartar caso</button>
                     <button type="button" class="btn retro-btn" @click="retroAlert"><i class="fas fa-exclamation"></i> Dar retroalimentación</button>
                 </div>
             </div>
@@ -285,7 +285,7 @@ export default {
 
                 this.busyBank = !this.busyBank;
                 this.isShowAddToBankModal = !this.isShowAddToBankModal;
-                this.$router.push({ path: `/requestedCases` });
+                this.$router.push({ path: `/reviewNewQuestions` });
             } catch (err) {
                 console.log(err);
             }
@@ -313,7 +313,7 @@ export default {
 
                 this.busySimulator = !this.busySimulator;
                 this.isShowAddToSimulatorModal = !this.isShowAddToSimulatorModal;
-                this.$router.push({ path: `/requestedCases` });
+                this.$router.push({ path: `/reviewNewQuestions` });
             } catch (err) {
                 console.log(err)
             }

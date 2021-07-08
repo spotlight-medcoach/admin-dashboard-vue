@@ -53,7 +53,7 @@
                             <h3>{{topicSelected}}</h3>
 
                             <button
-                                class="btn"
+                                class="btn ml-4"
                                 v-for="subtopic in subtopics"
                                 :key="subtopic.subtopic_id"
                                 @click="subtopicSelected(subtopic)">
@@ -61,12 +61,6 @@
                                 <i class="fas fa-circle"></i>
                                 {{subtopic.subtopic_name}} <span>{{subtopic.total_questions}}/{{topicTotalQuestions}}</span>
                             </button>
-
-                            <!-- <ul>
-                                <li v-for="subtopic in subtopics" :key="subtopic.subtopic_id">
-                                    {{subtopic.subtopic_name}}:<span>{{subtopic.total_questions}}/{{topicTotalQuestions}}</span>
-                                </li>
-                            </ul> -->
                         </div>
                     </div>
                 </div>
@@ -230,7 +224,18 @@
             :toUpdate="questionToUpdate"
             :typ="types"
             :case="caseToView._id"
-            :data.sync="questionUpdated" />
+            :data.sync="questionUpdated"
+            :simulatorFlag="true" />
+
+        <!-- Eliminar pregunta -->
+        <RejectModal 
+            v-if="isShowDeleteQuestionModal"
+            @close="closeRejectDeleteQuestionModal"
+            :textTitle="titleModal"
+            :textBody="bodyModal"
+            :action="deleteQuestion"
+            :textButton="button"
+            :isBusy="busyDeleteQuestion" />
 
         <!-- Eliminar caso del simulador -->
         <RejectModal 
@@ -291,6 +296,8 @@ export default {
             showFailToast: false,
             isShowAddQuestionModal: false,
             isShowCaseQuestionDetailsModal: false,
+            isShowDeleteQuestionModal: false,
+            busyDeleteQuestion: false,
 
             titleModal: '',
             bodyModal: '',
@@ -326,6 +333,8 @@ export default {
             questionData: {},
             questionToUpdate: {},
             questionUpdated: {},
+            questionToDelete:'',
+            caseQuestionToDelete: '',
 
             contentDescription: '',
             contentHtml: '',
@@ -380,7 +389,7 @@ export default {
                 this.createDataForType();
                 this.createDataForDificulty();
 
-                console.log('simulator', this.simulatorData);
+                // console.log('simulator', this.simulatorData);
 
                 this.loading = !this.loading;
             } catch (err) {
@@ -458,8 +467,8 @@ export default {
                 let subtopic_bubble = sub[0].subtopic;
                 this.topicBubble = topic_bubble;
                 this.subtopicBubble = subtopic_bubble;
-                console.log('bubbleT', topic_bubble)
-                console.log('bubbleS', subtopic_bubble)
+                // console.log('bubbleT', topic_bubble)
+                // console.log('bubbleS', subtopic_bubble)
 
 
                 let casesResponse = await this.$axios.get('/getCasesFromSimulator', { 
@@ -470,7 +479,7 @@ export default {
                         }
                     });
                 
-                console.log('response: ', casesResponse);
+                // console.log('response: ', casesResponse);
                 this.casesFiltered = casesResponse.data.payload.cases;
                 this.questionsSubtopicType = casesResponse.data.payload.byType;
                 this.questionsSubtopicDificulty = casesResponse.data.payload.byDificulty;
@@ -582,9 +591,7 @@ export default {
                         subtopic: this.subtopicBubble
                     }
                 })
-                
-                console.log(sendQuestionsResponse);
-                // alert(sendQuestionsResponse.data.message);
+
                 this.titleModal = sendQuestionsResponse.data.message;
                 this.showSuccessToast = !this.showSuccessToast;
 
@@ -620,36 +627,75 @@ export default {
         },
         async addQuestion() {
             try {
-                console.log('caseToView', this.caseToView)
-                console.log('questionData', this.questionData);
-                // this.caseToView.individual_questions.push(this.questionData);
+                this.questionData.type = this.types.filter(typ => typ.display == this.questionData.type)[0].bubble_id;
+
+                let addQuestionResponse = await this.$axios.post('/addSimulatorCaseQuestion', {
+                    ...this.questionData,
+                    index: this.caseToView.individual_questions.length + 1,
+                    case_id: this.caseToView.case_id,
+                    simulator_question: this.caseToView._id
+                });
+
+                // console.log('question added', addQuestionResponse);
+
+                this.caseToView.individual_questions.push(addQuestionResponse.data.payload.individual);
             } catch (err) {
                 console.log(err);
             }
         },
         updateQuestionModal(question, index) {
-            console.log('theQuestion before', question)
-            
             this.questionToUpdate = question;
             this.questionToUpdate.indexInArray = index;
-            // this.questionToUpdate.type = this.types.filter(typ => typ.bubble_id == question.type)[0].display;
+            this.questionToUpdate.case_id = this.caseToView.case_id;
+            
+            
             this.isShowCaseQuestionDetailsModal = !this.isShowCaseQuestionDetailsModal;
             
             console.log('questionToUpdate', this.questionToUpdate);
-            console.log('theQuestion after', question)
+            console.log('caseToView', this.caseToView);
         },
         reloadQuestions() {
-
+            this.caseToView.individual_questions[this.questionUpdated.indexInArray] = this.questionUpdated.updated;
         },
         deleteQuestionConfirm(question) {
-            alert('Delete question');
-            console.log('questionToDelete', question);
+            this.questionToDelete = question._id
+            // console.log('question', this.caseToView)
+            this.caseQuestionToDelete = question.case_question
+            this.titleModal = 'Eliminar pregunta'
+            this.bodyModal = '¿Deseas eliminar esta pregunta? Esta acción eliminará la pregunta junto con las respuestas y puede deshacerse.'
+            this.button = 'Eliminar'
+            this.isShowDeleteQuestionModal = !this.isShowDeleteQuestionModal;
+        },
+        async deleteQuestion() {
+            try {
+                this.busyDeleteQuestion = !this.busyDeleteQuestion;
+
+                let deleteResponse = await this.$axios.delete('/deleteIndividualQuestion', {
+                    params: {
+                        individual_id: this.questionToDelete,
+                        question_id: this.caseQuestionToDelete,
+                        simulator_question_id: this.caseToView._id,
+                        case_question_id: this.caseToView.case_id
+                    }
+                });
+
+                console.log(deleteResponse.data)
+
+                alert(deleteResponse.data.message);
+                this.caseToView.individual_questions = this.caseToView.individual_questions.filter(ques => ques._id != this.questionToDelete)
+
+                this.busyDeleteQuestion = !this.busyDeleteQuestion;
+                this.isShowDeleteQuestionModal = !this.isShowDeleteQuestionModal;
+            } catch (err) {
+                console.log(err);
+            }
         },
         goToSubtopics() {
             this.caseToView = {}
         },
         saveCaseConfirm() {
             alert('Save case')
+            console.log("case", this.caseToView);
         },
         async saveCase() {
 
@@ -662,7 +708,7 @@ export default {
             this.isShowDeleteCaseModal = !this.isShowDeleteCaseModal;
             
             this.caseToDelete = theCase;
-            console.log('case!!!!', theCase)
+            // console.log('case!!!!', theCase)
         },
         async deleteCase() {
             try {
@@ -674,7 +720,7 @@ export default {
                         case_id: this.caseToDelete._id
                     }
                 })
-                console.log(caseDeletedResponse);
+                // console.log(caseDeletedResponse);
                 alert(caseDeletedResponse.data.message);
                 this.casesFiltered = this.casesFiltered.filter(cases => cases._id != this.caseToDelete._id)
                 this.totalQuestionsBySubtopic -= this.caseToDelete.individual_questions.length;
@@ -684,7 +730,7 @@ export default {
                 this.questionsSubtopicType = this.questionsSubtopicType.filter(ques => ques._id != this.caseToDelete._id);
                 this.questionsSubtopicDificulty = this.questionsSubtopicDificulty.filter(ques => ques._id != this.caseToDelete);
 
-                console.log('subtopic', this.subtopics);
+                // console.log('subtopic', this.subtopics);
 
                 this.busyDelete = !this.busyDelete;
                 this.isShowDeleteCaseModal = !this.isShowDeleteCaseModal;
@@ -709,6 +755,9 @@ export default {
         },
         closeUpdateQuestionModal() {
             this.isShowCaseQuestionDetailsModal = false;
+        },
+        closeRejectDeleteQuestionModal() {
+            this.isShowDeleteQuestionModal = false;
         }
     }
 }
