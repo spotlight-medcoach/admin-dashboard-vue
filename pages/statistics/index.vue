@@ -138,7 +138,6 @@
                                 </div>
 
                                 <ChartBar
-                                    :max="max"
                                     :chartData="barData"
                                     :render="renderCount" />
                             </div>
@@ -180,7 +179,6 @@ export default {
             barData: {},
             totalCases: 0,
             topicTotalQuestions: 0,
-            max: 0,
             yearSelected: 2019,
 
             types: [],
@@ -437,8 +435,6 @@ export default {
             filterYear.forEach(obj => {
                 newData[obj._id.month - 1] = obj.count
             });
-
-            this.max = Math.max(...newData);
 
             console.log('newData', newData)
 
