@@ -12,7 +12,7 @@
         <div class="case-container">
             <div class="title-container">
                 <h3>Datos del caso</h3>
-                <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash mr-5 pr-5"></i> Descartar caso</button>
+                <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash"></i> Descartar caso</button>
             </div>
 
             <div class="inputs-container">
@@ -73,7 +73,7 @@
                     <QuestionCardSpotlighter
                         v-for="(ques, index) in questions"
                         :key="ques._id"
-                        :question="ques.question.content.ops[0].insert"
+                        :question="ques"
                         :ind="index"
                         @updateQuestion="updateQuestion(questions[index], index)"
                         @deleteQuestion="deleteQuestionConfirm(questions[index])" />
@@ -370,8 +370,8 @@ export default {
                         subtopic_bubble: this.subtopicBubbleSelected,
                         language: this.languageSelected,
                         description: {
-                            content: this.content.replace(/(<([^>]+)>)/ig, ''),
-                            html: this.content
+                            content: this.contentDescription,
+                            html: this.contentHtml
                         },
                         status: 'Pending review',
                         requested: false,
@@ -397,7 +397,7 @@ export default {
                 setTimeout(() => {
                     this.isShowModalAcceptSend = !this.isShowModalAcceptSend;
                     this.$router.push({ path: '/myCases'});
-                });
+                }, 1500);
             } catch (err) {
                 console.log(err)
             }

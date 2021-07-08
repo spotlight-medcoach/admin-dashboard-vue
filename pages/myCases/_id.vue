@@ -243,7 +243,7 @@ export default {
 
                 setTimeout(() => {
                     alert(updateCaseResponse.data.message)
-                }, 2000)
+                }, 500)
 
                 console.log('drafy updated', updateCaseResponse)
             } catch (err) {
@@ -361,21 +361,11 @@ export default {
 
             this.updateCaseDraft('Pending review');
 
-            // let sendToReviewResponse = await this.$axios.put('/sendToReview', {
-            //     case_id: this.$route.params.id,
-            //     description: {
-            //         content: this.contentDescription,
-            //         html: this.contentHtml
-            //     }
-            // });
-
-            // console.log(sendToReviewResponse)
-
             setTimeout(() => {
                 this.busySend = !this.busySend;
                 this.isShowModalAcceptSend = !this.isShowModalAcceptSend;
                 this.$router.push({ path: '/myCases'});
-            }, 1000);
+            }, 2000);
         },
         discardConfirm() {
             this.titleModal = 'Descartar caso';

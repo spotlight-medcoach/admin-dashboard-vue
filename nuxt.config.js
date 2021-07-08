@@ -26,6 +26,11 @@ export default {
 				{ src: "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js", integrity: "sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q", crossorigin: "anonymous" },
 				{ src: "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js", integrity: "sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl", crossorigin: "anonymous" },
 				{ src: "https://unpkg.com/select2@4.0.3/dist/js/select2.js" },
+
+				{ src: "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js", integrity: "sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM", crossorigin: "anonymous" },
+				{ src: "https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js", integrity: "sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p", crossorigin: "anonymous" },
+				{ src: "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js", integrity: "sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF", crossorigin: "anonymous" }
+
 				
 				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.min.js", integrity: "sha512-VCHVc5miKoln972iJPvkQrUYYq7XpxXzvqNfiul1H4aZDwGBGC0lq373KNleaB2LpnC2a/iNfE5zoRYmB4TRDQ==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
 				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.esm.js", integrity: "sha512-BDFtEx2x2jFpby9cxkGumnmLpRnaFqw8Y1c2y8rCYOCBBBFibmcNeL5MnvKbZOZxuqs1/qMsnmQvPu89d8epTA==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
