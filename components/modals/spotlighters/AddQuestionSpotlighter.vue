@@ -116,6 +116,14 @@
                             Guardar y regresar al caso
                         </button>
                     </div>
+
+                    <SuccessToast
+                        v-if="showSuccessToast"
+                        :textTitle="titleModal" />
+
+                    <FailToast 
+                        v-if="showFailToast"
+                        :textTitle="titleModal" />
                 </div>
             </div>
         </div>
@@ -123,10 +131,21 @@
 </template>
 
 <script>
+import SuccessToast from '../../toasts/SuccessToast';
+import FailToast from '../../toasts/FailToast';
+
 export default {
     props: ['typ', 'topicBubble', 'subtopicBubble', 'case_id'],
+    components: {
+        SuccessToast,
+        FailToast
+    },
     data() {
         return {
+            showSuccessToast: false,
+            showFailToast: false,
+            titleModal: '',
+
             isBusy: false,
             dificultySelected: '',
             typeSelected: '',
@@ -191,50 +210,66 @@ export default {
         async addQuestion() {
             try {
                 this.isBusy = !this.isBusy;
-                
-                this.$emit('update:data', {
-                    dificulty: parseInt(this.dificultySelected),
-                    type: this.typeSelected,
-                    question: {
-                        content: this.questionContent,
-                        html: this.questionHtml
-                    },
-                    answers: [
-                        {
-                            id: 1,
-                            content: this.answer1,
-                            html: this.answer1Html
+
+                if (this.dificultySelected == '' || this.typeSelected == '' || this.correctAnswer == '' || this.answer1.ops[0].insert.trim() == '' || this.answer2.ops[0].insert.trim() == '' || this.answer3.ops[0].insert.trim() == '' || this.answer4.ops[0].insert.trim() == '' || this.questionContent.ops[0].insert.trim() == '' || this.retroContent.ops[0].insert.trim() == '') {
+                    this.isBusy = !this.isBusy;
+                    this.titleModal = 'Todos los campos deben ser llenados';
+                    this.showFailToast = !this.showFailToast;
+
+                    setTimeout(() => {
+                        this.showFailToast = !this.showFailToast;
+                    }, 1);
+                } else {
+                    this.$emit('update:data', {
+                        dificulty: parseInt(this.dificultySelected),
+                        type: this.typeSelected,
+                        question: {
+                            content: this.questionContent,
+                            html: this.questionHtml
                         },
-                        {
-                            id: 2,
-                            content: this.answer2,
-                            html: this.answer2Html
-                        },
-                        {
-                            id: 3,
-                            content: this.answer3,
-                            html: this.answer3Html
-                        },
-                        {
-                            id: 4,
-                            content: this.answer4,
-                            html: this.answer4Html
+                        answers: [
+                            {
+                                id: 1,
+                                content: this.answer1,
+                                html: this.answer1Html
+                            },
+                            {
+                                id: 2,
+                                content: this.answer2,
+                                html: this.answer2Html
+                            },
+                            {
+                                id: 3,
+                                content: this.answer3,
+                                html: this.answer3Html
+                            },
+                            {
+                                id: 4,
+                                content: this.answer4,
+                                html: this.answer4Html
+                            }
+                        ],
+                        correct_answer: parseInt(this.correctAnswer),
+                        retro: {
+                            content: this.retroContent,
+                            html: this.retroHtml
                         }
-                    ],
-                    correct_answer: parseInt(this.correctAnswer),
-                    retro: {
-                        content: this.retroContent,
-                        html: this.retroHtml
-                    }
-                })
-                this.$emit('addQues');
+                    })
+                    this.$emit('addQues');
+    
+                    setTimeout(() => {
+                        this.isBusy = !this.isBusy;
+                        this.$emit('close');
+                    }, 2000)
+                }
+            } catch (err) {
+                console.log(err);
+                this.titleModal = err;
+                this.showFailToast = !this.showFailToast;
 
                 setTimeout(() => {
-                    this.isBusy = !this.isBusy;
-                    this.$emit('close');
-                }, 2000)
-            } catch (err) {
-                console.log(err)
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         }
     }

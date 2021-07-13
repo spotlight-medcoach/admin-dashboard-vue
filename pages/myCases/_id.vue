@@ -124,6 +124,14 @@
             :action="deleteQuestion"
             :textButton="button"
             :isBusy="busyDeleteQuestion" />
+        
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleModal" />
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleModal" />
 
     </div>
 </template>
@@ -137,6 +145,8 @@ import AddQuestionSpotlighter from '../../components/modals/spotlighters/AddQues
 import CaseQuestionDetailsModalSpotlighter from '../../components/modals/spotlighters/CaseQuestionDetailsModalSpotlighter';
 import AcceptModal from '../../components/modals/AcceptModal';
 import RejectModal from '../../components/modals/RejectModal';
+import SuccessToast from '../../components/toasts/SuccessToast';
+import FailToast from '../../components/toasts/FailToast';
 
 export default {
     components: {
@@ -147,7 +157,9 @@ export default {
         AddQuestionSpotlighter,
         CaseQuestionDetailsModalSpotlighter,
         AcceptModal,
-        RejectModal
+        RejectModal,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
@@ -164,6 +176,8 @@ export default {
             isShowModalAddQuestion: false,
             isShowModalQuestionDetails: false,
             isShowModalDeleteQuestion: false,
+            showSuccessToast: false,
+            showFailToast: false,
 
             caseDetails: {},
             questions: [],
@@ -239,15 +253,25 @@ export default {
                         content: this.contentDescription,
                         html: this.contentHtml
                     }
-                })
+                });
+
+                this.titleModal = updateCaseResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
 
                 setTimeout(() => {
-                    alert(updateCaseResponse.data.message)
-                }, 500)
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 1500)
 
                 console.log('drafy updated', updateCaseResponse)
             } catch (err) {
                 console.log(err);
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         requestQuestion() {
@@ -274,11 +298,24 @@ export default {
                     }
                 });
     
-                alert(questionsResponse.data.message);
+                // alert(questionsResponse.data.message);
+                this.titleModal = questionsResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
                 this.questions.push(questionsResponse.data.payload.question_created);
                 console.log('responseQuestion', questionsResponse);
+
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 1500);
             } catch (err) {
-                console.log(err)
+                console.log(err);
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         updateQuestion(question, index) {
@@ -309,13 +346,25 @@ export default {
                 })
 
                 alert(deleteQuestionResponse.data.message);
-                this.questions = this.questions.filter(ques => ques._id != this.questionToDelete)
-                console.log('new ques', this.questions)
+                this.titleModal = deleteQuestionResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+                this.questions = this.questions.filter(ques => ques._id != this.questionToDelete);
+                console.log('new ques', this.questions);
 
-                this.busyDeleteQuestion = !this.busyDeleteQuestion;
-                this.isShowModalDeleteQuestion = !this.isShowModalDeleteQuestion;
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.busyDeleteQuestion = !this.busyDeleteQuestion;
+                    this.isShowModalDeleteQuestion = !this.isShowModalDeleteQuestion;
+                }, 1500)
             } catch (err) {
-                console.log(err)
+                console.log(err);
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         filterTopic(topic_bubble) {
@@ -373,15 +422,37 @@ export default {
             this.button = 'Descartar caso';
             this.isShowModalReject = !this.isShowModalReject;
         },
-        discardCase() {
-            this.busyReject = !this.busyReject;
-
-            setTimeout(() => {
-                this.isShowModalReject = !this.isShowModalReject;
+        async discardCase() {
+            try {
                 this.busyReject = !this.busyReject;
 
-                this.$router.push({ path: '/myCases'});
-            }, 1500);
+                let deleteCaseResponse = await this.$axios.delete('/deletePendingCase', {
+                    params: { case_id: this.$route.params.id }
+                });
+                // console.log(deleteCaseResponse)
+
+                this.titleModal = deleteCaseResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+    
+                setTimeout(() => {
+                    this.isShowModalReject = !this.isShowModalReject;
+                    this.busyReject = !this.busyReject;
+                    this.showSuccessToast = !this.showSuccessToast;
+    
+                    this.$router.push({ path: '/myCases'});
+                }, 1500);
+            } catch (err) {
+                console.log(err);
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.busyReject = !this.busyReject;
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
+            }
         },
         closeModal() {
             this.isShowModalAddQuestion = false;

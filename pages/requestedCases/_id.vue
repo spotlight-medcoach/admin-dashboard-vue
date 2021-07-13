@@ -22,7 +22,7 @@
                     </div>
 
                     <div v-else-if="caseDetails.case_status == 'With feedback'">
-                        <button type="button" class="btn retro-btn" @click="retroAlert"><i class="fas fa-exclamation"></i> Dar retroalimentación</button>
+                        <button type="button" class="btn retro-btn" @click="viewRetro"><i class="fas fa-exclamation"></i> Ver retroalimentación</button>
                     </div>
                 </div>
             </div>
@@ -94,6 +94,12 @@
             :feedback="caseDetails.feedback"
             :data.sync="theFeedback" />
 
+        <!-- Modal para ver retroalimentacion -->
+        <ViewRetroModal
+            v-if="isShowViewRetroModal"
+            @close="closeViewRetroModal"
+            :feedback="caseDetails.feedback" />
+
         <!-- Modalo para agregar al banco -->
         <AddToBankModal
             v-if="isShowAddToBankModal"
@@ -136,6 +142,7 @@ import QuestionReviewCard from '../../components/cards/administrators/QuestionRe
 import QuestionDetailsReviewModalAdministrator from '../../components/modals/administrators/QuestionDetailsReviewModalAdministrator'
 import CaseDetailsReviewCard from '../../components/cards/administrators/CaseDetailsReviewCard';
 import SetRetroModal from '../../components/modals/administrators/SetRetroModal';
+import ViewRetroModal from '../../components/modals/administrators/ViewRetroModal';
 import AddToBankModal from '../../components/modals/administrators/AddToBankModal';
 import AddToSimulator from '../../components/modals/administrators/AddToSimulator';
 import RejectModal from '../../components/modals/RejectModal';
@@ -148,6 +155,7 @@ export default {
         QuestionDetailsReviewModalAdministrator,
         CaseDetailsReviewCard,
         SetRetroModal,
+        ViewRetroModal,
         AddToBankModal,
         AddToSimulator,
         RejectModal
@@ -161,9 +169,12 @@ export default {
             busyDiscardCase: false,
             isShowQuestionDetailsModal: false,
             isShowRetroModal: false,
+            isShowViewRetroModal: false,
             isShowAddToBankModal: false,
             isShowAddToSimulatorModal: false,
             busySimulator: false,
+            showSuccessToast: false,
+            showFailToast: false,
 
             titleModal: '',
             bodyModal: '',
@@ -295,6 +306,9 @@ export default {
 
             this.isShowRetroModal = !this.isShowRetroModal;
         },
+        viewRetro() {
+            this.isShowViewRetroModal = !this.isShowViewRetroModal;
+        },
         updateFeedback() {
             // Actualizar el feedback sin API
             this.caseDetails.feedback = this.theFeedback;
@@ -369,6 +383,9 @@ export default {
         },
         closeRetroModal() {
             this.isShowRetroModal = false;
+        },
+        closeViewRetroModal() {
+            this.isShowViewRetroModal = false;
         },
         closeAddToBankModal() {
             this.isShowAddToBankModal = false;

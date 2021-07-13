@@ -79,6 +79,14 @@
                 :textButton="button"
                 :isBusy="busy" />
 
+            <SuccessToast
+                v-if="showSuccessToast"
+                :textTitle="titleModal" />
+
+            <FailToast 
+                v-if="showFailToast"
+                :textTitle="titleModal" />
+
         </div>
     </div>
 </template>
@@ -89,6 +97,8 @@ import Loading from '../../components/modals/Loading';
 import RequestQuestionCard from '../../components/cards/RequestQuestionCard';
 import AcceptModal from '../../components/modals/AcceptModal';
 import RejectModal from '../../components/modals/RejectModal';
+import SuccessToast from '../../components/toasts/SuccessToast';
+import FailToast from '../../components/toasts/FailToast';
 
 export default {
     components: {
@@ -96,7 +106,9 @@ export default {
         Loading,
         RequestQuestionCard,
         AcceptModal,
-        RejectModal
+        RejectModal,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
@@ -104,6 +116,8 @@ export default {
             loading: false,
             isShowModalAccept: false,
             isShowModalReject: false,
+            showSuccessToast: false,
+            showFailToast: false,
 
             titleModal: '',
             bodyModal: '',
@@ -226,11 +240,28 @@ export default {
                 })
 
                 this.isShowModalAccept = !this.isShowModalAccept;
-                alert(assignResponse.data.message)
-                this.busy = !this.busy
+                
+                // alert(assignResponse.data.message)
+                this.titleModal = assignResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.busy = !this.busy
+                }, 1500);
+
                 this.getCasesRequested();
             } catch (err) {
                 console.log(err);
+                this.busy = !this.busy;
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         async rejectCase() {

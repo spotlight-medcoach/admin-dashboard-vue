@@ -3,7 +3,7 @@
         <div class="title">
             <h3>{{ title }}</h3>
         </div>
-        <input :type="type" :placeholder="placeholder" v-model="localValue" :disabled="dis">
+        <input :type="type" :placeholder="placeholder" v-model="localValue" :disabled="dis" required>
     </div>
 </template>
 

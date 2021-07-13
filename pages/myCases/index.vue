@@ -183,6 +183,7 @@ export default {
 
             this.myCases = casesResponse.data.payload.cases;
             this.totalCases = casesResponse.data.payload.length;
+            console.log('my cases', this.myCases);
 
             this.filterTopicSubtopicName();
             this.loading = !this.loading;

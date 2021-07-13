@@ -150,6 +150,14 @@
             :action="deleteQuestion"
             :textButton="button"
             :isBusy="busyDeleteQuestion" />
+
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleModal" />
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleModal" />
         
     </div>
 </template>
@@ -162,6 +170,8 @@ import AddQuestionSpotlighter from '../../components/modals/spotlighters/AddQues
 import CaseQuestionDetailsModalSpotlighter from '../../components/modals/spotlighters/CaseQuestionDetailsModalSpotlighter';
 import AcceptModal from '../../components/modals/AcceptModal';
 import RejectModal from '../../components/modals/RejectModal';
+import SuccessToast from '../../components/toasts/SuccessToast';
+import FailToast from '../../components/toasts/FailToast';
 
 export default {
     components: {
@@ -171,7 +181,9 @@ export default {
         AddQuestionSpotlighter,
         CaseQuestionDetailsModalSpotlighter,
         AcceptModal,
-        RejectModal
+        RejectModal,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
@@ -186,6 +198,8 @@ export default {
             isShowModalReject: false,
             isShowModalQuestionDetails: false,
             isShowModalDeleteQuestion: false,
+            showSuccessToast: false,
+            showFailToast: false,
 
             userData: {},
             dataCase: {},
@@ -241,16 +255,94 @@ export default {
     methods: {
         onEditorChangeDescription({ quill, html, text }) {
             this.contentDescription = quill.getContents();
-            this.contentHtml = quill.root.innerHTML;
+            this.contentHtml = html;
         },
         async requestCase() {
             try {
-                // Mostramos el modal para agregar la pregunta y creamos el caso en la BD
-                this.isShowModalAddQuestion = !this.isShowModalAddQuestion;
+                if (this.name.trim() == '' || this.topicBubbleSelected == '' || this.subtopicBubbleSelected == '' || this.languageSelected == '' || this.contentDescription.ops[0].insert.trim() == '') {
+                    this.titleModal = 'Todos los campos deben ser llenados';
+                    this.showFailToast = !this.showFailToast;
+
+                    setTimeout(() => {
+                        this.showFailToast = !this.showFailToast;
+                    }, 1);
+                } else {
+                    // Mostramos el modal para agregar la pregunta y creamos el caso en la BD
+                    this.isShowModalAddQuestion = !this.isShowModalAddQuestion;
+                    
+                    // Crear el pending case
+                    if (!this.dataCase._id) {
+                        console.log('Crear caso y al mostrar modal de crear pregunta')
+
+                        let caseResponse = await this.$axios.post('/createPendingCase', {
+                            admin_user: this.userData.admin_id,
+                            pending_case_id: this.id,
+                            name: this.name,
+                            topic_bubble: this.topicBubbleSelected,
+                            subtopic_bubble: this.subtopicBubbleSelected,
+                            language: this.languageSelected,
+                            description: {
+                                content: this.contentDescription,
+                                html: this.contentHtml
+                            },
+                            status: 'In edit',
+                            requested: false,
+                            request_description: {
+                                content: {
+                                    ops: [{
+                                        insert: ''
+                                    }]
+                                },
+                                html: ''
+                            },
+                            feedback: {
+                                content: {
+                                    ops: [{
+                                        insert: ''
+                                    }]
+                                },
+                                html: ''
+                            },
+                            spotlighter_id: this.userData.spotlighter_id.spotlighter_id
+                        });
+
+                        this.indexQuestion += 1
+                        this.dataCase = caseResponse.data.payload;
+                        // alert(caseResponse.data.message)
+                        console.log('caseCreated', this.dataCase);
+                    } else {
+                        this.indexQuestion += 1
+                    }
+                }
+            } catch (err) {
+                console.log(err);
+            }
+            
+        },
+        draftConfirm() {
+            if (this.name.trim() == '' || this.topicBubbleSelected == '' || this.subtopicBubbleSelected == '' || this.languageSelected == '' || this.contentHtml.trim() == '') {
+                    this.titleModal = 'Todos los campos deben ser llenados';
+                    this.showFailToast = !this.showFailToast;
+
+                    setTimeout(() => {
+                        this.showFailToast = !this.showFailToast;
+                    }, 1);
+            } else {
+                this.titleModal = 'Guardar como borrador';
+                this.bodyModal = 'Tu caso estará en estado de edición, solo tú lo podrás ver para que puedas continuar editandolo.';
+                this.button = 'Guardar caso';
                 
-                // Crear el pending case
+                this.isShowModalAcceptDraft = !this.isShowModalAcceptDraft;
+            }
+        },
+        async saveAsDraft() {
+            try {
+                console.log('save as draft')
+                // Si se guarda como borrador y no se ha creado el caso, se crea y regresamos a /myCases
+                this.busyDraft = !this.busyDraft;
+
                 if (!this.dataCase._id) {
-                    console.log('Crear caso y al mostrar modal de crear pregunta')
+                    console.log('create case and save as draft')
 
                     let caseResponse = await this.$axios.post('/createPendingCase', {
                         admin_user: this.userData.admin_id,
@@ -284,74 +376,49 @@ export default {
                         spotlighter_id: this.userData.spotlighter_id.spotlighter_id
                     });
 
-                    this.indexQuestion += 1
-                    this.dataCase = caseResponse.data.payload;
-                    alert(caseResponse.data.message)
-                    console.log('caseCreated', this.dataCase);
-                } else {
-                    this.indexQuestion += 1
-                }
-            } catch (err) {
-                console.log(err);
-            }
-            
-        },
-        draftConfirm() {
-            console.log('save as draft confirm')
-            this.titleModal = 'Guardar como borrador';
-            this.bodyModal = 'Tu caso estará en estado de edición, solo tú lo podrás ver para que puedas continuar editandolo.';
-            this.button = 'Guardar caso';
-            
-            this.isShowModalAcceptDraft = !this.isShowModalAcceptDraft;
-        },
-        async saveAsDraft() {
-            try {
-                console.log('save as draft')
-                // Si se guarda como borrador y no se ha creado el caso, se crea y regresamos a /myCases
-                this.busyDraft = !this.busyDraft;
-
-                if (!this.dataCase._id) {
-                    console.log('create case and save as draft')
-
-                    let caseResponse = await this.$axios.post('/createPendingCase', {
-                        admin_user: this.userData.admin_id,
-                        pending_case_id: this.id,
-                        name: this.name,
-                        topic_bubble: this.topicBubbleSelected,
-                        subtopic_bubble: this.subtopicBubbleSelected,
-                        language: this.languageSelected,
-                        description: {
-                            content: this.contentDescription,
-                            html: this.contentHtml
-                        },
-                        status: 'In edit',
-                        requested: false,
-                        spotlighter_id: this.userData.spotlighter_id.spotlighter_id
-                    });
-
                     this.dataCase = caseResponse.data.payload;
                     console.log('caseCreated', this.dataCase);
 
-                    alert(caseResponse.data.message)
+                    // alert(caseResponse.data.message)
+                    this.titleModal = caseResponse.data.message 
+                    this.showSuccessToast = !this.showSuccessToast;
                 }
 
                 setTimeout(() => {
                     this.busyDraft = !this.busyDraft;
                     this.isShowModalAcceptDraft = !this.isShowModalAcceptDraft;
+                    this.showSuccessToast = !this.showSuccessToast;
 
                     this.$router.push({ path: '/myCases'});
                 }, 1500)
             } catch (err) {
                 console.log(err);
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         saveAndSendConfirm() {
-            console.log('save and send confirm')
-            this.titleModal = 'Guardar como borrador';
-            this.bodyModal = "Tu caso se enviará al panel de administración para ser revísado. Si toda la información es correcta, se publicará en los simuladores o en caso de ser necesario, recibirás comentarios y feedback para su corrección. Una vez enviado no podrás modificarlo a menos que lo solicite el administrador. ¿Deseas enviarlo?";
-            this.button = 'Guardar y enviar caso';
+            if (this.name.trim() == '' || this.topicBubbleSelected == '' || this.subtopicBubbleSelected == '' || this.languageSelected == '' || this.contentHtml.trim() == '' || this.indexQuestion == 0) {
+                this.titleModal = 'Todos los campos deben ser llenados o falta agregar preguntas';
+                this.showFailToast = !this.showFailToast;
 
-            this.isShowModalAcceptSend = !this.isShowModalAcceptSend;
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
+            } else {
+                console.log('save and send confirm')
+                this.titleModal = 'Guardar como borrador';
+                this.bodyModal = "Tu caso se enviará al panel de administración para ser revísado. Si toda la información es correcta, se publicará en los simuladores o en caso de ser necesario, recibirás comentarios y feedback para su corrección. Una vez enviado no podrás modificarlo a menos que lo solicite el administrador. ¿Deseas enviarlo?";
+                this.button = 'Guardar y enviar caso';
+    
+                this.isShowModalAcceptSend = !this.isShowModalAcceptSend;
+            }
         },
         async saveAndSend() {
             try {
@@ -375,21 +442,49 @@ export default {
                         },
                         status: 'Pending review',
                         requested: false,
+                        request_description: {
+                            content: {
+                                ops: [{
+                                    insert: ''
+                                }]
+                            },
+                            html: ''
+                        },
+                        feedback: {
+                            content: {
+                                ops: [{
+                                    insert: ''
+                                }]
+                            },
+                            html: ''
+                        },
                         spotlighter_id: this.userData.spotlighter_id.spotlighter_id
                     });
 
                     this.dataCase = caseResponse.data.payload;
                     console.log('caseCreated', this.dataCase);
 
-                    alert(caseResponse.data.message)
+                    // alert(caseResponse.data.message)
+                    this.titleModal = caseResponse.data.message;
+                    this.showSuccessToast = !this.showSuccessToast;
+
+                    setTimeout(() => {
+                        this.showSuccessToast = !this.showSuccessToast;
+                    }, 1500);
                 } else {
                     console.log('save and send')
                     let changeStatusResponse = await this.$axios.put('/sendToReview', {
                         case_id: this.dataCase._id
                     });
     
-                    alert(changeStatusResponse.data.message)
+                    // alert(changeStatusResponse.data.message);
+                    this.titleModal = changeStatusResponse.data.message;
+                    this.showSuccessToast = !this.showSuccessToast;
+
                     console.log(changeStatusResponse.data.payload)
+                    setTimeout(() => {
+                        this.showSuccessToast = !this.showSuccessToast;
+                    }, 1500);
                 }
     
                 this.busySend = !this.busySend;
@@ -399,7 +494,15 @@ export default {
                     this.$router.push({ path: '/myCases'});
                 }, 1500);
             } catch (err) {
-                console.log(err)
+                console.log(err);
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         discardConfirm() {
@@ -425,17 +528,29 @@ export default {
                         params: { case_id: this.dataCase._id }
                     });
     
-                    alert(deleteResponse.data.message);
+                    // alert(deleteResponse.data.message);
+                    this.titleModal = deleteResponse.data.message;
+                    this.showSuccessToast = !this.showSuccessToast;
+
                     this.busyReject = !this.busyReject;
     
                     setTimeout(() => {
                         this.isShowModalReject = !this.isShowModalReject;
-        
+                        this.showSuccessToast = !this.showSuccessToast;
+
                         this.$router.push({ path: '/myCases'});
                     }, 1500);
                 }
             } catch (err) {
                 console.log(err);
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         filterSubtopics(topic) {
@@ -445,6 +560,7 @@ export default {
         async addQuestion() {
             try {
                 // Agregar y crear las pending questions
+                console.log('questionData', this.questionData)
                 let questionsResponse = await this.$axios.post('/createPendingQuestion', {
                     case_id: this.dataCase._id,
                     index: this.indexQuestion,
@@ -462,11 +578,24 @@ export default {
                     }
                 });
     
-                alert(questionsResponse.data.message);
+                // alert(questionsResponse.data.message);
+                this.titleModal = questionsResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+
                 this.questions.push(questionsResponse.data.payload.question_created);
-                console.log('responseQuestion', questionsResponse);    
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 2000)
+                // console.log('responseQuestion', questionsResponse);    
             } catch (err) {
-                console.log(err)
+                this.showFailToast = !this.showFailToast;
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+                console.log('err', response)
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
 
@@ -499,14 +628,29 @@ export default {
                     }
                 })
 
-                alert(deleteQuestionResponse.data.message);
+                // alert(deleteQuestionResponse.data.message);
+                this.titleModal = deleteQuestionResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+
                 this.questions = this.questions.filter(ques => ques._id != this.questionToDelete)
                 console.log('new ques', this.questions)
 
                 this.busyDeleteQuestion = !this.busyDeleteQuestion;
                 this.isShowModalDeleteQuestion = !this.isShowModalDeleteQuestion;
+
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 1000);
             } catch (err) {
                 console.log(err)
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
 

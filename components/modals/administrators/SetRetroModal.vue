@@ -25,17 +25,36 @@
                         <button type="button" class="btn accept" data-dismiss="modal" @click="setRetro"><i class="fas fa-check-circle"></i>{{textButton}}</button>
                     </div>
                 </div>
+
+                <SuccessToast
+                    v-if="showSuccessToast"
+                    :textTitle="titleModal" />
+
+                <FailToast 
+                    v-if="showFailToast"
+                    :textTitle="titleModal" />
             </div>
         </div>
+
     </transition>
 </template>
 
 <script>
+import SuccessToast from '../../toasts/SuccessToast';
+import FailToast from '../../toasts/FailToast';
+
 export default {
     props: ['textTitle', 'textBody', 'textButton', 'isBusy', 'case_id', 'feedback'],
+    components: {
+        SuccessToast,
+        FailToast
+    },
     data() {
         return {
             busy: false,
+            showSuccessToast: false,
+            showFailToast: false,
+            titleModal: '',
 
             contentDescription: this.feedback,
             contentHtml: '',
@@ -54,27 +73,45 @@ export default {
             this.contentHtml = quill.root.innerHTML;
         },
         async setRetro() {
-            this.busy = !this.busy;
-
-            console.log('retro', this.retro)
-            console.log('contentDescription', this.contentDescription)
-            let retroResponse = await this.$axios.put('/setFeedback', {
-                case_id: this.case_id,
-                feedback: {
+            try {
+                this.busy = !this.busy;
+    
+                console.log('contentDescription', this.contentDescription)
+                let retroResponse = await this.$axios.put('/setFeedback', {
+                    case_id: this.case_id,
+                    feedback: {
+                        content: this.contentDescription,
+                        html: this.contentHtml
+                    }
+                })
+    
+                // alert(retroResponse.data.message);
+    
+                this.busy = !this.busy;
+                this.$emit('update:data', {
                     content: this.contentDescription,
                     html: this.contentHtml
-                }
-            })
+                });
 
-            alert(retroResponse.data.message);
+                // this.titleModal = retroResponse.data.message 
+                // this.showSuccessToast = !this.showSuccessToast;
 
-            this.busy = !this.busy;
-            this.$emit('update:data', {
-                content: this.contentDescription,
-                html: this.contentHtml
-            })
-            this.$emit('feed')
-            this.$emit('close');
+                // setTimeout(() => {
+                //     this.showSuccessToast = !this.showSuccessToast;
+                // }, 2000);
+
+                this.$emit('close');
+                this.$emit('feed');
+            } catch (err) {
+                console.log('Error', err.message);
+                // const response = err.response;
+                // this.titleModal = response.data.message;
+                // this.showFailToast = !this.showFailToast;
+                
+                // setTimeout(() => {
+                //     this.showFailToast = !this.showFailToast;
+                // }, 1);
+            }
         },
     }
 }

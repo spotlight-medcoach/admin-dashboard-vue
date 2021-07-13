@@ -15,7 +15,9 @@
                 
                 <div v-if="!loading" class="buttons">
                     <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash"></i> Descartar caso</button>
-                    <button type="button" class="btn retro-btn" @click="retroAlert"><i class="fas fa-exclamation"></i> Dar retroalimentación</button>
+                    
+                    <button v-if="caseDetails.status != 'With feedback'" type="button" class="btn retro-btn" @click="retroAlert"><i class="fas fa-exclamation"></i> Dar retroalimentación</button>
+                    <button v-else class="btn retro-btn" @click="viewRetro"><i class="fas fa-exclamation"></i> Ver retroalimentación</button>
                 </div>
             </div>
 
@@ -84,6 +86,12 @@
             :feedback="caseDetails.feedback"
             :data.sync="theFeedback" />
 
+        <!-- Modal para ver retroalimentacion -->
+        <ViewRetroModal
+            v-if="isShowViewRetroModal"
+            @close="closeViewRetroModal"
+            :feedback="caseDetails.feedback" />
+
         <!-- Ver detalle de pregunta -->
         <QuestionDetailsReviewModalAdministrator 
             v-if="isShowQuestionDetailsModal"
@@ -112,27 +120,13 @@
             :allSimulators="simulators"
             :isBusy="busySimulator" />
 
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleModal" />
 
-        <!-- <AcceptModal 
-            v-if="isShowModalAccept"
-            @close="closeAcceptModal"
-            :textTitle="titleModal"
-            :textBody="bodyModal"
-            :action="saveAsDraft"
-            :textButton="button"
-            :isBusy="busyDraft" />
-
-        <AcceptModal 
-            v-if="isShowModalAccept"
-            @close="closeAcceptModal"
-            :textTitle="titleModal"
-            :textBody="bodyModal"
-            :action="saveAndSend"
-            :textButton="button"
-            :isBusy="busySend" />
-
-         -->
-
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleModal" />
     </div>
 </template>
 
@@ -143,9 +137,12 @@ import CaseDetailsReviewCard from '../../components/cards/administrators/CaseDet
 import QuestionReviewCard from '../../components/cards/administrators/QuestionReviewCard';
 import RejectModal from '../../components/modals/RejectModal'
 import SetRetroModal from '../../components/modals/administrators/SetRetroModal';
+import ViewRetroModal from '../../components/modals/administrators/ViewRetroModal';
 import QuestionDetailsReviewModalAdministrator from '../../components/modals/administrators/QuestionDetailsReviewModalAdministrator';
 import AddToBankModal from '../../components/modals/administrators/AddToBankModal';
 import AddToSimulator from '../../components/modals/administrators/AddToSimulator';
+import SuccessToast from '../../components/toasts/SuccessToast';
+import FailToast from '../../components/toasts/FailToast';
 
 export default {
     components: {
@@ -155,9 +152,12 @@ export default {
         QuestionReviewCard,
         RejectModal,
         SetRetroModal,
+        ViewRetroModal,
         QuestionDetailsReviewModalAdministrator,
         AddToBankModal,
-        AddToSimulator
+        AddToSimulator,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
@@ -166,11 +166,14 @@ export default {
             busyReject: false,
             isShowRetroModal: false,
             busyRetro: false,
+            isShowViewRetroModal: false,
             isShowQuestionDetailsModal: false,
             isShowAddToBankModal: false,
             busyBank: false,
             isShowAddToSimulatorModal: false,
             busySimulator: false,
+            showSuccessToast: false,
+            showFailToast: false,
 
             titleModal: '',
             bodyModal: '',
@@ -252,8 +255,33 @@ export default {
             this.button = 'Enviar retroalimentación'
 
         },
+        viewRetro() {
+            this.isShowViewRetroModal = !this.isShowViewRetroModal;
+        },
         updateFeedback() {
-            this.caseDetails.feedback = this.theFeedback
+            try {
+                this.loading =! this.loading;
+    
+                this.caseDetails.feedback = this.theFeedback;
+                this.caseDetails.status = 'With feedback';
+
+                this.titleModal = 'Feedback updated';
+                this.showSuccessToast = !this.showSuccessToast;
+                
+                setTimeout(() => {
+                    this.loading =! this.loading;
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.$router.push({ path: `/reviewNewQuestions` });
+                }, 1000)
+            } catch (err) {
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+                
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
+            }
         },
 
         viewQuestion(question) {
@@ -345,6 +373,9 @@ export default {
         },
         closeRetroModal() {
             this.isShowRetroModal = false;
+        },
+        closeViewRetroModal() {
+            this.isShowViewRetroModal = false;
         },
         closeQuestionDetailsModal() {
             this.isShowQuestionDetailsModal = false
