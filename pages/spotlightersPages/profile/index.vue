@@ -8,7 +8,7 @@
                     Salir de perfil
                 </nuxt-link>
 
-                <button v-if="disabled" class="btn" @click="editProfile"><i class="fas fa-pencil-alt"></i> Edital perfil</button>
+                <button v-if="disabled && !loading" class="btn" @click="editProfile"><i class="fas fa-pencil-alt"></i> Edital perfil</button>
             </div>
             
             <Loading v-if="loading" />
@@ -136,10 +136,19 @@
                 </div>
 
                 <div v-if="!disabled" class="button-container">
-                    <button class="btn" @click="saveProfile"><i class="fas fa-check-circle"></i> Guardar cambios</button>
+                    <button class="btn cancel" @click="cancel"><i class="fas fa-window-close mr-1"></i> Cancelar</button>
+                    <button class="btn save" @click="saveProfile"><i class="fas fa-check-circle mr-1"></i> Guardar cambios</button>
                 </div>
             </div>
         </div>
+
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleModal" />
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleModal" />
     </div>
 </template>
 
@@ -148,6 +157,8 @@ import SpotlighterNavigation from '../../../components/navs/SpotlighterNavigatio
 import Loading from '../../../components/modals/Loading';
 import Input from '../../../components/inputs/Input';
 import InputIcon from '../../../components/inputs/InputIcon';
+import SuccessToast from '../../../components/toasts/SuccessToast';
+import FailToast from '../../../components/toasts/FailToast';
 
 // var bcrypt = require('bcryptjs');
 
@@ -156,12 +167,17 @@ export default {
         SpotlighterNavigation,
         Loading,
         Input,
-        InputIcon
+        InputIcon,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
             loading: false,
             busy: false,
+            showSuccessToast: false,
+            showFailToast: false,
+            titleModal: '',
 
             userInfo: {},
             new_name: '',
@@ -178,7 +194,7 @@ export default {
             universities: [],
 
             typePassword: 'password',
-            classPassword: 'btn fas fa-eye',
+            classPassword: 'btn fas fa-eye-slash',
         }
     },
     async created() {
@@ -216,18 +232,20 @@ export default {
         changeIconClassPass() {
             if (this.typePassword == 'password') {
                 this.typePassword = 'text'
-                this.classPassword = 'btn fas fa-eye-slash'
-                // var salt = bcrypt.genSaltSync(10);
-                // var hash = bcrypt.hashSync("B4c0/\/", salt);
-                console.log(hash)
+                this.classPassword = 'btn fas fa-eye'
             } else if (this.typePassword == 'text') {
                 this.typePassword = 'password'
-                this.classPassword = 'btn fas fa-eye'
+                this.classPassword = 'btn fas fa-eye-slash'
             }
         },
         editProfile() {
             this.disabled = false;
             this.new_university = this.userInfo.spotlighter_id.university_id;
+        },
+        cancel() {
+            this.disabled = true;
+            // console.log(this.universities.filter(uni => uni._id == this.new_university)[0].name)
+            this.new_university = this.universities.filter(uni => uni._id == this.new_university)[0].name
         },
         async saveProfile() {
             try {
@@ -247,12 +265,26 @@ export default {
                 })
                 console.log(updateResponse)
                 alert(updateResponse.data.message);
+                this.titleModal = updateResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
 
-                this.busy = !this.busy;
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.busy = !this.busy;
+                });
 
                 this.$router.push({ path: '/myCases' })
             } catch (err) {
                 console.log(err);
+                this.busy = !this.busy;
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         }
     }
@@ -373,7 +405,16 @@ export default {
         justify-content: flex-end;
     }
 
-    .button-container button {
+    .cancel {
+        padding: 12px 20px;
+        background: #DB1212;
+        color: #FFF;
+        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
+        border-radius: 10px;
+        margin: 45px 40px;
+    }
+
+    .save {
         padding: 12px 20px;
         background: #20B000;
         color: #FFF;

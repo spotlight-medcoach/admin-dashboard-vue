@@ -6,8 +6,7 @@
                 <h3 class="content">{{question.question.content.ops[0].insert}}</h3>
             </div>
             <div class="icons">
-                <button class="btn fas fa-pencil-alt edit" @click="$emit('updateQuestion')"></button>
-                <button class="btn fas fa-trash delete" @click="$emit('deleteQuestion')"></button>
+                <button class="btn fas fa-eye edit" @click="$emit('viewQuestion')"></button>
             </div>
         </div>
     </div>

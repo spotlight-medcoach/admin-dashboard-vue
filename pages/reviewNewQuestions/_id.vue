@@ -309,13 +309,30 @@ export default {
                 })
 
                 console.log(bankResponse);
-                alert(bankResponse.data.message);
+                // alert(bankResponse.data.message);
+
+                this.titleModal = bankResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
 
                 this.busyBank = !this.busyBank;
                 this.isShowAddToBankModal = !this.isShowAddToBankModal;
-                this.$router.push({ path: `/reviewNewQuestions` });
+
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.$router.push({ path: `/reviewNewQuestions` });
+                }, 1500);
             } catch (err) {
                 console.log(err);
+                this.busyBank = !this.busyBank;
+                this.isShowAddToBankModal = !this.isShowAddToBankModal;
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
 

@@ -24,7 +24,7 @@
                                 <h3>Tipo</h3>
                                 <select v-model="typeSelected" name="" id="">
                                     <option value="" disabled>Tipo</option>
-                                    <option :value="types.display" v-for="types in typ" :key="types._id">{{ types.display }}</option>
+                                    <option :value="types.bubble_id" v-for="types in typ" :key="types._id">{{ types.display }}</option>
                                 </select>
                             </div>
                         </div>
@@ -122,6 +122,14 @@
                             Guardar y regresar al caso
                         </button>
                     </div>
+
+                    <SuccessToast
+                        v-if="showSuccessToast"
+                        :textTitle="titleModal" />
+
+                    <FailToast 
+                        v-if="showFailToast"
+                        :textTitle="titleModal" />
                 </div>
             </div>
         </div>
@@ -129,10 +137,21 @@
 </template>
 
 <script>
+import SuccessToast from '../../toasts/SuccessToast';
+import FailToast from '../../toasts/FailToast';
+
 export default {
     props: ['toUpdate', 'typ', 'case'],
+    components: {
+        SuccessToast,
+        FailToast
+    },
     data() {
         return {
+            showSuccessToast: false,
+            showFailToast: false,
+            titleModal: '',
+
             isBusy: false,
             dificultySelected: this.toUpdate.importance,
             typeSelected: this.toUpdate.type,
@@ -215,61 +234,80 @@ export default {
         async updateQuestion() {
             try {
                 this.isBusy = !this.isBusy;
-                
-                let updateQuestionResponse = await this.$axios.put('/updatePendingQuestion', {
-                    case_id: this.case,
-                    question_id: this.toUpdate._id,
-                    index: this.toUpdate.index,
-                    importance: this.dificultySelected,
-                    type: this.typeSelected,
-                    question: {
-                        content: this.questionContent,
-                        html: this.questionHtml
-                    },
-                    answers: [
-                        {
-                            id: this.toUpdate.answers[0].id,
-                            content: this.answer1,
-                            html: this.answer1Html
-                        },
-                        {
-                            id: this.toUpdate.answers[1].id,
-                            content: this.answer2,
-                            html: this.answer2Html
-                        },
-                        {
-                            id: this.toUpdate.answers[2].id,
-                            content: this.answer3,
-                            html: this.answer3Html
-                        },
-                        {
-                            id: this.toUpdate.answers[3].id,
-                            content: this.answer4,
-                            html: this.answer4Html
-                        }
-                    ],
-                    correct_answer: this.correctAnswer,
-                    retro: {
-                        content: this.retroContent,
-                        html: this.retroHtml
-                    }
-                })
 
-                this.$emit('update:data', {
-                    updated: updateQuestionResponse.data.payload,
-                    indexInArray: this.toUpdate.indexInArray
-                })
-    
-                console.log(updateQuestionResponse.data.payload)
-                alert(updateQuestionResponse.data.message);
-
-                // setTimeout(() => {
+                if (this.dificultySelected == '' || this.typeSelected == '' || this.correctAnswer == '' || this.answer1.ops[0].insert.trim() == '' || this.answer2.ops[0].insert.trim() == '' || this.answer3.ops[0].insert.trim() == '' || this.answer4.ops[0].insert.trim() == '' || this.questionContent.ops[0].insert.trim() == '' || this.retroContent.ops[0].insert.trim() == '') {
                     this.isBusy = !this.isBusy;
-                    this.$emit('reload')
-                    this.$emit('close');
-                // }, 1500);
+                    this.titleModal = 'Ningun campo puede quedar vacio';
+                    this.showFailToast = !this.showFailToast;
+
+                    setTimeout(() => {
+                        this.showFailToast = !this.showFailToast;
+                    }, 1);
+                } else {
+                    let updateQuestionResponse = await this.$axios.put('/updatePendingQuestion', {
+                        case_id: this.case,
+                        question_id: this.toUpdate._id,
+                        index: this.toUpdate.index,
+                        importance: this.dificultySelected,
+                        type: this.typeSelected,
+                        question: {
+                            content: this.questionContent,
+                            html: this.questionHtml
+                        },
+                        answers: [
+                            {
+                                id: this.toUpdate.answers[0].id,
+                                content: this.answer1,
+                                html: this.answer1Html
+                            },
+                            {
+                                id: this.toUpdate.answers[1].id,
+                                content: this.answer2,
+                                html: this.answer2Html
+                            },
+                            {
+                                id: this.toUpdate.answers[2].id,
+                                content: this.answer3,
+                                html: this.answer3Html
+                            },
+                            {
+                                id: this.toUpdate.answers[3].id,
+                                content: this.answer4,
+                                html: this.answer4Html
+                            }
+                        ],
+                        correct_answer: this.correctAnswer,
+                        retro: {
+                            content: this.retroContent,
+                            html: this.retroHtml
+                        }
+                    })
+    
+                    this.$emit('update:data', {
+                        updated: updateQuestionResponse.data.payload,
+                        indexInArray: this.toUpdate.indexInArray
+                    })
+        
+                    console.log(updateQuestionResponse.data.payload)
+                    // alert(updateQuestionResponse.data.message);
+                    this.titleModal = updateQuestionResponse.data.message;
+                    this.showSuccessToast = !this.showSuccessToast;
+
+                    setTimeout(() => {
+                        this.showSuccessToast = !this.showSuccessToast;
+                        this.isBusy = !this.isBusy;
+                        this.$emit('reload')
+                        this.$emit('close');
+                    });
+                }
             } catch (err) {
-                console.log(err)
+                console.log(err);
+                this.titleModal = err;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         }
     }

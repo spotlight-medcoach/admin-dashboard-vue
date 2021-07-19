@@ -22,7 +22,7 @@
 					to="/reviewNewQuestions"
 					new_class="link nuxt-link-active"
 					icon="fas fa-folder"
-					title="Revisión de preguntas" />
+					title="Revisión de casos" />
 			</div>
 			<div>
 				<LinkNavigation 

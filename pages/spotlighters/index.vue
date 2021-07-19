@@ -8,7 +8,7 @@
                     v-if="!loading"
                     to="/spotlighters/addSpotlighter"
                     class="add-button" >
-                    <i class="fas fa-user-plus"></i>
+                    <i class="fas fa-user-plus mr-2"></i>
                         Agregar spotlighter
                 </nuxt-link>
             </div>
@@ -54,19 +54,19 @@
                                     <button class="btn fas fa-ellipsis-v" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                         <div class="configuration">
-                                            <button v-if="selected == 'true'" type="button" class="btn" @click="confirmModalInactive(spotlighters[index])">
-                                                <i class="fas fa-trash"></i>
-                                                Eliminar usuario
+                                            <button v-if="selected == 'true'" type="button" class="btn" @click="update(spotlighters[index])">
+                                                <i class="fas fa-pencil-alt mr-2"></i>
+                                                Editar usuario
                                             </button>
                                             <button v-else-if="selected == 'false'" type="button" class="btn" @click="confirmModalActive(spotlighters[index])">
-                                                <i class="fas fa-check-circle"></i>
+                                                <i class="fas fa-check-circle mr-2"></i>
                                                 Habilitar usuario
                                             </button>
                                         </div>
                                         <div v-if="selected == 'true'" class="notifications">
-                                            <button type="button" class="btn" @click="update(spotlighters[index])">
-                                                <i class="fas fa-pencil-alt"></i>
-                                                Editar usuario
+                                            <button type="button" class="btn" @click="confirmModalInactive(spotlighters[index])">
+                                                <i class="fas fa-trash mr-2"></i>
+                                                Eliminar usuario
                                             </button>
                                         </div>
                                     </div>
@@ -446,35 +446,35 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
     .dollar {
         color: #FFF;
         background: #FE9400;
-        border-radius: 50%;
+        border-radius: 100%;
         margin: 0 .5rem;
     }
 
     .dollar:hover {
         color: #FFF;
         background: #000;
-        border-radius: 50%;
+        border-radius: 100%;
         margin: 0 .5rem;
     }
 
     .dollar-request {
         color: #FFF;
         background: #DB1212;
-        border-radius: 50%;
+        border-radius: 100%;
         margin: 0 .5rem;
     }
 
     .dollar-request:hover {
         color: #FFF;
         background: #000;
-        border-radius: 50%;
+        border-radius: 100%;
         margin: 0 .5rem;
     }
 
     .dollar-payed {
         color: #FFF;
         background: #8f8f8f;
-        border-radius: 50%;
+        border-radius: 100%;
         margin: 0 .5rem;
     }
     .pay-button button {
@@ -502,6 +502,14 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
         height: 24px;
         padding-top: 2%;
         margin-right: 5%;
+    }
+
+    .dropdown-menu {
+        background: #FFFFFF;
+        box-shadow: 0px 0px 20px #D4D5D7;
+        border-radius: 10px;
+        width: 200px;
+        padding-left: 8px;
     }
 
     .pagination-container {

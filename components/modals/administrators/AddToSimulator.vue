@@ -9,9 +9,13 @@
                     </div>
                     <div class="modal-body">
                         <p>{{ textBody }}</p>
-                        <select name="" id="" v-model="simulatorSelected">
-                            <option :value="simulator._id" v-for="simulator in allSimulators" :key="simulator._id">{{simulator.name}}</option>
-                        </select>
+
+                        <div class="select-simulator">
+                            <span>Elige el simulador</span>
+                            <select name="" id="" v-model="simulatorSelected">
+                                <option :value="simulator._id" v-for="simulator in allSimulators" :key="simulator._id">{{simulator.name}}</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Loader -->
@@ -69,7 +73,7 @@ export default {
         flex-direction: column;
         justify-content: center;
         width: 35%;
-        height: 318px;
+        /* height: 318px; */
         margin: 0px auto;
         padding: 24px 24px;
         background-color: #fff;
@@ -79,12 +83,27 @@ export default {
         font-family: Montserrat;
     }
 
+    .select-simulator {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .select-simulator span {
+        margin-top: 20px;
+        margin-bottom: 10px;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 20px;
+        color: #1CA4FC;
+    }
+
     .modal-body select {
         height: 32px;
         width: 30%;
         border: none;
         border-bottom: 1px solid #000;
-        margin-top: 20px;
+        /* margin-top: 20px; */
     }
 
     .modal-footer {

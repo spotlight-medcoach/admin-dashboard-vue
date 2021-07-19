@@ -13,7 +13,7 @@
             <div v-else class="form-container">
                 <div class="title-container">
                     <h1>Solicitar nuevo caso</h1>
-                    <button type="button" class="btn cancel" @click="discardCase"><i class="fas fa-trash"></i> Descartar caso</button>
+                    <button type="button" class="btn cancel" @click="discardCaseConfirm"><i class="fas fa-trash"></i> Descartar caso</button>
                 </div>
 
                 <div class="inputs-container">
@@ -26,11 +26,13 @@
                     </div>
 
                     <div class="id">
-                        <Input
+                        <label for="">ID</label>
+                        <input type="text" name="" id="" disabled v-model="new_id">
+                        <!-- <Input
                             type="text"
                             placeholder="1234"
                             v-model="case_id"
-                            title="ID" />
+                            title="ID" /> -->
                     </div>
                 </div>
 
@@ -47,7 +49,7 @@
                     <div class="subtopic-container">
                         <div class="input">
                             <h3>Subtema</h3>
-                            <select v-model="subtopicBubbleSelected" class="js-example-basic-single">
+                            <select v-model="subtopicBubbleSelected" class="js-example-basic-single" @change="changeSubtopic(subtopicBubbleSelected)">
                                 <option :value="''" selected>Elegir subtema</option>
                                 <option :value="sub.subtopic" v-for="sub in subtopics" :key="sub._id">{{sub.name}}</option>
                             </select>
@@ -95,8 +97,25 @@
                         :i_class="'fas fa-list-alt'" /> 
                 </div>
             </div>
-
         </div>
+
+        <!-- Descartar caso -->
+        <RejectModal 
+            v-if="showRejectModal"
+            @close="closeRejectModal"
+            :action="discardCase"
+            :textTitle="textTitle"
+            :textBody="textModal"
+            :textButton="button"
+            :isBusy="rejectBusy" />
+
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleModal" />
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleModal" />
     </div>
 </template>
 
@@ -106,6 +125,9 @@ import Input from '../../components/inputs/Input';
 import InputTitle from '../../components/inputs/InputTitle';
 import SuccessButton from '../../components/buttons/SuccessButton';
 import Loading from '../../components/modals/Loading';
+import RejectModal from '../../components/modals/RejectModal';
+import SuccessToast from '../../components/toasts/SuccessToast';
+import FailToast from '../../components/toasts/FailToast';
 
 export default {
     components: {
@@ -114,11 +136,18 @@ export default {
         InputTitle,
         SuccessButton,
         Loading,
+        RejectModal,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
             loading: true,
             busy: false,
+            showRejectModal: false,
+            showSuccessToast: false,
+            showFailToast: false,
+            rejectBusy: false,
 
             topicBubbleSelected: '',
             subtopicBubbleSelected: '',
@@ -126,6 +155,7 @@ export default {
 
             textModal: '',
             textTitle: '',
+            button: '',
 
             spotlighters: [],
             topics: [],
@@ -135,7 +165,10 @@ export default {
             nameSpotlighter: '',
 
             case_name: '',
-            case_id: '',
+            id: 'A-',
+            new_id: '',
+            topicFolio: '',
+            subtopicFolio: '',
             topic: '',
             subtopic: '',
 
@@ -187,8 +220,17 @@ export default {
             }
         },
         filterSubtopics(topic) {
+            console.log('topic', this.topics)
+            this.topicFolio = this.topics.filter(top => top.bubble_id == topic)[0].topic_folio;
+            this.new_id = this.id + this.topicFolio + '-';
+
             let topicFiltered = this.topics.filter(top => top.bubble_id == topic)
             this.subtopics = topicFiltered[0].subtopics
+        },
+        changeSubtopic(subtopic) {
+            this.subtopicFolio = this.subtopics.filter(sub => sub.subtopic == subtopic)[0].subtopic_folio;
+            this.new_id = this.id + this.topicFolio + '-' + this.subtopicFolio + '-' + (parseInt(this.$route.query.length) + 1);
+            console.log('length', this.$route.query.length)
         },
         async addPendingCase() {
             try {
@@ -197,7 +239,7 @@ export default {
                 
                 let case_response = await this.$axios.post('/createPendingCase', {
                     admin_user: this.admin_data.admin_id,
-                    pending_case_id: this.case_id,
+                    pending_case_id: this.new_id,
                     name: this.case_name,
                     topic_bubble: this.topicBubbleSelected,
                     subtopic_bubble: this.subtopicBubbleSelected,
@@ -215,14 +257,6 @@ export default {
                         },
                         html: ''
                     },
-                    // retro: {
-                    //     content: {
-                    //         ops: [{
-                    //             insert: ''
-                    //         }]
-                    //     },
-                    //     html: ''
-                    // },
                     feedback: {
                         content: {
                             ops: [{
@@ -236,17 +270,45 @@ export default {
                 })
 
                 this.busy = !this.busy;
-                alert(case_response.data.message)
+                // alert(case_response.data.message)
+                this.titleModal = case_response.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.$router.push({ path: '/requestedCases' })
+                }, 1500);
                 
-                this.$router.push({ path: '/requestedCases' })
             } catch (err) {
                 this.busy = false;
                 console.log(err)
-                alert(err.message)
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
+        discardCaseConfirm() {
+            this.textTitle = 'Descartar caso'
+            this.textModal = 'Al descartar esete caso, se eliminará toda la información relacionada con él. Esta acción no puede deshacerse. ¿Deseas descartarlo?';
+            this.button = 'Descartar caso'
+            this.showRejectModal = !this.showRejectModal;
+        },
         discardCase() {
-             this.$router.push({ path: '/requestedCases'});
+            this.rejectBusy = !this.rejectBusy;
+
+            setTimeout(() => {
+                this.rejectBusy = !this.rejectBusy;
+                this.showRejectModal = !this.showRejectModal;
+                this.$router.push({ path: '/requestedCases'});
+            }, 2000);
+        },
+        closeRejectModal() {
+            this.showRejectModal = false;
         },
         closeModal() {
             this.isShowModal = !this.isShowModal;
@@ -383,7 +445,29 @@ export default {
         width: 65%;
     }
     .id {
+        display: flex;
+        flex-direction: column;
+        /* margin: 10px 0px; */
         width: 30%;
+    }
+
+    .id label {
+        color: #1CA4FC;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
+        margin-bottom: 12px;
+    }
+
+    .id input {
+        margin-top: .5rem;
+        background-color:transparent;
+        border: 0px solid;
+        height:30px;
+        width: 100%;
+        margin-top: 0px;
+        font-family: Montserrat;
     }
 
     .topic {
@@ -428,6 +512,20 @@ export default {
         box-sizing: border-box;
         border-radius: 10px;
         padding: 10px;
+        font-family: Montserrat !important;
+    }
+
+    .ql-font-montserrat {
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .ql-container p {
+        font-family: Montserrat !important;
+        color: red;
+    }
+
+    .ql-bubble {
+        font-family: Montserrat;
     }
     
     .select-users {

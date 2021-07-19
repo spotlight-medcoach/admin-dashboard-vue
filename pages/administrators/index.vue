@@ -42,19 +42,19 @@
                                     <button class="btn fas fa-ellipsis-v" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                         <div class="configuration">
-                                            <button v-if="selected == 'true'" type="button" class="btn" @click="confirmModalInactive(administrators[index])">
-                                                <i class="fas fa-trash"></i>
-                                                Eliminar usuario
+                                            <button v-if="selected == 'true'" type="button" class="btn" @click="update(administrators[index])">
+                                                <i class="fas fa-pencil-alt mr-2"></i>
+                                                Editar usuario
                                             </button>
                                             <button v-else-if="selected == 'false'" type="button" class="btn" @click="confirmModalActive(administrators[index])">
-                                                <i class="fas fa-check-circle"></i>
+                                                <i class="fas fa-check-circle mr-2"></i>
                                                 Habilitar usuario
                                             </button>
                                         </div>
                                         <div v-if="selected == 'true'" class="notifications">
-                                            <button type="button" class="btn" @click="update(administrators[index])">
-                                                <i class="fas fa-pencil-alt"></i>
-                                                Editar usuario
+                                            <button type="button" class="btn" @click="confirmModalInactive(administrators[index])">
+                                                <i class="fas fa-trash mr-2"></i>
+                                                Eliminar usuario
                                             </button>
                                         </div>
                                     </div>
@@ -64,27 +64,6 @@
                     </tbody>
                 </table>
             </div>
-
-            <!-- <div v-if="!loading" class="pagination-container">
-                <div class="select-container">
-                    <span>Rows per page: </span>
-                    <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
-                        <option value=1>1</option>
-                        <option value=2>2</option>
-                        <option value=3>3</option>
-                        <option value=5>5</option>
-                        <option value=10>10</option>
-                        <option value=15>15</option>
-                        <option value=20>20</option>
-                    </select>
-                </div>
-
-                <div class="arrows-container">
-                    <span>1 - {{pageResults}} of {{totalAdmins}} Administradores</span>
-                    <button class="btn fas fa-chevron-left" @click="before"></button>
-                    <button class="btn fas fa-chevron-right" @click="after"></button>
-                </div>
-            </div> -->
 
             <div v-if="!loading" class="pagination-container">
                 <div class="select-container">
@@ -467,6 +446,14 @@ export default {
 
     .arrows-container button {
         color: #FE9400;
+    }
+
+    .dropdown-menu {
+        background: #FFFFFF;
+        box-shadow: 0px 0px 20px #D4D5D7;
+        border-radius: 10px;
+        width: 200px;
+        padding-left: 8px;
     }
 
     /* .loco {

@@ -37,7 +37,7 @@
                 <div class="inputs">
                     <div class="int-cont-email">
                         <InputIcon
-                            type="text"
+                            type="email"
                             placeholder="example@example.com"
                             v-model="new_email"
                             :val="new_email"
@@ -83,6 +83,14 @@
                 :name="nameUser"
                 :action="deleteUser"
                 :isBusy="busy" />
+
+                <SuccessToast
+                    v-if="showSuccessToast"
+                    :textTitle="titleToast" />
+
+                <FailToast 
+                    v-if="showFailToast"
+                    :textTitle="titleToast" />
         </div>
     </div>
 </template>
@@ -94,6 +102,8 @@ import InputIcon from '../../components/inputs/InputIcon';
 import Input from '../../components/inputs/Input';
 import SuccessButton from '../../components/buttons/SuccessButton';
 import DeleteUserModal from '../../components/modals/DeleteUserModal';
+import SuccessToast from '../../components/toasts/SuccessToast';
+import FailToast from '../../components/toasts/FailToast';
 
 export default {
     components: {
@@ -102,13 +112,19 @@ export default {
         InputIcon,
         Input,
         SuccessButton,
-        DeleteUserModal
+        DeleteUserModal,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
             loading: false,
             busy: false,
             isShowModal: false,
+            showSuccessToast: false,
+            showFailToast: false,
+            titleToast: '',
+
             user_data: {},
             new_name: '',
             new_last_name: '',
@@ -118,7 +134,7 @@ export default {
             bodyModal: '',
             nameUser: '',
             typePassword: 'password',
-            classPassword: 'btn fas fa-eye',
+            classPassword: 'btn fas fa-eye-slash',
         }
     },
     async created() {
@@ -153,7 +169,7 @@ export default {
             try {
                 this.busy = !this.busy
                 let updated_response = await this.$axios.put('/updateUser', {
-                    user_id: this.user_data.admi_id,
+                    user_id: this.$route.params.id,
                     name: this.new_name,
                     last_name: this.new_last_name,
                     email: this.new_email,
@@ -162,13 +178,24 @@ export default {
 
                 this.busy = !this.busy
 
+                // alert(updated_response.data.message)
+                this.titleToast = updated_response.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+
                 setTimeout(() => {
-                    alert(updated_response.data.message)
-                    // console.log(updated_response)
+                    this.showSuccessToast = !this.showSuccessToast;
                     this.$router.push({ path: '/administrators' })
-                }, 1000);
+                }, 1500);
             } catch (err) {
-                console.log(err)
+                this.busy = !this.busy;
+                console.log(err);
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         confirmModal() {
@@ -181,23 +208,34 @@ export default {
                 let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.$route.params.id });
                 console.log(inactive_response);
                 
-                // this.bodyModal = 'Eliminado'
-                // this.isShowModal = !this.isShowModal;
+                this.titleToast = inactive_response.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+
                 setTimeout(() => {
-                    this.$router.push({ path: '/administrators' })
                     this.isShowModal = !this.isShowModal;
+
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.$router.push({ path: '/administrators' })
                 }, 1500);
             } catch (err) {
+                this.busy = !this.busy;
                 console.log(err);
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         changeIconClassPass() {
             if (this.typePassword == 'password') {
                 this.typePassword = 'text'
-                this.classPassword = 'btn fas fa-eye-slash'
+                this.classPassword = 'btn fas fa-eye'
             } else if (this.typePassword == 'text') {
                 this.typePassword = 'password'
-                this.classPassword = 'btn fas fa-eye'
+                this.classPassword = 'btn fas fa-eye-slash'
             }
         },
         closeModal() {

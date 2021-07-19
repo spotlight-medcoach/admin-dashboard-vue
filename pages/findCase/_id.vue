@@ -14,7 +14,7 @@
                 <h1>Detalles del caso</h1>
 
                 <div class="buttons-container">
-                    <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash mr-5 pr-5"></i> Descartar caso</button>
+                    <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash mr-2"></i> Descartar caso</button>
                 </div>
             </div>
 

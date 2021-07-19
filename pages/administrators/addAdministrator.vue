@@ -34,7 +34,7 @@
                 <div class="inputs">
                     <div class="int-cont-email">
                         <InputIcon
-                            type="text"
+                            type="email"
                             placeholder="example@example.com"
                             v-model="email"
                             icon="fas fa-envelope"
@@ -83,6 +83,14 @@
                 />
             </div>
         </div>
+
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleToast" />
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleToast" />
     </div>
 </template>
 
@@ -93,6 +101,8 @@ import InputTitle from '../../components/inputs/InputTitle';
 import Input from '../../components/inputs/Input';
 import Loading from '../../components/modals/Loading';
 import InputIcon from '../../components/inputs/InputIcon';
+import SuccessToast from '../../components/toasts/SuccessToast';
+import FailToast from '../../components/toasts/FailToast';
 
 export default {
     components: {
@@ -101,22 +111,28 @@ export default {
         InputTitle,
         Input,
         Loading,
-        InputIcon
+        InputIcon,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
             busy: false,
             loading: true,
+            showSuccessToast: false,
+            showFailToast: false,
+            titleToast: '',
+
             name: '',
             last_name: '',
             email: '',
             password: '',
             confirm_password: '',
             typePassword: 'password',
-            classPassword: 'btn fas fa-eye',
+            classPassword: 'btn fas fa-eye-slash',
 
             typeConfirm: 'password',
-            classConfirm: 'btn fas fa-eye'
+            classConfirm: 'btn fas fa-eye-slash',
         }
     },
     created() {
@@ -126,37 +142,55 @@ export default {
     },
     methods: {
         async addAdministrator() {
-            this.busy = !this.busy;
+            try {
+                this.busy = !this.busy;
+    
+                let add_response = await this.$axios.post('/createUser', {
+                    name: this.name,
+                    last_name: this.last_name,
+                    email: this.email,
+                    password: this.password,
+                    role: 'Administrador'
+                });
+    
+                this.busy = !this.busy;
+    
+                // alert(add_response.data.message);
+                this.titleToast = add_response.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
 
-            let add_response = await this.$axios.post('/createUser', {
-                name: this.name,
-                last_name: this.last_name,
-                email: this.email,
-                password: this.password,
-                role: 'Administrador'
-            });
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.$router.push({ path: '/administrators' })
+                }, 1500)
+            } catch (err) {
+                this.busy = !this.busy;
+                console.log(err);
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
 
-            this.busy = !this.busy;
-
-            alert(add_response.data.message);
-            this.$router.push({ path: '/administrators' })
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
+            }
         },
         changeIconClassPass() {
             if (this.typePassword == 'password') {
                 this.typePassword = 'text'
-                this.classPassword = 'btn fas fa-eye-slash'
+                this.classPassword = 'btn fas fa-eye'
             } else if (this.typePassword == 'text') {
                 this.typePassword = 'password'
-                this.classPassword = 'btn fas fa-eye'
+                this.classPassword = 'btn fas fa-eye-slash'
             }
         },
         changeIconClassConf() {
             if (this.typeConfirm == 'password') {
                 this.typeConfirm = 'text'
-                this.classConfirm = 'btn fas fa-eye-slash'
+                this.classConfirm = 'btn fas fa-eye'
             } else if (this.typeConfirm == 'text') {
                 this.typeConfirm = 'password'
-                this.classConfirm = 'btn fas fa-eye'
+                this.classConfirm = 'btn fas fa-eye-slash'
             }
         }
     }

@@ -67,6 +67,11 @@
                         Aceptado
                     </div>
                 </div>
+                <div v-else-if="newStatus == 'Approved'">
+                    <div class="approved">
+                        Aprobado
+                    </div>
+                </div>
             </div>  
         </div>
     </div>
@@ -164,6 +169,14 @@ export default {
         font-weight: bold;
         text-align: center;
         background: #C6E8FE;
+        border-radius: 4px;
+        padding: 4px 12px;
+    }
+
+    .approved {
+        font-weight: bold;
+        text-align: center;
+        background: #90DF7E;
         border-radius: 4px;
         padding: 4px 12px;
     }
