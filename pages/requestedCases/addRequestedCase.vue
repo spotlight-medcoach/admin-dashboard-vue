@@ -28,11 +28,6 @@
                     <div class="id">
                         <label for="">ID</label>
                         <input type="text" name="" id="" disabled v-model="new_id">
-                        <!-- <Input
-                            type="text"
-                            placeholder="1234"
-                            v-model="case_id"
-                            title="ID" /> -->
                     </div>
                 </div>
 
@@ -111,11 +106,11 @@
 
         <SuccessToast
             v-if="showSuccessToast"
-            :textTitle="titleModal" />
+            :textTitle="titleToast" />
 
         <FailToast 
             v-if="showFailToast"
-            :textTitle="titleModal" />
+            :textTitle="titleToast" />
     </div>
 </template>
 
@@ -156,6 +151,7 @@ export default {
             textModal: '',
             textTitle: '',
             button: '',
+            titleToast: '',
 
             spotlighters: [],
             topics: [],
@@ -236,49 +232,58 @@ export default {
             try {
                 this.busy = !this.busy;
                 console.log('spot: ', this.spotlighterSelected)
-                
-                let case_response = await this.$axios.post('/createPendingCase', {
-                    admin_user: this.admin_data.admin_id,
-                    pending_case_id: this.new_id,
-                    name: this.case_name,
-                    topic_bubble: this.topicBubbleSelected,
-                    subtopic_bubble: this.subtopicBubbleSelected,
-                    language: this.languageSelected,
-                    requested: true,
-                    request_description: {
-                        content: this.contentDescription,
-                        html: this.contentHtml
-                    },
-                    description: {
-                        content: {
-                            ops: [{
-                                insert: ''
-                            }]
-                        },
-                        html: ''
-                    },
-                    feedback: {
-                        content: {
-                            ops: [{
-                                insert: ''
-                            }]
-                        },
-                        html: ''
-                    },
-                    spotlighter_id: this.spotlighterSelected,
-                    status: this.spotlighterSelected ? 'Accepted by Spotlighter' : 'Pending'
-                })
 
-                this.busy = !this.busy;
-                // alert(case_response.data.message)
-                this.titleModal = case_response.data.message;
-                this.showSuccessToast = !this.showSuccessToast;
+                if (this.case_name.trim() == '' || this.topicBubbleSelected == '' || this.subtopicBubbleSelected == '' || this.languageSelected == '' || this.contentHtml.trim() == '') {
+                    this.titleToast = 'Todos los campos deben ser llenados';
+                    this.showFailToast = !this.showFailToast;
 
-                setTimeout(() => {
+                    setTimeout(() => {
+                        this.busy = !this.busy;
+                        this.showFailToast = !this.showFailToast;
+                    }, 1);
+                } else {
+                    let case_response = await this.$axios.post('/createPendingCase', {
+                        admin_user: this.admin_data.admin_id,
+                        pending_case_id: this.new_id,
+                        name: this.case_name,
+                        topic_bubble: this.topicBubbleSelected,
+                        subtopic_bubble: this.subtopicBubbleSelected,
+                        language: this.languageSelected,
+                        requested: true,
+                        request_description: {
+                            content: this.contentDescription,
+                            html: this.contentHtml
+                        },
+                        description: {
+                            content: {
+                                ops: [{
+                                    insert: ''
+                                }]
+                            },
+                            html: ''
+                        },
+                        feedback: {
+                            content: {
+                                ops: [{
+                                    insert: ''
+                                }]
+                            },
+                            html: ''
+                        },
+                        spotlighter_id: this.spotlighterSelected,
+                        status: this.spotlighterSelected ? 'Accepted by Spotlighter' : 'Pending'
+                    })
+    
+                    this.busy = !this.busy;
+                    // alert(case_response.data.message)
+                    this.titleModal = case_response.data.message;
                     this.showSuccessToast = !this.showSuccessToast;
-                    this.$router.push({ path: '/requestedCases' })
-                }, 1500);
-                
+    
+                    setTimeout(() => {
+                        this.showSuccessToast = !this.showSuccessToast;
+                        this.$router.push({ path: '/requestedCases' })
+                    }, 1500);
+                }
             } catch (err) {
                 this.busy = false;
                 console.log(err)
@@ -388,7 +393,7 @@ export default {
     .topic-container h3 {
         color: #1CA4FC;
         font-style: normal;
-        font-weight: 500;
+        font-weight: bold;
         font-size: 16px;
         line-height: 20px;
         margin-bottom: 12px;
@@ -414,7 +419,7 @@ export default {
     .subtopic-container h3 {
         color: #1CA4FC;
         font-style: normal;
-        font-weight: 500;
+        font-weight: bold;
         font-size: 16px;
         line-height: 20px;
         margin-bottom: 12px;
@@ -428,7 +433,7 @@ export default {
     .language-container h3 {
         color: #1CA4FC;
         font-style: normal;
-        font-weight: 500;
+        font-weight: bold;
         font-size: 16px;
         line-height: 20px;
         margin-bottom: 12px;
@@ -454,7 +459,7 @@ export default {
     .id label {
         color: #1CA4FC;
         font-style: normal;
-        font-weight: 500;
+        font-weight: bold;
         font-size: 16px;
         line-height: 20px;
         margin-bottom: 12px;
@@ -485,7 +490,7 @@ export default {
     .assign h3 {
         color: #1CA4FC;
         font-style: normal;
-        font-weight: 500;
+        font-weight: bold;
         font-size: 16px;
         line-height: 20px;
         margin-bottom: 24px;
@@ -500,7 +505,7 @@ export default {
     .description h3 {
         color: #1CA4FC;
         font-style: normal;
-        font-weight: 500;
+        font-weight: bold;
         font-size: 16px;
         line-height: 20px;
         margin-bottom: 0;

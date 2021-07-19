@@ -40,7 +40,7 @@ export default {
 
     .input-title h3 {
         font-style: normal;
-        font-weight: 500;
+        font-weight: bold;
         font-size: 16px;
         line-height: 20px;
         margin-bottom: 0;
