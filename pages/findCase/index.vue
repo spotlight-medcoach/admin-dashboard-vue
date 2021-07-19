@@ -4,7 +4,7 @@
         
         <div class="case-container">
             <div class="title">
-                <h1>Busqueda de casos</h1>
+                <h1>Búsqueda de casos</h1>
                 <button v-if="!loading" class="btn"><i class="fas fa-list-alt"></i> Crear un nuevo caso</button>
             </div>
 
@@ -99,8 +99,6 @@
             :allSimulators="simulators"
             :isBusy="busyAddToSimulator" />
 
-
-
         <!-- Eliminar el caso -->
         <RejectModal
             v-if="isShowDeleteModal"
@@ -110,6 +108,15 @@
             :action="deleteCase"
             :textButton="button"
             :isBusy="busyReject" />
+
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleModal" />
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleModal" />
+
     </div>
 </template>
 
@@ -119,6 +126,8 @@ import Loading from '../../components/modals/Loading';
 import InfoModal from '../../components/modals/InfoModal';
 import AddToSimulator from '../../components/modals/administrators/AddToSimulator';
 import RejectModal from '../../components/modals/RejectModal';
+import SuccessToast from '../../components/toasts/SuccessToast';
+import FailToast from '../../components/toasts/FailToast';
 
 export default {
     components: {
@@ -126,7 +135,9 @@ export default {
         Loading,
         InfoModal,
         AddToSimulator,
-        RejectModal
+        RejectModal,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
@@ -136,11 +147,13 @@ export default {
             busyReject: false,
             isShowAddToSimulatorModal: false,
             busyAddToSimulator: false,
+            showSuccessToast: false,
+            showFailToast: false,
 
             simulators: [],
             topics: [],
             subtopics: [],
-            topicSelected: {},
+            topicSelected: '',
             topicBubbleSelected: '',
             subtopicBubbleSelected: '',
             search: '',
@@ -275,12 +288,28 @@ export default {
                     simulator_id: this.simulatorSelected
                 })
 
-                alert(addResponse.data.message)
+                // alert(addResponse.data.message)
 
                 this.busyAddToSimulator = !this.busyAddToSimulator;
                 this.isShowAddToSimulatorModal = !this.isShowAddToSimulatorModal;
+
+                this.titleModal = "Caso agregado al simulador"
+                this.bodyModal = "El caso se agregó correctamente al \"" + this.simulators.filter(sim => sim._id == this.simulatorSelected)[0].name + "\". Para verlo, ve al simulador y búscalo en el tema al que pertenece.";
+                this.button = "Entendido";
+                this.isShowInfoModal = !this.isShowInfoModal;
+
+                this.cases = this.cases.filter(eachCase => eachCase._id != this.caseToAddASimulator);
             } catch (err) {
                 console.log(err);
+                this.busyAddToSimulator = !this.busyAddToSimulator;
+
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         caseDetails(theCase) {
@@ -430,6 +459,10 @@ export default {
         background: #212529;
         color: #FFF;
         text-transform: uppercase;
+    }
+
+    th {
+        font-size: 12px;
     }
 
     .thead-cases th:last-child {

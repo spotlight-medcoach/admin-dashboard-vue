@@ -24,11 +24,14 @@
                         title="Nombre del caso" />
                 </div>
                 <div class="input">
-                    <Input
+                    <label for="">ID</label>
+                    <input type="text" name="" id="" disabled v-model="new_id">
+                    <!-- <Input
+                        :dis="true"
                         type="text"
                         placeholder="12345"
                         v-model="id"
-                        title="ID" />
+                        title="ID" /> -->
                 </div>
             </div>
 
@@ -42,7 +45,7 @@
                 </div>
                 <div class="subtopic-container">
                     <h3>Subtema</h3>
-                    <select v-model="subtopicBubbleSelected" class="js-example-basic-single">
+                    <select v-model="subtopicBubbleSelected" class="js-example-basic-single" @change="changeSubtopic(subtopicBubbleSelected)">
                         <option value="" selected disabled>Subtema</option>
                         <option :value="sub.subtopic" v-for="sub in subtopics" :key="sub._id">{{sub.name}}</option>
                     </select>
@@ -213,7 +216,10 @@ export default {
 // Caso creado como spotlighter, para actualizar preguntas desde creación
 // Paciente de 25 años se anda paletiando por lo que hace.
             name: '',
-            id: '',
+            id: 'S-',
+            new_id: '',
+            topicFolio: '',
+            subtopicFolio: '',
             topicBubbleSelected: '',
             subtopicBubbleSelected: '',
             languageSelected: '',
@@ -251,6 +257,8 @@ export default {
 
             this.types = JSON.parse(localStorage.getItem('types'));
         }
+
+        // console.log(this.topics)
     },
     methods: {
         onEditorChangeDescription({ quill, html, text }) {
@@ -276,7 +284,7 @@ export default {
 
                         let caseResponse = await this.$axios.post('/createPendingCase', {
                             admin_user: this.userData.admin_id,
-                            pending_case_id: this.id,
+                            pending_case_id: this.new_id,
                             name: this.name,
                             topic_bubble: this.topicBubbleSelected,
                             subtopic_bubble: this.subtopicBubbleSelected,
@@ -346,7 +354,7 @@ export default {
 
                     let caseResponse = await this.$axios.post('/createPendingCase', {
                         admin_user: this.userData.admin_id,
-                        pending_case_id: this.id,
+                        pending_case_id: this.new_id,
                         name: this.name,
                         topic_bubble: this.topicBubbleSelected,
                         subtopic_bubble: this.subtopicBubbleSelected,
@@ -382,6 +390,9 @@ export default {
                     // alert(caseResponse.data.message)
                     this.titleModal = caseResponse.data.message 
                     this.showSuccessToast = !this.showSuccessToast;
+                } else {
+                    this.titleModal = 'Caso almacenado como borrador';
+                    this.showSuccessToast = !this.showSuccessToast;
                 }
 
                 setTimeout(() => {
@@ -413,7 +424,7 @@ export default {
                 }, 1);
             } else {
                 console.log('save and send confirm')
-                this.titleModal = 'Guardar como borrador';
+                this.titleModal = 'Enviar a revisión';
                 this.bodyModal = "Tu caso se enviará al panel de administración para ser revísado. Si toda la información es correcta, se publicará en los simuladores o en caso de ser necesario, recibirás comentarios y feedback para su corrección. Una vez enviado no podrás modificarlo a menos que lo solicite el administrador. ¿Deseas enviarlo?";
                 this.button = 'Guardar y enviar caso';
     
@@ -431,7 +442,7 @@ export default {
                     // Si no existe el caso, lo creamos
                     let caseResponse = await this.$axios.post('/createPendingCase', {
                         admin_user: this.userData.admin_id,
-                        pending_case_id: this.id,
+                        pending_case_id: this.new_id,
                         name: this.name,
                         topic_bubble: this.topicBubbleSelected,
                         subtopic_bubble: this.subtopicBubbleSelected,
@@ -554,8 +565,16 @@ export default {
             }
         },
         filterSubtopics(topic) {
-            let topicFiltered = this.topics.filter(top => top.bubble_id == topic)
-            this.subtopics = topicFiltered[0].subtopics
+            this.topicFolio = this.topics.filter(top => top.bubble_id == topic)[0].topic_folio;
+            
+            this.new_id = this.id + this.topicFolio + '-'
+            let topicFiltered = this.topics.filter(top => top.bubble_id == topic);
+            this.subtopics = topicFiltered[0].subtopics;
+        },
+        changeSubtopic(subtopic) {
+            this.subtopicFolio = this.subtopics.filter(sub => sub.subtopic == subtopic)[0].subtopic_folio;
+            this.new_id = this.id + this.topicFolio + '-' + this.subtopicFolio + '-' + (parseInt(this.$route.query.length) + 1);
+            // console.log(typeof(this.$route.query.length))
         },
         async addQuestion() {
             try {
@@ -806,8 +825,29 @@ export default {
     }
 
     .input {
+        display: flex;
+        flex-direction: column;
         margin: 10px 0px;
         width: 30%;
+    }
+
+    .input label {
+        color: #1CA4FC;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
+        margin-bottom: 12px;
+    }
+
+    .input input {
+        margin-top: .5rem;
+        background-color:transparent;
+        border: 0px solid;
+        height:30px;
+        width: 100%;
+        margin-top: 0px;
+        font-family: Montserrat;
     }
 
     .description-container {

@@ -266,7 +266,7 @@ export default {
         updateCaseConfirm() {
             this.isShowUpdateReportModal = !this.isShowUpdateReportModal;
             this.titleModal = 'Actualizar caso y finalizar reporte'
-            this.bodyModal = 'Al realizar esta acción indicas que el caso se ha corregido de acuerdo al reporte hecho por el usuario y se actualizará en la base de datos. El reporte cambiará de estado y corregido y se eliminará de la lista. ¿Deseas continuar?'
+            this.bodyModal = 'Al realizar esta acción indicas que el caso se ha corregido de acuerdo al reporte hecho por el usuario y se actualizará en la base de datos. El reporte cambiará de estado a corregido y se eliminará de la lista. ¿Deseas continuar?'
             this.button = 'Finalizar reporte'
         },
         async updateCase() {

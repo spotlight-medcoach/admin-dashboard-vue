@@ -211,7 +211,8 @@ export default {
             this.myCases = casesUpdated;
         },
         addCase() {
-            this.$router.push({ path: '/myCases/addNewCase' });
+            this.$router.push({ path: '/myCases/addNewCase', query: { length: this.myCases.filter(cas => cas.requested == false).length } });
+            // console.log('myCases', this.myCases.filter(cas => cas.requested == false));
         },
         requestPaymentConfirm() {
             this.titleModal = 'Solicitar pago'

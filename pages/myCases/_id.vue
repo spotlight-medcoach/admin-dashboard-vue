@@ -13,7 +13,7 @@
 
             <div class="cancel-container">
                 <h1>Detalles del caso</h1>
-                <button type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash mr-1"></i> Descartar caso</button>
+                <button v-if="caseDetails.status != 'Approved'" type="button" class="btn cancel" @click="discardConfirm"><i class="fas fa-trash mr-1"></i> Descartar caso</button>
             </div>
 
             <!-- Card con los detalles del caso -->
@@ -33,6 +33,14 @@
                 <h1>Descripción del caso</h1>
                     <!-- v-model="contentDescription" -->
                 <quill-editor
+                    v-if="caseDetails.status == 'Approved'"
+                    disabled
+                    :options="editorOptionView"
+                    @ready="onEditorReady($event)" 
+                    @change="onEditorChange($event)" />
+
+                <quill-editor
+                    v-else
                     :options="editorOption"
                     @ready="onEditorReady($event)" 
                     @change="onEditorChange($event)" />
@@ -47,21 +55,33 @@
                 </div>
 
                 <div v-else class="each-question">
-                    <QuestionCardSpotlighter 
-                        v-for="(ques, index) in questions"
-                        :key="ques._id"
-                        :question="ques"
-                        :ind="index"
-                        @updateQuestion="updateQuestion(questions[index], index)"
-                        @deleteQuestion="deleteQuestionConfirm(questions[index])" />
+                    <div v-if="caseDetails.status == 'Approved'">
+                        
+                        <QuestionCardViewSpotlighter
+                            v-for="(ques, index) in questions"
+                            :question="ques"
+                            :key="ques._id"
+                            :ind="index"
+                            @viewQuestion="viewQuestion(ques)" />
+                    </div>
+
+                    <div v-else>
+                        <QuestionCardSpotlighter 
+                            v-for="(ques, index) in questions"
+                            :key="ques._id"
+                            :question="ques"
+                            :ind="index"
+                            @updateQuestion="updateQuestion(questions[index], index)"
+                            @deleteQuestion="deleteQuestionConfirm(questions[index])" />
+                    </div>
                 </div>
 
-                <div class="add-question-container">
+                <div v-if="caseDetails.status != 'Approved'" class="add-question-container">
                     <button class="btn" @click="requestQuestion"><i class="fas fa-plus-circle"></i> Agregar pregunta</button>
                 </div>
             </div>
 
-            <div class="buttons-container">
+            <div v-if="caseDetails.status != 'Approved'" class="buttons-container">
                 <button class="btn draft" @click="draftConfirm"><i class="fas fa-save"></i> Guardar como borrador</button>
                 <button class="btn send" @click="saveAndSendConfirm"><i class="fas fa-paper-plane"></i> Guardar y enviar caso</button>
             </div>
@@ -84,6 +104,12 @@
             :typ="types"
             :case="caseDetails._id"
             :data.sync="questionUpdated" />
+        
+        <!-- Detalle de pregunta (Caso aceptado) -->
+        <QuestionDetailsReviewModalSpotlighter 
+            v-if="isShowQuestionAcceptedModal"
+            @close="closeQuestionAccepted"
+            :question="questionAcceptedToView" />
 
         <!-- Guardar como borrador -->
         <AcceptModal 
@@ -139,10 +165,12 @@
 <script>
 import SpotlighterNavigation from '../../components/navs/SpotlighterNavigation';
 import QuestionCardSpotlighter from '../../components/cards/spotlighters/QuestionCardSpotlighter';
+import QuestionCardViewSpotlighter from '../../components/cards/spotlighters/QuestionCardViewSpotlighter';
 import CaseDetailsCardSpotlighter from '../../components/cards/spotlighters/CaseDetailsCardSpotlighter';
 import Loading from '../../components/modals/Loading';
 import AddQuestionSpotlighter from '../../components/modals/spotlighters/AddQuestionSpotlighter';
 import CaseQuestionDetailsModalSpotlighter from '../../components/modals/spotlighters/CaseQuestionDetailsModalSpotlighter';
+import QuestionDetailsReviewModalSpotlighter from '../../components/modals/spotlighters/QuestionDetailsReviewModalSpotlighter'
 import AcceptModal from '../../components/modals/AcceptModal';
 import RejectModal from '../../components/modals/RejectModal';
 import SuccessToast from '../../components/toasts/SuccessToast';
@@ -152,10 +180,12 @@ export default {
     components: {
         SpotlighterNavigation,
         QuestionCardSpotlighter,
+        QuestionCardViewSpotlighter,
         CaseDetailsCardSpotlighter,
         Loading,
         AddQuestionSpotlighter,
         CaseQuestionDetailsModalSpotlighter,
+        QuestionDetailsReviewModalSpotlighter,
         AcceptModal,
         RejectModal,
         SuccessToast,
@@ -178,6 +208,7 @@ export default {
             isShowModalDeleteQuestion: false,
             showSuccessToast: false,
             showFailToast: false,
+            isShowQuestionAcceptedModal: false,
 
             caseDetails: {},
             questions: [],
@@ -188,6 +219,7 @@ export default {
             questionToUpdate: {},
             questionUpdated: {},
             questionToDelete: '',
+            questionAcceptedToView: {},
 
             titleModal: '',
             bodyModal: '',
@@ -206,6 +238,10 @@ export default {
                         ['link', 'image']
                     ]
                 }
+            },
+            editorOptionView: {
+                theme: 'bubble',
+                placeholder: 'Respuesta...',
             }
         }
     },
@@ -367,6 +403,11 @@ export default {
                 }, 1);
             }
         },
+        viewQuestion(question) {
+            this.questionAcceptedToView = question;
+            this.questionAcceptedToView.type_name = this.types.filter(typ => typ.bubble_id == question.type)[0].display;
+            this.isShowQuestionAcceptedModal = !this.isShowQuestionAcceptedModal;
+        },
         filterTopic(topic_bubble) {
             let topic = '';
             topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0].name
@@ -389,21 +430,30 @@ export default {
         },
         async saveAsDraft() {
             this.busyDraft = !this.busyDraft;
-
+            await this.updateCaseDraft('In edit');
+            
             setTimeout(() => {
                 this.busyDraft = !this.busyDraft;
                 this.isShowModalAcceptDraft = !this.isShowModalAcceptDraft;
 
-                this.updateCaseDraft('In edit');
                 this.$router.push({ path: '/myCases'});
-            }, 1500)
+            }, 1500);
         },
         saveAndSendConfirm() {
-            this.titleModal = 'Guardar como borrador';
-            this.bodyModal = "Tu caso se enviará al panel de administración para ser revísado. Si toda la información es correcta, se publicará en los simuladores o en caso de ser necesario, recibirás comentarios y feedback para su corrección. \n Una vez enviado no podrás modificarlo a menos que lo solicite el administrador. ¿Deseas enviarlo?";
-            this.button = 'Guardar y enviar caso';
+            if (this.contentHtml.trim() == '' || this.indexQuestion == 0) {
+                this.titleModal = 'Todos los campos deben ser llenados o falta agregar preguntas';
+                this.showFailToast = !this.showFailToast;
 
-            this.isShowModalAcceptSend = !this.isShowModalAcceptSend;
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
+            } else {
+                this.titleModal = 'Guardar como borrador';
+                this.bodyModal = "Tu caso se enviará al panel de administración para ser revísado. Si toda la información es correcta, se publicará en los simuladores o en caso de ser necesario, recibirás comentarios y feedback para su corrección. \n Una vez enviado no podrás modificarlo a menos que lo solicite el administrador. ¿Deseas enviarlo?";
+                this.button = 'Guardar y enviar caso';
+    
+                this.isShowModalAcceptSend = !this.isShowModalAcceptSend;
+            }
         },
         async saveAndSend() {
             this.busySend = !this.busySend;
@@ -471,6 +521,9 @@ export default {
         },
         closeUpdateQuestionModal() {
             this.isShowModalQuestionDetails = false;
+        },
+        closeQuestionAccepted() {
+            this.isShowQuestionAcceptedModal = false;
         }
     }
 }
@@ -517,11 +570,26 @@ export default {
         display: flex;
         flex-direction: column;
         margin: 20px 0px;
-        height: 200px;
     }
 
-    .quill-editor {
+    /* .quill-editor {
         height: 50%;
+    } */
+
+    .ql-container {
+        font-family: Montserrat !important;
+        color: red;
+    }
+
+    .ql-editor {
+        font-family: Montserrat !important;
+        background: blue;
+        color: red;
+    }
+
+    .ql-editor p {
+        font-family: Montserrat;
+        font-weight: bold;
     }
 
     .details-container h1 {

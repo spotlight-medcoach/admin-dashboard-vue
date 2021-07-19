@@ -59,6 +59,10 @@ export default {
         font-family: Montserrat;
     }
 
+    .modal-header {
+        border-bottom: 0px;
+    }
+
     .modal-footer {
         border-top: 0;
         padding: 0;

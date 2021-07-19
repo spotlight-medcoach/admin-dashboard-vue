@@ -46,6 +46,7 @@
                 <span v-if="caseDetails.status == 'Pending'" class="my-3 text-danger">Aún no hay información sobre este caso.</span>
                 <quill-editor
                     v-else
+                    disabled
                     :options="editorOption"
                     @ready="onEditorReady($event)" 
                     @change="onEditorChange($event)" />

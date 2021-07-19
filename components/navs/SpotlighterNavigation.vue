@@ -8,7 +8,7 @@
 					to="/requestedQuestions"
 					new_class="link nuxt-link-active"
 					icon="fas fa-file-medical"
-					title="Preguntas solicitadas" />
+					title="Casos solicitados" />
 			</div>
 			<div>
 				<LinkNavigation 

@@ -32,26 +32,26 @@
                     </div>
 
                     <div class="inputs">
-                        <div class="int-cont">
-                            <Input
-                                type="text"
-                                placeholder="País"
-                                v-model="country"
-                                title="País" />
+                        <div class="input-country">
+                            <h3>País</h3>
+                            <select v-model="new_country" class="js-example-basic-single" @change="changeCountry()">
+                                <option :value="''" disabled selected>País</option>
+                                <option :value="country.code" v-for="country in countries" :key="country.code">{{country.name}}</option>
+                            </select>
                         </div>
-                        <div class="int-cont">
-                            <Input
-                                type="text"
-                                placeholder="Estados"
-                                v-model="state"
-                                title="Estado" />
+                        <div class="input-country">
+                            <h3>Estado</h3>
+                            <select v-model="new_state" class="js-example-basic-single" @change="changeState()">
+                                <option :value="''" disabled selected>Estado</option>
+                                <option :value="state.region" v-for="state in states" :key="state.region">{{state.region}}</option>
+                            </select>
                         </div>
                     </div>
 
                     <div class="inputs">
                         <div class="int-cont">
                             <InputIcon
-                                type="text"
+                                type="email"
                                 placeholder="example@example.com"
                                 v-model="email"
                                 icon="fas fa-user-circle"
@@ -129,6 +129,14 @@
                 />
             </div>
         </div>
+
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleToast" />
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleToast" />
     </div>
 </template>
 
@@ -137,37 +145,46 @@ import Navigation from '../../components/navs/Navigation';
 import InputIcon from '../../components/inputs/InputIcon';
 import Input from '../../components/inputs/Input';
 import SuccessButton from '../../components/buttons/SuccessButton';
+import SuccessToast from '../../components/toasts/SuccessToast';
+import FailToast from '../../components/toasts/FailToast';
 
 export default {
     components: {
         Navigation,
         InputIcon,
         Input,
-        SuccessButton
+        SuccessButton,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
             busy: false,
             loading: false,
+            showSuccessToast: false,
+            showFailToast: false,
+            titleToast: '',
 
             name: '',
             last_name: '',
             email: '',
             phone: '',
-            country: '',
-            state: '',
+            new_country: '',
+            new_state: '',
             university: '',
             account_number: '',
             password: '',
             confirm_password: '',
 
             universities: [],
+            countries: [],
+            states: [],
             
             typePassword: 'password',
-            classPassword: 'btn fas fa-eye',
+            classPassword: 'btn fas fa-eye-slash',
 
             typeConfirm: 'password',
-            classConfirm: 'btn fas fa-eye'
+            classConfirm: 'btn fas fa-eye-slash',
         }
     },
     async created() {
@@ -176,14 +193,26 @@ export default {
             
             this.universities = JSON.parse(localStorage.getItem('universities'));
         }
+
+        await this.getCountries();
+        console.log('contries', this.countries)
     },
     methods: {
+        async getCountries() {
+            try {
+                this.loading = !this.loading;
+                
+                let contriesResponse = await this.$axios.get('https://vsbs6hgmxf.execute-api.us-west-2.amazonaws.com/refinery/api/countries');
+                this.countries = contriesResponse.data;
+
+                this.loading = !this.loading;
+            } catch (err) {
+                console.log(err);
+            }
+        },
         async addSpotlighter() {
-            this.busy = !this.busy;
-            if (process.browser) {
-                // verificar que la universidad exista en la lista
-                let universities = JSON.parse(localStorage.getItem('universities'));
-                let university_filtered = universities.filter(uni => uni.name.toLowerCase() == this.university.toLowerCase());
+            try {
+                this.busy = !this.busy;
                 
                 let data = {
                     name: this.name,
@@ -193,37 +222,57 @@ export default {
                     role: 'Spotlighter',
                     phone: this.phone,
                     account_number: this.account_number,
-                    country: 'this.country',
-                    state: 'this.state',
-                    university_id: university_filtered[0]._id
+                    country: this.new_country,
+                    state: this.new_state,
+                    university_id: this.university
                 }
-
-                console.log('data: ', data)
-
+    
                 let add_response = await this.$axios.post('/createUser', data);
-                console.log('response: ', add_response);
-                alert(add_response.data.message)
+                // alert(add_response.data.message)
+                this.titleToast = add_response.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
                 
+                setTimeout(() => {
+                    this.busy = !this.busy;
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.$router.push({ path: '/spotlighters' });
+                }, 1500);    
+            } catch (err) {
                 this.busy = !this.busy;
-                this.$router.push({ path: '/spotlighters' });
+                console.log(err);
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
+        },
+        async changeCountry() {
+            console.log('newCountry', this.new_country);
+            let statesResponse = await this.$axios.get(`https://vsbs6hgmxf.execute-api.us-west-2.amazonaws.com/refinery/api/countries/cities?country_code=${this.new_country}`)
+            this.states = statesResponse.data;
+        },
+        changeState() {
+            console.log('newState', this.new_state);
         },
         changeIconClassPass() {
             if (this.typePassword == 'password') {
                 this.typePassword = 'text'
-                this.classPassword = 'btn fas fa-eye-slash'
+                this.classPassword = 'btn fas fa-eye'
             } else if (this.typePassword == 'text') {
                 this.typePassword = 'password'
-                this.classPassword = 'btn fas fa-eye'
+                this.classPassword = 'btn fas fa-eye-slash'
             }
         },
         changeIconClassConf() {
             if (this.typeConfirm == 'password') {
                 this.typeConfirm = 'text'
-                this.classConfirm = 'btn fas fa-eye-slash'
+                this.classConfirm = 'btn fas fa-eye'
             } else if (this.typeConfirm == 'text') {
                 this.typeConfirm = 'password'
-                this.classConfirm = 'btn fas fa-eye'
+                this.classConfirm = 'btn fas fa-eye-slash'
             }
         }
     }
@@ -297,6 +346,32 @@ export default {
     }
 
     .input select {
+        width: 100%;
+        border: 0px;
+        outline: 0px;
+        border-bottom: 2px solid lightgray;
+    }
+
+    .input-country {
+        width: 100%;
+        margin: 20px 40px;
+    }
+
+    .input-country i {
+        font-size: 24px;
+        margin-right: 8px;
+    }
+
+    .input-country h3 {
+        color: #1CA4FC;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 20px;
+        margin-bottom: 12px;
+    }
+
+    .input-country select {
         width: 100%;
         border: 0px;
         outline: 0px;
