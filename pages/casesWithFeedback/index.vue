@@ -15,28 +15,27 @@
                     :name="oneCase.name"
                     :topicName="oneCase.topic_name"
                     :subtopicName="oneCase.subtopic_name"
-                    :requestDescription="oneCase.request_description"
+                    :requestDescription="oneCase.request_description.content.ops[0].insert"
                  />
             </div>
 
             <div v-if="!loading" class="pagination-container">
                 <div class="select-container">
-                    <span>Rows per page: </span>
+                    <span>Resultados por página: </span>
                     <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
                         <option value=1>1</option>
                         <option value=2>2</option>
                         <option value=3>3</option>
                         <option value=5>5</option>
                         <option value=10>10</option>
-                        <option value=15>15</option>
                         <option value=20>20</option>
                     </select>
                 </div>
 
                 <div class="arrows-container">
-                    <span>1 - {{pageResults}} of {{totalCases}} casos</span>
-                    <button class="btn fas fa-chevron-left" @click="before"></button>
-                    <button class="btn fas fa-chevron-right" @click="after"></button>
+                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalCases ? totalCases : (page * pageResults) > totalCases ? totalCases : page * pageResults }} de {{totalCases}} casos</span>
+                    <button class="btn fas fa-chevron-left" @click="before" :disabled="disbaledBefore == 1"></button>
+                    <button class="btn fas fa-chevron-right" @click="after" :disabled="disabledAfter == 1"></button>
                 </div>
             </div>
         </div>
@@ -66,8 +65,10 @@ export default {
             requestDescription: '',
 
             totalCases: 0,
+            pageResults: 10,
             page: 1,
-            pageResults: 5
+            disbaledBefore: 0,
+            disabledAfter: 0,
         }
     },
     async created() {
@@ -76,26 +77,29 @@ export default {
             this.topics = JSON.parse(localStorage.getItem('topics'))
         }
 
-        await this.getCasesWithFeddback()
-        
-        console.log('cases: ', this.casesFeedback)
+        await this.getCasesWithFeddback();
+        this.before();
     },
     methods: {
         async getCasesWithFeddback() {
-            this.loading = !this.loading;
-
-            let casesWithFeedback = await this.$axios.get('/getCasesWithFeedback', {
-                params: {
-                    page: this.page,
-                    pageResults: this.pageResults
-                }
-            })
-            // console.log(casesWithFeedback)
-            this.casesFeedback = casesWithFeedback.data.payload.cases;
-            this.totalCases = casesWithFeedback.data.payload.length;
-            this.filterTopicSubtopicName()
-            
-            this.loading = !this.loading;
+            try {
+                this.loading = !this.loading;
+    
+                let casesWithFeedback = await this.$axios.get('/getCasesWithFeedback', {
+                    params: {
+                        page: this.page,
+                        pageResults: this.pageResults
+                    }
+                })
+                // console.log(casesWithFeedback)
+                this.casesFeedback = casesWithFeedback.data.payload.cases;
+                this.totalCases = casesWithFeedback.data.payload.length;
+                this.filterTopicSubtopicName()
+                
+                this.loading = !this.loading;
+            } catch (err) {
+                console.log(err);
+            }
         },
         filterTopicSubtopicName() {
             let casesUpdated = []
@@ -115,13 +119,50 @@ export default {
             alert(theCase)
         },
         rowsChange() {
+            this.page = 1;
+
+            if (this.pageResults > this.totalCases || this.totalCases == 0) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 1
+            } else {
+                this.disbaledBefore = 1
+                this.disabledAfter = 0
+            }
+
             this.getCasesWithFeddback()
         },
         before() {
-            alert('Logica para esta asunto')
+            if (this.page == 1) {
+                this.disbaledBefore = 1
+                if (this.totalCases == 0)
+                    this.disabledAfter = 1
+                else {
+                    if (this.totalCases > this.pageResults)
+                        this.disabledAfter = 0
+                    else
+                        this.disabledAfter = 1
+                }
+            } else if (this.page > 1) {
+                this.page -= 1;
+                this.disabledAfter = 0
+
+                if (this.page == 1)
+                    this.disbaledBefore = 1
+                
+                this.getCasesWithFeddback();
+            }
         },
         after() {
-            alert('Logica para esta asunto')
+            this.page += 1;
+            if (this.page * this.pageResults > this.totalCases) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 0
+            } else {
+                if (this.page > 1)
+                    this.disbaledBefore = 0
+            }
+
+            this.getCasesWithFeddback();
         },
     }
 }

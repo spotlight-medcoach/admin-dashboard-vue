@@ -11,7 +11,6 @@ export default {
 				{ hid: 'description', name: 'description', content: '' }
 			],
 			link: [
-				{ rel: "stylesheet", href: "./static/css/normalize.css" },
 				{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
 				{ rel: "stylesheet", href: "https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css", integrity: "sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0", crossorigin: "anonymous" },
 				{ rel: "stylesheet", href: "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css", integrity: "sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T", crossorigin:"anonymous" },
@@ -23,7 +22,6 @@ export default {
 				{ rel: "stylesheet", href: "style-sheet_chrome.css", type: "text/chrome/safari" }
 			],
 			script: [
-				{ src: "https://cdn.jsdelivr.net/npmbootstrap@5.0.0/dist/js/bootstrap.bundle.min.js", integrity: "sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8", crossorigin: "anonymous" },
 				{ src: "https://code.jquery.com/jquery-3.2.1.slim.min.js", integrity: "sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN", crossorigin: "anonymous" },
 				{ src: "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js", integrity: "sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q", crossorigin: "anonymous" },
 				{ src: "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js", integrity: "sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl", crossorigin: "anonymous" },
@@ -32,19 +30,6 @@ export default {
 				{ src: "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js", integrity: "sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM", crossorigin: "anonymous" },
 				{ src: "https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js", integrity: "sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p", crossorigin: "anonymous" },
 				{ src: "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js", integrity: "sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF", crossorigin: "anonymous" }
-
-				
-				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.min.js", integrity: "sha512-VCHVc5miKoln972iJPvkQrUYYq7XpxXzvqNfiul1H4aZDwGBGC0lq373KNleaB2LpnC2a/iNfE5zoRYmB4TRDQ==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
-				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.esm.js", integrity: "sha512-BDFtEx2x2jFpby9cxkGumnmLpRnaFqw8Y1c2y8rCYOCBBBFibmcNeL5MnvKbZOZxuqs1/qMsnmQvPu89d8epTA==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
-				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.esm.min.js", integrity: "sha512-viBARNC43u175Exx9Fhcm985ysTEIrKagpWCl62NkxyVm9/Y7BylO+eVH8Kdsf7mKmyuF07Zypv2QQRYMmdNmw==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
-				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.js", integrity: "sha512-CAv0l04Voko2LIdaPmkvGjH3jLsH+pmTXKFoyh5TIimAME93KjejeP9j7wSeSRXqXForv73KUZGJMn8/P98Ifg==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
-				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/helpers.esm.js", integrity: "sha512-DiXUm6brTaeEIei9FvCPPLvxLcf3ufH8g+aRTpSqhFhf+mSvndawwfaZiKx3Fqj1hbFua7OSXhb4ynoM9REc/Q==", crossorigin: "anonymous", referrerpolicy: "no-referrer" },
-				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/helpers.esm.min.js", integrity: "sha512-4OeC7P+qUXB7Kpyeu1r5Y209JLXfCkwGKDpk8vnXzeNGMnpTr6hzOz2lMm7h0oxRBVu2ZCPRkCBPMmIlWsbaHg==", crossorigin: "anonymous", referrerpolicy: "no-referrer" }
-
-				// { src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js" },
-				// { src: "https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js" }
-
-
 			],
 	},
 
@@ -52,7 +37,8 @@ export default {
 	css: [
 		'quill/dist/quill.core.css',
 		'quill/dist/quill.snow.css',
-		'quill/dist/quill.bubble.css'
+		'quill/dist/quill.bubble.css',
+		'@/assets/css/normalize.css',
 	],
 
 	// Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins

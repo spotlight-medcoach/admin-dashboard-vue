@@ -9,7 +9,7 @@
                 </div>
 
                 <div v-if="!loading" class="filter-container">
-                    <div class="select-container">
+                    <!-- <div class="select-container"> -->
                         <select v-model="topicBubbleSelected" class="js-example-basic-single" @change="filterSubtopics(topicBubbleSelected)" name="topic" id="topic">
                             <option value="">Tema</option>
                             <option :value="top.bubble_id" v-for="top in topics" :key="top._id">{{top.name}}</option>
@@ -19,7 +19,7 @@
                             <option value="">Elegir subtema</option>
                             <option :value="sub.subtopic" v-for="sub in subtopics" :key="sub._id">{{sub.name}}</option>
                         </select>
-                    </div>
+                    <!-- </div> -->
                 </div>
             </div>
 
@@ -39,23 +39,22 @@
             </div>
 
             <div v-if="!loading" class="pagination-container">
-                <div class="select-container">
-                    <span>Rows per page: </span>
+                <div class="result-container">
+                    <span>Resultados por página: </span>
                     <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
                         <option value=1>1</option>
                         <option value=2>2</option>
                         <option value=3>3</option>
                         <option value=5>5</option>
                         <option value=10>10</option>
-                        <option value=15>15</option>
                         <option value=20>20</option>
                     </select>
                 </div>
 
                 <div class="arrows-container">
-                    <span>1 - {{pageResults}} of {{totalCases}} casos</span>
-                    <button class="btn fas fa-chevron-left" @click="before"></button>
-                    <button class="btn fas fa-chevron-right" @click="after"></button>
+                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalCases ? totalCases : (page * pageResults) > totalCases ? totalCases : page * pageResults }} de {{totalCases}} casos</span>
+                    <button class="btn fas fa-chevron-left" @click="before" :disabled="disbaledBefore == 1"></button>
+                    <button class="btn fas fa-chevron-right" @click="after" :disabled="disabledAfter == 1"></button>
                 </div>
             </div>
 
@@ -133,8 +132,10 @@ export default {
             universities: [],
 
             totalCases: 0,
+            pageResults: 10,
             page: 1,
-            pageResults: 5
+            disbaledBefore: 0,
+            disabledAfter: 0,
         }
     },
     async created() {
@@ -155,7 +156,7 @@ export default {
         this.loading = !this.loading
 
         await this.getCasesRequested();
-        console.log('cases', this.casesRequested)
+        this.before();
     },
     methods: {
         async getUniversities() {
@@ -289,13 +290,50 @@ export default {
             this.caseToRejectId = '';
         },
         rowsChange() {
+            this.page = 1;
+
+            if (this.pageResults > this.totalCases || this.totalCases == 0) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 1
+            } else {
+                this.disbaledBefore = 1
+                this.disabledAfter = 0
+            }
+
             this.getCasesRequested()
         },
         before() {
-            alert('Logica para esta asunto')
+            if (this.page == 1) {
+                this.disbaledBefore = 1
+                if (this.totalCases == 0)
+                    this.disabledAfter = 1
+                else {
+                    if (this.totalCases > this.pageResults)
+                        this.disabledAfter = 0
+                    else
+                        this.disabledAfter = 1
+                }
+            } else if (this.page > 1) {
+                this.page -= 1;
+                this.disabledAfter = 0
+
+                if (this.page == 1)
+                    this.disbaledBefore = 1
+                
+                this.getCasesRequested();
+            }
         },
         after() {
-            alert('Logica para esta asunto')
+            this.page += 1;
+            if (this.page * this.pageResults > this.totalCases) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 0
+            } else {
+                if (this.page > 1)
+                    this.disbaledBefore = 0
+            }
+
+            this.getCasesRequested();
         },
     }
 }
@@ -335,21 +373,31 @@ export default {
         display: flex;
         flex-direction: row;
         align-items: center;
+        justify-content: space-between;
         position: static;
         height: 32px;
-    }
-    
-    .select-container {
-        display: flex;
-        justify-content: space-between;
-        height: 32px;
-        margin: 0px 60px;
+        width: 30%;
     }
 
-    .select-container select {
-        margin: 0px 20px;
+    .filter-container select {
+        height: 32px;
+        width: 45%;
         border: none;
         border-bottom: 1px solid #000;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .filter-container select:focus {
+        outline: none;
     }
 
     .thead-admin {
@@ -386,13 +434,13 @@ export default {
         margin: 10px 0px;
     }
 
-    .select-container {
+    .result-container {
         display: flex;
         align-items: center;
         margin: 0px 40px;
     }
 
-    .select-container span {
+    .result-container span {
         font-style: normal;
         font-weight: normal;
         font-size: 12px;

@@ -16,12 +16,16 @@
             <Loading v-if="loading" />
 
             <div v-if="!loading" class="filter-conteiner">
-                <input type="searchText" placeholder="Buscar">
+                <div class="search">
+                    <input v-model="search" type="searchText" placeholder="Buscar" @keyup.enter="searchReports">
+                </div>
                 
-                <select v-model="resolvedSelected" class="options" @change="getReports">
-                    <option value=false>Sin resolver</option>
-                    <option value=true>Resueltos</option>
-                </select>
+                <div class="select-container">
+                    <select v-model="resolvedSelected" class="options" @change="getReports">
+                        <option value=false>Sin resolver</option>
+                        <option value=true>Resueltos</option>
+                    </select>
+                </div>
             </div>
 
             <div v-if="!loading" class="table-container">
@@ -51,8 +55,8 @@
             </div>
 
             <div v-if="!loading" class="pagination-container">
-                <div class="select-container">
-                    <span>Rows per page: </span>
+                <div class="results-container">
+                    <span>Resultados por página: </span>
                     <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
                         <option value=1>1</option>
                         <option value=2>2</option>
@@ -60,12 +64,11 @@
                         <option value=5>5</option>
                         <option value=10>10</option>
                         <option value=15>15</option>
-                        <option value=20>20</option>
                     </select>
                 </div>
 
                 <div class="arrows-container">
-                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalReports ? totalReports : (page * pageResults) > totalReports ? totalReports : page * pageResults }} of {{totalReports}} casos</span>
+                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalReports ? totalReports : (page * pageResults) > totalReports ? totalReports : page * pageResults }} de {{totalReports}} reportes</span>
                     <button class="btn fas fa-chevron-left" @click="before" :disabled="disbaledBefore == 1"></button>
                     <button class="btn fas fa-chevron-right" @click="after" :disabled="disabledAfter == 1"></button>
                 </div>
@@ -88,20 +91,20 @@ export default {
             loading: false,
             reports: [],
             resolvedSelected: false,
+            search: '',
 
             disabledAfter: 0,
             disbaledBefore: 0,
-
             totalReports: 0,
             page: 1,
-            pageResults: 5,
+            pageResults: 10,
         }
     },
     async created() {
         if (process.browser) 
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
 
-        // await this.getReports();
+        await this.getReports();
         this.before();
     },
     methods: {
@@ -113,7 +116,8 @@ export default {
                     params: {
                         page: this.page,
                         pageResults: this.pageResults,
-                        resolved: this.resolvedSelected
+                        resolved: this.resolvedSelected,
+                        spotlight_id: this.search
                     }
                 });
                 this.reports = reportsResponse.data.payload.reports;
@@ -128,10 +132,17 @@ export default {
         reportDetails(report_id) {
             this.$router.push({ path: `/reports/${report_id}` });
         },
+        searchReports() {
+            try {
+                this.getReports();
+            } catch (err) {
+                console.log(err);
+            }
+        },
         rowsChange() {
             this.page = 1;
 
-            if (this.pageResults > this.totalReports) {
+            if (this.pageResults > this.totalReports || this.totalReports == 0) {
                 this.disabledAfter = 1
                 this.disbaledBefore = 1
             } else {
@@ -144,29 +155,43 @@ export default {
         before() {
             if (this.page == 1) {
                 this.disbaledBefore = 1
-                if (this.totalReports == 0 || this.pageResults > this.totalReports)
+                if (this.totalReports == 0)
                     this.disabledAfter = 1
+                else {
+                    if (this.totalReports > this.pageResults)
+                        this.disabledAfter = 0
+                    else
+                        this.disabledAfter = 1
+                }
             } else if (this.page > 1) {
                 this.page -= 1;
                 this.disabledAfter = 0
 
                 if (this.page == 1)
                     this.disbaledBefore = 1
+                
+                this.getReports();
             }
-
-            this.getReports();
         },
         after() {
             this.page += 1;
-            if (this.page * this.pageResults > this.totalReports) {
+            if (this.page * this.pageResults >= this.totalReports) {
                 this.disabledAfter = 1
                 this.disbaledBefore = 0
             } else {
                 if (this.page > 1)
                     this.disbaledBefore = 0
-                    if ((this.page * this.pageResults) >= this.totalReports)
-                        this.disabledAfter = 1
             }
+            // this.page += 1;
+            // if (this.page * this.pageResults > this.totalReports) {
+            //     this.disabledAfter = 1
+            //     this.disbaledBefore = 0
+            // } else {
+            //     if (this.page > 1)
+            //         this.disbaledBefore = 0
+            //         if ((this.page * this.pageResults) >= this.totalReports)
+            //             this.disabledAfter = 1
+            // }
 
             this.getReports();
         }
@@ -193,25 +218,55 @@ export default {
     .filter-conteiner {
         display: flex;
         flex-direction: row;
+        align-items: flex-end;
         height: 48px;
         margin: 20px 0px;
     }
 
-    .filter-conteiner input {
-        width: 50%;
-        padding: 20px;
+    .search {
+        display: flex;
+        align-items: center;
+        width: 60%;
+        height: 100%;
+    }
+
+    .search input {
+        padding: 12px;
+        width: 800px;
+        height: 48px;
         background: #FFFFFF;
         border: 1px solid #D4D5D7;
         box-sizing: border-box;
         border-radius: 10px;
     }
 
-    .filter-conteiner select {
-        font-family: Montserrat;
-        width: 15%;
+    .select-container {
+        display: flex;
+        height: 32px;
         margin: 0px 40px;
+        width: 100%;
+    }
+
+    .select-container select {
+        height: 32px;
+        width: 25%;
+        margin: 0px 20px;
         border: none;
         border-bottom: 1px solid #000;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .select-container select:focus {
+        outline: none;
     }
 
     .table-container {
@@ -273,13 +328,13 @@ export default {
         height: 56px;
     }
 
-    .select-container {
+    .results-container {
         display: flex;
         align-items: center;
         margin: 0px 40px;
     }
 
-    .select-container span {
+    .results-container span {
         font-style: normal;
         font-weight: normal;
         font-size: 12px;

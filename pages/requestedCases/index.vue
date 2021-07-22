@@ -18,7 +18,7 @@
 
             <Loading v-if="loading" />
             <div v-else class="search-container">
-                <input type="searchText" placeholder="    Buscar">
+                <input v-model="search" type="searchText" placeholder="Buscar" @keyup.enter="searchCases">
                 
                 <select v-model="selected" class="options" @change="changeStatus(selected)">
                     <option value="" selected>Filtrar por estado</option>
@@ -35,6 +35,8 @@
                 <table class="table table-bordered">
                     <thead class="thead-admin">
                         <tr>
+                            
+                            <th scope="col">ID</th>
                             <th scope="col" class="th-case">Caso</th>
                             <th scope="col">Tema</th>
                             <th scope="col">Subtema</th>
@@ -46,6 +48,7 @@
                     </thead>
                     <tbody class="tbody">
                         <tr v-for="theCase in cases" :key="theCase._id">
+                            <td>{{ theCase.pending_case_id }}</td>
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
@@ -74,20 +77,18 @@
 
             <div v-if="!loading" class="pagination-container">
                 <div class="select-container">
-                    <span>Rows per page: </span>
+                    <span>Resultados por página: </span>
                     <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
                         <option value=1>1</option>
                         <option value=2>2</option>
                         <option value=3>3</option>
                         <option value=5>5</option>
                         <option value=10>10</option>
-                        <option value=15>15</option>
-                        <option value=50>50</option>
                     </select>
                 </div>
 
                 <div class="arrows-container">
-                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalCases ? totalCases : (page * pageResults) > totalCases ? totalCases : page * pageResults }} of {{totalCases}} casos</span>
+                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalCases ? totalCases : (page * pageResults) > totalCases ? totalCases : page * pageResults }} de {{totalCases}} casos</span>
                     <button class="btn fas fa-chevron-left" @click="before" :disabled="disbaledBefore == 1"></button>
                     <button class="btn fas fa-chevron-right" @click="after" :disabled="disabledAfter == 1"></button>
                 </div>
@@ -130,13 +131,14 @@ export default {
             topics: [],
             subtopics: [],
             selected: '',
+            search: '',
             loading: false,
             showModal: false,
+
             disbaledBefore: 0,
             disabledAfter: 0,
-
             totalCases: 0,
-            pageResults: 50,
+            pageResults: 10,
             page: 1
         }
     },
@@ -144,7 +146,7 @@ export default {
         if (process.browser) 
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
 
-        await this.getCases()
+        await this.getCases();
         this.before();
         // this.loading = !this.loading
     },
@@ -158,7 +160,8 @@ export default {
                     params: {
                         status: this.selected,
                         page: this.page,
-                        pageResults: this.pageResults
+                        pageResults: this.pageResults,
+                        pending_case_id: this.search
                     }
                 });
                 
@@ -179,7 +182,13 @@ export default {
                 console.log(err);
             }
         },
-
+        searchCases() {
+            try {
+                this.getCases();
+            } catch (err) {
+                console.log(err);
+            }
+        },
         filterTopic(topic_bubble) {
             // Traer los topics y filtrar el nombre
             var topic = '';
@@ -244,14 +253,21 @@ export default {
                 this.disbaledBefore = 1
                 if (this.totalCases == 0)
                     this.disabledAfter = 1
+                else {
+                    if (this.totalCases > this.pageResults)
+                        this.disabledAfter = 0
+                    else
+                        this.disabledAfter = 1
+                }
             } else if (this.page > 1) {
                 this.page -= 1;
                 this.disabledAfter = 0
 
                 if (this.page == 1)
                     this.disbaledBefore = 1
+                
+                this.getCases();
             }
-            this.getCases();
         },
         after() {
             // Cambiar a página siguiente
@@ -337,7 +353,7 @@ export default {
     .search-container {
         display: flex;
         flex-direction: row;
-        align-items: center;
+        align-items: flex-end;
         width: 100%;
         height: 48px;
     }
@@ -345,6 +361,7 @@ export default {
     .search-container input {
         width: 800px;
         height: 48px;
+        padding: 12px;
         background: #FFFFFF;
         border: 1px solid #D4D5D7;
         box-sizing: border-box;
@@ -355,14 +372,36 @@ export default {
         outline: none;
     }
 
-    .options {
+    .search-container select {
+        height: 32px;
+        width: 15%;
+        margin: 0px 115px;
+        border: none;
+        border-bottom: 1px solid #000;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .search-container select:focus {
+        outline: none;
+    }
+
+    /* .options {
         font-family: Montserrat;
         width: 15%;
         height: 32px;
         margin: 0px 40px;
         border: none;
         border-bottom: 1px solid #000;
-    }
+    } */
 
     .th-case {
         width: 15%;

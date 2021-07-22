@@ -16,7 +16,7 @@
             <Loading v-if="loading" />
             <div v-else class="filter-container">
                 <div class="search">
-                    <input type="searchText" placeholder="Buscar">
+                    <input v-model="search" type="searchText" placeholder="Buscar" @keyup.enter="searchSpotlighters">
                 </div>
                 
                 <div class="filter-drop">
@@ -80,22 +80,20 @@
 
             <div v-if="!loading" class="pagination-container">
                 <div class="select-container">
-                    <span>Rows per page: </span>
+                    <span>Resultados por página: </span>
                     <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
                         <option value=1>1</option>
                         <option value=2>2</option>
                         <option value=3>3</option>
                         <option value=5>5</option>
                         <option value=10>10</option>
-                        <option value=15>15</option>
-                        <option value=20>20</option>
                     </select>
                 </div>
 
                 <div class="arrows-container">
-                    <span>1 - {{pageResults}} of {{totalSpotlighters}} Spotlighters</span>
-                    <button class="btn fas fa-chevron-left" @click="before"></button>
-                    <button class="btn fas fa-chevron-right" @click="after"></button>
+                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalSpotlighters ? totalSpotlighters : (page * pageResults) > totalSpotlighters ? totalSpotlighters : page * pageResults }} de {{totalSpotlighters}} spotlighters</span>
+                    <button class="btn fas fa-chevron-left" @click="before" :disabled="disbaledBefore == 1"></button>
+                    <button class="btn fas fa-chevron-right" @click="after" :disabled="disabledAfter == 1"></button>
                 </div>
             </div>
 
@@ -161,7 +159,7 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
             busyPayment: false,
 
             selected: 'true',
-            searchText: '',
+            search: '',
             titleModal: '',
             bodyModal: '',
             nameUser: '',
@@ -173,7 +171,11 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
             totalSpotlighters: 0,
             userIdToDelete: '',
             userIdToActive: '',
-            pageResults: 5,
+
+            disbaledBefore: 0,
+            disabledAfter: 0,
+            totalCases: 0,
+            pageResults: 10,
             page: 1
         }
     }, // Instituto de Estudios Superiores de Tamaulipas (IEST Anáhuac) Escuela de Medicina
@@ -181,8 +183,9 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
         if (process.browser) {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
         }
-        await this.getSpotlighters()
-        console.log(this.spotlighters)
+        await this.getSpotlighters();
+        this.before();
+        // console.log(this.spotlighters)
     },
     methods: {
         async getSpotlighters() {
@@ -194,7 +197,8 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
                     params: {
                         status: this.selected,
                         page: this.page,
-                        pageResults: this.pageResults
+                        pageResults: this.pageResults,
+                        name: this.search
                     }
                 });
 
@@ -208,6 +212,13 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
         },
         selectedChange() {
             this.getSpotlighters()
+        },
+        searchSpotlighters() {
+            try {
+                this.getSpotlighters()
+            } catch (err) {
+                console.log(err);
+            }
         },
         async update(user) {
             // cambiar a vista para actualizar spotlighter
@@ -294,13 +305,53 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
             this.getSpotlighters()
         },
         rowsChange() {
+            // Cambiar los resultados que se muestran
+            this.page = 1;
+
+            if (this.pageResults > this.totalSpotlighters || this.totalSpotlighters == 0) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 1
+            } else {
+                this.disbaledBefore = 1
+                this.disabledAfter = 0
+            }
+
             this.getSpotlighters()
         },
         before() {
-            alert('Logica para esta asunto')
+            // Cambiar a página anterior
+            if (this.page == 1) {
+                this.disbaledBefore = 1
+                if (this.totalSpotlighters == 0)
+                    this.disabledAfter = 1
+                else {
+                    if (this.totalSpotlighters > this.pageResults)
+                        this.disabledAfter = 0
+                    else
+                        this.disabledAfter = 1
+                }
+            } else if (this.page > 1) {
+                this.page -= 1;
+                this.disabledAfter = 0
+
+                if (this.page == 1)
+                    this.disbaledBefore = 1
+                
+                this.getSpotlighters();
+            }
         },
         after() {
-            alert('Logica para esta asunto')
+            // Cambiar a página siguiente
+            this.page += 1;
+            if (this.page * this.pageResults > this.totalSpotlighters) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 0
+            } else {
+                if (this.page > 1)
+                    this.disbaledBefore = 0
+            }
+
+            this.getSpotlighters();
         },
         closeModalInactive() {
             this.isShowModalInactive = !this.isShowModalInactive;
@@ -355,7 +406,8 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
     .filter-container {
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
+        /* justify-content: space-between; */
+        align-items: flex-end;
         height: 48px;
         margin: 20px 0px;
     }
@@ -380,16 +432,38 @@ export default { // Instituto de Ciencias y Estudios Superiores de Tamaulipas Ma
     .filter-drop {
         display: flex;
         align-items: center;
-        width: 20%;
-        margin: 0px 40px;
+        width: 15%;
+        margin: 0px 100px;
     }
 
     .filter-drop select {
+        height: 32px;
+        width: 100%;
+        /* margin: 0px 115px; */
+        border: none;
+        border-bottom: 1px solid #000;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .filter-drop select:focus {
+        outline: none;
+    }
+
+    /* .filter-drop select {
         width: 100%;
         height: 32px;
         border: none;
         border-bottom: 1px solid #000;
-    }
+    } */
 
     .pay-button {
         width: 20%;
