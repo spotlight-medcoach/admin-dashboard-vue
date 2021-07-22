@@ -10,7 +10,7 @@
             <Loading v-if="loading" />
             <div v-else class="filter-container">
                 <div class="search">
-                    <input type="searchText" placeholder="    Buscar">
+                    <input v-model="search" type="searchText" placeholder="Buscar" @keyup.enter="searchCases">
                 </div>
                 
                 <div class="select-container">
@@ -30,6 +30,7 @@
                 <table class="table table-bordered">
                     <thead class="thead-cases">
                         <tr>
+                            <th scope="col">ID</th>
                             <th scope="col">Caso</th>
                             <th scope="col">Tema</th>
                             <th scope="col">Subtema</th>
@@ -41,6 +42,7 @@
                     </thead>
                     <tbody class="tbody">
                         <tr v-for="(theCase, index) in cases" :key="theCase._id">
+                            <td>{{ theCase.pending_case_id }}</td>
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
@@ -56,8 +58,8 @@
             </div>
 
             <div v-if="!loading" class="pagination-container">
-                <div class="select-container">
-                    <span>Rows per page: </span>
+                <div class="results-container">
+                    <span>Resultados por página: </span>
                     <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
                         <option value=1>1</option>
                         <option value=2>2</option>
@@ -65,18 +67,15 @@
                         <option value=5>5</option>
                         <option value=10>10</option>
                         <option value=15>15</option>
-                        <option value=20>20</option>
                     </select>
                 </div>
 
                 <div class="arrows-container">
-                    <span>1 - {{pageResults}} of {{totalCases}} casos</span>
-                    <button class="btn fas fa-chevron-left" @click="before"></button>
-                    <button class="btn fas fa-chevron-right" @click="after"></button>
+                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalCases ? totalCases : (page * pageResults) > totalCases ? totalCases : page * pageResults }} de {{totalCases}} casos</span>
+                    <button class="btn fas fa-chevron-left" @click="before" :disabled="disbaledBefore == 1"></button>
+                    <button class="btn fas fa-chevron-right" @click="after" :disabled="disabledAfter == 1"></button>
                 </div>
             </div>
-
-
         </div>
     </div>
 </template>
@@ -96,6 +95,7 @@ export default {
             topics: [],
             subtopics: [],
             loading: false,
+            search: '',
             topicSelected: '',
             subtopicSelected: '',
             topicBubbleSelected: '',
@@ -103,9 +103,11 @@ export default {
             topicName: '',
             subtopicName: '',
 
+            disbaledBefore: 0,
+            disabledAfter: 0,
             totalCases: 0,
-            pageResults: 5,
-            page: 1
+            page: 1,
+            pageResults: 10,
         }
     },
     async created() {
@@ -115,8 +117,7 @@ export default {
         }
 
         await this.getCasesWithReview();
-        console.log('cases: ', this.cases)
-        console.log('topics: ', this.topics)
+        this.before()
     },
     methods: {
         async getCasesWithReview() {
@@ -128,15 +129,15 @@ export default {
                         topic_bubble: this.topicBubbleSelected,
                         subtopic_bubble: this.subtopicBubbleSelected,
                         page: this.page,
-                        pageResults: this.pageResults
+                        pageResults: this.pageResults,
+                        pending_case_id: this.search
                     }
                 });
-                // console.log(cases_response)
+                
                 this.cases = cases_response.data.payload.cases;
                 this.totalCases = cases_response.data.payload.length;
 
                 let cases = this.cases;
-                // console.log(new Date(this.cases[0].approved_date).toLocaleDateString('es-ES'))
                 cases.forEach(oneCase => {
                     oneCase.topic_name = this.getTopicName(oneCase.topic_bubble);
                     oneCase.subtopic_name = this.getSubtopicName(oneCase.topic_bubble, oneCase.subtopic_bubble);
@@ -157,6 +158,13 @@ export default {
             this.subtopicBubbleSelected = subtopic;
             this.getCasesWithReview();
         },
+        searchCases() {
+            try {
+                this.getCasesWithReview();
+            } catch (err) {
+                console.log(err);
+            }
+        },
         getTopicName(topic_bubble) {
             let topic = this.topics.filter(top => top.bubble_id == topic_bubble)[0].name
             return topic;
@@ -170,13 +178,50 @@ export default {
             this.$router.push({ path: `/reviewNewQuestions/${theCase._id}` });
         },
         rowsChange() {
+            this.page = 1;
+
+            if (this.pageResults > this.totalCases || this.totalCases == 0) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 1
+            } else {
+                this.disbaledBefore = 1
+                this.disabledAfter = 0
+            }
+
             this.getCasesWithReview()
         },
         before() {
-            alert('Logica para esta asunto')
+            if (this.page == 1) {
+                this.disbaledBefore = 1
+                if (this.totalCases == 0)
+                    this.disabledAfter = 1
+                else {
+                    if (this.totalCases > this.pageResults)
+                        this.disabledAfter = 0
+                    else
+                        this.disabledAfter = 1
+                }
+            } else if (this.page > 1) {
+                this.page -= 1;
+                this.disabledAfter = 0
+
+                if (this.page == 1)
+                    this.disbaledBefore = 1
+                
+                this.getCasesWithReview();
+            }
         },
         after() {
-            alert('Logica para esta asunto')
+            this.page += 1;
+            if (this.page * this.pageResults >= this.totalCases) {
+                this.disabledAfter = 1
+                this.disbaledBefore = 0
+            } else {
+                if (this.page > 1)
+                    this.disbaledBefore = 0
+            }
+
+            this.getCasesWithReview();
         },
     }
 }
@@ -202,10 +247,32 @@ export default {
     .filter-container {
         display: flex;
         flex-direction: row;
-        align-items: center;
+        align-items: flex-end;
         position: static;
         width: 100%;
         height: 48px;
+    }
+
+    .filter-container select {
+        height: 32px;
+        width: 60%;
+        margin: 0px 20px;
+        border: none;
+        border-bottom: 1px solid #000;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .filter-container select:focus {
+        outline: none;
     }
 
     .search {
@@ -216,6 +283,7 @@ export default {
     }
 
     .search input {
+        padding: 12px;
         width: 800px;
         height: 48px;
         background: #FFFFFF;
@@ -226,17 +294,17 @@ export default {
 
     .select-container {
         display: flex;
-        /* justify-content: space-between; */
         height: 32px;
         margin: 0px 40px;
-        /* width: 25%; */
+        width: 40%;
     }
 
-    .select-container select {
+    /* .select-container select {
         margin: 0px 20px;
         border: none;
         border-bottom: 1px solid #000;
-    }
+        width: 60%;
+    } */
 
     table {
         table-layout:fixed;
@@ -299,13 +367,13 @@ export default {
         height: 56px;
     }
 
-    .select-container {
+    .results-container {
         display: flex;
         align-items: center;
         margin: 0px 40px;
     }
 
-    .select-container span {
+    .results-container span {
         font-style: normal;
         font-weight: normal;
         font-size: 12px;

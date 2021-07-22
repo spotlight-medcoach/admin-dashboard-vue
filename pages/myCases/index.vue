@@ -18,7 +18,7 @@
             <Loading v-if="loading" />
             <div v-else class="filter-container">
                 <div class="search-input">
-                    <input type="text" placeholder="Buscar">
+                    <input v-model="search" type="text" placeholder="Buscar" @keyup.enter="searchCases">
                 </div>
 
                 <select v-model="statusSelected" name="status" class="js-example-basic-single" @change="getMyCases">
@@ -46,6 +46,7 @@
                 <table class="table table-bordered">
                     <thead class="thead-cases">
                         <tr>
+                            <th scope="col">ID</th>
                             <th scope="col">Caso</th>
                             <th scope="col">Tema</th>
                             <th scope="col">Subtema</th>
@@ -56,6 +57,7 @@
                     </thead>
                     <tbody class="tbody">
                         <tr v-for="(theCase, index) in myCases" :key="theCase._id">
+                            <td>{{ theCase.pending_case_id }}</td>
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
@@ -77,20 +79,19 @@
 
             <div v-if="!loading" class="pagination-container">
                 <div class="select-container">
-                    <span>Rows per page: </span>
+                    <span>Resultados por página: </span>
                     <select v-model="pageResults" class="js-example-basic-single" @change="rowsChange">
                         <option value=1>1</option>
                         <option value=2>2</option>
                         <option value=3>3</option>
                         <option value=5>5</option>
                         <option value=10>10</option>
-                        <option value=15>15</option>
-                        <option value=50>50</option>
+                        <option value=20>20</option>
                     </select>
                 </div>
 
                 <div class="arrows-container">
-                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalCases ? totalCases : (page * pageResults) > totalCases ? totalCases : page * pageResults }} of {{totalCases}} casos</span>
+                    <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalCases ? totalCases : (page * pageResults) > totalCases ? totalCases : page * pageResults }} de {{totalCases}} casos</span>
                     <button class="btn fas fa-chevron-left" @click="before" :disabled="disbaledBefore == 1"></button>
                     <button class="btn fas fa-chevron-right" @click="after" :disabled="disabledAfter == 1"></button>
                 </div>
@@ -137,15 +138,15 @@ export default {
             subtopicSelected: '',
             topicBubbleSelected: '',
             subtopicBubbleSelected: '',
+            search: '',
 
             titleModal: '',
             bodyModal: '',
             button: '',
 
             totalCases: 0,
-            pageResults: 50,
+            pageResults: 10,
             page: 1,
-            
             disbaledBefore: 0,
             disabledAfter: 0,
         }
@@ -166,6 +167,7 @@ export default {
         }
 
         await this.getMyCases();
+        this.before();
     },
     methods: {
         async getMyCases() {
@@ -177,7 +179,8 @@ export default {
                     topic_bubble: this.topicBubbleSelected,
                     subtopic_bubble: this.subtopicBubbleSelected,
                     pageResults: this.pageResults,
-                    page: this.page
+                    page: this.page,
+                    pending_case_id: this.search
                 }
             })
 
@@ -187,6 +190,13 @@ export default {
 
             this.filterTopicSubtopicName();
             this.loading = !this.loading;
+        },
+        searchCases() {
+            try {
+                this.getMyCases();
+            } catch (err) {
+                console.log(err);
+            }
         },
         filterSubtopics(topic) {
             this.topicBubbleSelected = topic.bubble_id;
@@ -241,7 +251,7 @@ export default {
         rowsChange() {
             this.page = 1;
 
-            if (this.pageResults > this.totalCases) {
+            if (this.pageResults > this.totalCases || this.totalCases == 0) {
                 this.disabledAfter = 1
                 this.disbaledBefore = 1
             } else {
@@ -254,17 +264,23 @@ export default {
         before() {
             if (this.page == 1) {
                 this.disbaledBefore = 1
-                if (this.totalCases == 0 || this.pageResults > this.totalCases)
+                if (this.totalCases == 0)
                     this.disabledAfter = 1
+                else {
+                    if (this.totalCases > this.pageResults)
+                        this.disabledAfter = 0
+                    else
+                        this.disabledAfter = 1
+                }
             } else if (this.page > 1) {
                 this.page -= 1;
                 this.disabledAfter = 0
 
                 if (this.page == 1)
                     this.disbaledBefore = 1
+                
+                this.getMyCases();
             }
-
-            this.getMyCases();
         },
         after() {
             this.page += 1;
@@ -274,8 +290,6 @@ export default {
             } else {
                 if (this.page > 1)
                     this.disbaledBefore = 0
-                    if ((this.page * this.pageResults) >= this.totalCases)
-                        this.disabledAfter = 1
             }
 
             this.getMyCases();
@@ -384,9 +398,24 @@ export default {
 
     .filter-container select {
         height: 32px;
-        /* width: 20%; */
+        width: 12%;
+        /* margin: 0px 115px; */
         border: none;
         border-bottom: 1px solid #000;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .filter-container select:focus {
+        outline: none;
     }
 
     .thead-cases {
