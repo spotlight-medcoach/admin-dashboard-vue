@@ -6,9 +6,10 @@ export default function ({ $axios, redirect, store }) {
     // Interceptors
     $axios.onError((error) => {
         const code = parseInt(error.response && error.response.status)
-        if (code === 403 || code === 402) {
-        store.dispatch('killSession')
-        redirect({ path: '/login', query: { invalid_token: 'Su token ha expirado' } })
+        console.log('axios code', code);
+        if (code === 403 || code === 402 || code === 500) {
+            store.dispatch('killSession')
+            redirect({ path: '/' })
         }
     })
   }

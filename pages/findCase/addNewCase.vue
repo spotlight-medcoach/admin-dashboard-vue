@@ -239,7 +239,7 @@ export default {
         async requestCase() {
             try {
                 if (this.name.trim() == '' || this.topicBubbleSelected == '' || this.subtopicBubbleSelected == '' || this.languageSelected == '' || this.contentHtml.trim() == '') {
-                    this.titleModal = 'Todos los campos deben ser llenados';
+                    this.titleToast = 'Todos los campos deben ser llenados';
                     this.showFailToast = !this.showFailToast;
 
                     setTimeout(() => {
@@ -376,26 +376,36 @@ export default {
             try {
                 this.busy = !this.busy;
 
-                let caseUpdated = await this.$axios.put('/updateBankCase', {
-                    case_id: this.dataCase._id,
-                    spotlight_id: this.new_id,
-                    name: this.name,
-                    topic: this.topicBubbleSelected,
-                    subtopic: this.subtopicBubbleSelected,
-                    language: this.languageSelected,
-                    content: {
-                        quill: this.contentDescription,
-                        html: this.contentHtml
-                    }
-                });
+                if (this.name.trim() == '' || this.topicBubbleSelected == '' || this.subtopicBubbleSelected == '' || this.languageSelected == '' || this.contentHtml.trim() == '') {
+                    this.titleToast = 'Todos los campos deben ser llenados';
+                    this.showFailToast = !this.showFailToast;
 
-                this.titleToast = caseUpdated.data.message;
-                this.showSuccessToast = !this.showSuccessToast;
-
-                setTimeout(() => {
-                    this.busy = !this.busy;
+                    setTimeout(() => {
+                        this.showFailToast = !this.showFailToast;
+                        this.busy = !this.busy;
+                    }, 1);
+                } else {
+                    let caseUpdated = await this.$axios.put('/updateBankCase', {
+                        case_id: this.dataCase._id,
+                        spotlight_id: this.new_id,
+                        name: this.name,
+                        topic: this.topicBubbleSelected,
+                        subtopic: this.subtopicBubbleSelected,
+                        language: this.languageSelected,
+                        content: {
+                            quill: this.contentDescription,
+                            html: this.contentHtml
+                        }
+                    });
+    
+                    this.titleToast = caseUpdated.data.message;
                     this.showSuccessToast = !this.showSuccessToast;
-                }, 1500);
+    
+                    setTimeout(() => {
+                        this.busy = !this.busy;
+                        this.showSuccessToast = !this.showSuccessToast;
+                    }, 1500);
+                }
             } catch (err) {
                 this.busy = !this.busy;
 
@@ -408,6 +418,7 @@ export default {
                     this.showFailToast = !this.showFailToast;
                 }, 1);
             }
+
         },
         discardConfirm() {
             this.titleModal = 'Descartar caso';

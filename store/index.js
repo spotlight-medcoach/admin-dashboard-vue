@@ -32,9 +32,11 @@ export const actions = {
     killSession ({ commit }) {
         if (localStorage.getItem('remember_me')) {
             console.log('yes')
+            localStorage.removeItem('user_token')
             localStorage.removeItem('universities')
             localStorage.removeItem('topics')
             localStorage.removeItem('types')
+            commit('setToken', null)
             commit('setUniversities', null)
             commit('setTopics', null)
             commit('setTypes', null)

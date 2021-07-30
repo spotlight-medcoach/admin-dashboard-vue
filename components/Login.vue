@@ -83,13 +83,22 @@ export default {
     },
     created() {
         if(process.browser) {
-            if (localStorage.getItem('remember_me')) {
-                console.log('make login');
-                this.$router.push({ path: '/statistics' });
-            } 
-            // else {
-            //     console.log('nothing');
-            // }
+            if (localStorage.getItem('remember_me') && localStorage.getItem('user_token')) {
+                let userInfo = JSON.parse(localStorage.getItem('user'))
+
+                if (userInfo.role == 'Administrador')
+                    this.$router.push({ path: '/statistics' });
+                else
+                    this.$router.push({ path: '/requestedQuestions'});
+            } else {
+                console.log('login again')
+                this.titleToast = 'Token no valido, inicia sesión de nuevo';
+                this.showSuccessToast = !this.showSuccessToast;
+
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 2500);
+            }
         }
     },
     methods: {

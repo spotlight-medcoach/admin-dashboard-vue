@@ -46,10 +46,10 @@
                             <td>{{ spotlighter.account_number }}</td>
                             <td>{{ spotlighter.phone }}</td>
                             <td>{{ spotlighter.email }}</td>
-                            <td></td>
+                            <td>{{ spotlighter.questions_created.length }}</td>
                             <td>Falta hacer este calculo</td>
                             <td class="td-style">
-                                <button :disabled="spotlighter.payed" :class="spotlighter.request_payment ? 'fas fa-dollar-sign btn dollar-request' : spotlighter.payed ? 'fas fa-dollar-sign btn dollar-payed' : 'fas fa-dollar-sign btn dollar'" @click="makePaymentConfirm(spotlighter)"></button>
+                                <button :disabled="!spotlighter.request_payment" :class="spotlighter.request_payment ? 'fas fa-dollar-sign btn dollar' : 'fas fa-dollar-sign btn dollar-payed'" @click="makePaymentConfirm(spotlighter)"></button>
                                 <div class="dropleft">
                                     <button class="btn fas fa-ellipsis-v" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
