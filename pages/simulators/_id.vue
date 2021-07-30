@@ -104,9 +104,9 @@
                                         <th scope="col" class="th-case">ID</th>
                                         <th scope="col">Caso</th>
                                         <th scope="col">Idioma</th>
-                                        <!-- <th scope="col" class="th-description">Tipo</th>
-                                        <th scope="col">Dificultad</th>
-                                        <th scope="col">Subtema1</th> -->
+                                        <!-- <th scope="col">Tema</th>
+                                        <th scope="col">Subtema</th> -->
+                                        <!-- <th scope="col">Subtema1</th> -->
                                         <th scope="col" class="act">Acciones</th>
                                     </tr>
                                 </thead>
@@ -115,6 +115,8 @@
                                         <td>{{ theCase.spotlight_id }}</td>
                                         <td>{{ theCase.name }}</td>
                                         <td>{{ theCase.language }}</td>
+                                        <!-- <td>{{ theCase.topicName }}</td>
+                                        <td>{{ theCase.subtopicName }}</td> -->
                                         <td class="act">
                                             <button class="btn edit" @click="viewCase(theCase)"><i class="fas fa-pencil-alt"></i></button>
                                             <button class="btn delete" @click="deleteCaseConfirm(theCase)"><i class="fas fa-trash"></i></button>
@@ -488,6 +490,15 @@ export default {
                 this.createDataSubtopicDificulty();
                 this.setTotalQuestionsBySubtopic();
 
+                // this.casesFiltered.forEach(theCase => {
+                //     let theTopic = this.topicsInfo.filter(top => top.bubble_id == theCase.topic)
+                //     theCase.topicName = theTopic[0].name;
+
+                //     let theSubtopics = theTopic[0].subtopics;
+                //     let theSub = theSubtopics.filter(sub => sub.subtopic == theCase.subtopic)
+                //     theCase.subtopicName = theSub[0].name
+                // })
+
                 this.loading = !this.loading;
             } catch (err) {
                 console.log(err);
@@ -851,7 +862,7 @@ export default {
     }
 
     hr {
-        border: 3px solid #000000;
+        border: 1.5px solid #000000;
         opacity: 1;
         margin: 0;
     }
@@ -1027,6 +1038,8 @@ export default {
     }
 
     .head-container h3 {
+        display: flex;
+        align-items: center;
         font-style: normal;
         font-weight: bold;
         font-size: 20px;
@@ -1041,6 +1054,7 @@ export default {
     }
 
     .head-container i {
+        margin: 0px 5px;
         font-size: 8px;
         color: #1CA4FC;
     }
@@ -1051,7 +1065,7 @@ export default {
         font-size: 20px;
         line-height: 24px;
         color: #FE9400;
-        margin: 0px 5px;
+        /* margin: 0px 5px; */
     }
 
     .title {

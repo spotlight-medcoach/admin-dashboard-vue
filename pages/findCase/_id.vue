@@ -54,6 +54,9 @@
             </div>
 
             <div v-if="!loading" class="save-container">
+                <!-- Loader -->
+                <div class="lds-dual-ring" v-if="busy"></div>
+
                 <button class="btn send" @click="saveCase"><i class="fas fa-paper-plane"></i> Guardar caso</button>
             </div>
         </div>
@@ -95,6 +98,14 @@
             :action="discardCase"
             :textButton="button"
             :isBusy="busyDiscard" />
+
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleToast" />
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleToast" />
     </div>
 </template>
 
@@ -106,39 +117,8 @@ import QuestionCardAdministrator from '../../components/cards/administrators/Que
 import AddCaseQuestion from '../../components/modals/administrators/AddCaseQuestion';
 import CaseQuestionDetailsModal from '../../components/modals/administrators/CaseQuestionDetailsModal'
 import RejectModal from '../../components/modals/RejectModal';
-// CASEQUESTION
-// 60ca81d23b9121000d76470b
-// 60ca81d23b9121000d764710
-// 60ca946e328b9a000dd84e7f
-// 60ca946e328b9a000dd84e84
-// 60ca98ac693ae7000dab32a2
-// 60ca98ac693ae7000dab32ac
-// 60ca9a4c1f6800000d2e1770
-// 60ca9a4c1f6800000d2e177a
-// 60ca9f59e5c0dc000dbce34b
-// 60ca9f59e5c0dc000dbce355
-// 60caa06fd21a8b000d458c42
-// 60caa070d21a8b000d458c4c
-
-// CASE
-// 60ca9a4c1f6800000d2e1784
-// 60ca9f59e5c0dc000dbce35f
-// 60caa070d21a8b000d458c56
-
-// INDIVIDUALQUESTION
-// 60ca9554ab861c000d482523
-// 60ca9554ab861c000d482528
-// 60ca98ac693ae7000dab32a7
-// 60ca98ac693ae7000dab32b1
-// 60ca9a4c1f6800000d2e1775
-// 60ca9a4c1f6800000d2e177f
-// 60ca9f59e5c0dc000dbce350
-// 60ca9f59e5c0dc000dbce35a
-// 60caa070d21a8b000d458c47
-// 60caa070d21a8b000d458c51
-
-// SIMULATORQUESTION
-// 60caa070d21a8b000d458c57
+import SuccessToast from '../../components/toasts/SuccessToast';
+import FailToast from '../../components/toasts/FailToast';
 
 export default {
     components: {
@@ -148,11 +128,14 @@ export default {
         QuestionCardAdministrator,
         AddCaseQuestion,
         CaseQuestionDetailsModal,
-        RejectModal
+        RejectModal,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
             loading: false,
+            busy: false,
             isShowDiscardCaseModal: false,
             busyDiscard: false,
             isShowAddQuestionModal: false,
@@ -173,6 +156,9 @@ export default {
             titleModal: '',
             bodyModal: '',
             button: '',
+            titleToast: '',
+            showSuccessToast: false,
+            showFailToast: false,
 
             contentDescription: '',
             contentHtml: '',
@@ -249,18 +235,64 @@ export default {
             try {
                 this.busyDiscard = !this.busyDiscard;
                 
-                alert('DiscartCase')
+                let deleteResponse = await this.$axios.delete('/deleteCaseBank', {
+                    params: { case_id: this.$route.params.id }
+                })
+
+                this.titleToast = deleteResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast
                 
-                this.isShowDiscardCaseModal = !this.isShowDiscardCaseModal;
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast
+                    this.isShowDiscardCaseModal = !this.isShowDiscardCaseModal;
+                    this.busyDiscard = !this.busyDiscard;
+                    this.$router.push({ path: '/findCase'});
+                }, 1500);
+            } catch (err) {
                 this.busyDiscard = !this.busyDiscard;
 
-                // this.$router.push({ path: '/findCase'});
-            } catch (err) {
-                console.log(err);
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+                console.log(response.data.message);
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         async saveCase() {
-            alert('Save case')
+            try {
+                this.busy = !this.busy;
+
+                let caseUpdated = await this.$axios.put('/updateBankCase', {
+                    case_id: this.$route.params.id,
+                    content: {
+                        quill: this.contentDescription,
+                        html: this.contentHtml
+                    }
+                });
+
+                this.titleToast = caseUpdated.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+
+                setTimeout(() => {
+                    this.busy = !this.busy;
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.$router.push({ path: '/findCase'});
+                }, 1500);
+            } catch (err) {
+                this.busy = !this.busy;
+
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+                console.log(response.data.message);
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
+            }
         },
         addQuestionModal() {
             this.isShowAddQuestionModal = !this.isShowAddQuestionModal;
@@ -286,10 +318,23 @@ export default {
                     }
                 });
 
-                alert(addQuestionResponse.data.message);
-                this.questions.push(addQuestionResponse.data.payload);
+                // alert(addQuestionResponse.data.message);
+                this.titleToast = addQuestionResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.questions.push(addQuestionResponse.data.payload);
+                }, 1500);
             } catch (err) {
-                console.log(err);
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+                console.log(response.data.message);
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         updateQuestion(question, index) {
@@ -300,7 +345,13 @@ export default {
             console.log('findCase questions', this.questions);
         },
         reloadQuestions() {
-            this.questions[this.questionUpdated.indexInArray] = this.questionUpdated.updated;
+            this.titleToast = 'Question updated!';
+            this.showSuccessToast = !this.showSuccessToast;
+
+            setTimeout(() => {
+                this.showSuccessToast = !this.showSuccessToast;
+                this.questions[this.questionUpdated.indexInArray] = this.questionUpdated.updated;
+            }, 1500);
         },
         deleteQuestionConfirm(question) {
             this.questionToDelete = question._id
@@ -320,13 +371,24 @@ export default {
                     }
                 })
 
-                alert(deleteQuestionResponse.data.message);
-                this.questions = this.questions.filter(ques => ques._id != this.questionToDelete)
+                this.titleToast = deleteQuestionResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
 
-                this.busyDeleteQuestion = !this.busyDeleteQuestion;
-                this.isShowDeleteQuestionModal = !this.isShowDeleteQuestionModal;
-            } catch (er) {
-                console.log(err);
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.questions = this.questions.filter(ques => ques._id != this.questionToDelete)
+                    this.busyDeleteQuestion = !this.busyDeleteQuestion;
+                    this.isShowDeleteQuestionModal = !this.isShowDeleteQuestionModal;
+                }, 1500);
+            } catch (err) {
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+                console.log(response.data.message);
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         closeDiscardCaseModal() {
@@ -455,5 +517,34 @@ export default {
     .send {
         background: #20B000;
         color: #FFF;
+    }
+
+    /* estilos para el loading predeterminado */
+    .lds-dual-ring {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        margin: 0px auto;
+    }
+
+    .lds-dual-ring:after {
+        content: " ";
+        display: block;
+        width: 44px;
+        height: 44px;
+        /* margin: 8px; */
+        border-radius: 50%;
+        border: 6px solid #FE9400;
+        border-color: #FE9400 transparent #FE9400 transparent;
+        animation: lds-dual-ring 1.2s linear infinite;
+    }
+
+    @keyframes lds-dual-ring {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
     }
 </style>

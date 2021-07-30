@@ -61,7 +61,7 @@
                             <td v-else-if="theCase.status == 'With feedback'"><div class="feedback">Feedback</div></td>
                             <td v-else-if="theCase.status == 'Pending review'"><div class="pendign-review">Revisión pendiente</div></td>
 
-                            <td>{{ theCase.spotlighter_id ? theCase.admin_user.name + " " + theCase.admin_user.last_name : 'No asignado/aceptado' }}</td>
+                            <td>{{ theCase.spotlighter_id ? theCase.spotlighter_id.admin_id.name + " " + theCase.spotlighter_id.admin_id.last_name : 'No asignado/aceptado' }}</td>
                             <td class="act">
                                 <div v-if="theCase.status == 'Accepted by Spotlighter' || theCase.status == 'Pending' || theCase.status == 'In edit'" class="appro">
                                     <button class="btn accep" @click="acceptedCaseModal(theCase.status)"><i class="fas fa-exclamation-circle"></i> Info</button>

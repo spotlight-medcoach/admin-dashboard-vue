@@ -83,7 +83,8 @@
                 </div>
 
                 <div v-if="!disabled" class="button-container">
-                    <button class="btn" @click="saveProfile"><i class="fas fa-check-circle"></i> Guardar cambios</button>
+                    <button class="btn cancel" @click="cancel"><i class="fas fa-window-close mr-1"></i> Cancelar</button>
+                    <button class="btn save" @click="saveProfile"><i class="fas fa-check-circle"></i> Guardar cambios</button>
                 </div>
             </div>
         </div>
@@ -161,6 +162,9 @@ export default {
         },
         editProfile() {
             this.disabled = false;
+        },
+        cancel() {
+            this.disabled = true;
         },
         async saveProfile() {
             try {
@@ -308,7 +312,16 @@ export default {
         justify-content: flex-end;
     }
 
-    .button-container button {
+    .cancel {
+        padding: 12px 20px;
+        background: #DB1212;
+        color: #FFF;
+        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
+        border-radius: 10px;
+        margin: 45px 40px;
+    }
+
+    .save {
         padding: 12px 20px;
         background: #20B000;
         color: #FFF;
@@ -316,6 +329,15 @@ export default {
         border-radius: 10px;
         margin: 45px 40px;
     }
+
+    /* .button-container button {
+        padding: 12px 20px;
+        background: #20B000;
+        color: #FFF;
+        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
+        border-radius: 10px;
+        margin: 45px 40px;
+    } */
 
     /* estilos para el loading predeterminado */
     .load-container {

@@ -5,7 +5,7 @@
         <div class="case-container">
             <div class="title">
                 <h1>Búsqueda de casos</h1>
-                <button v-if="!loading" class="btn"><i class="fas fa-list-alt"></i> Crear un nuevo caso</button>
+                <button v-if="!loading" class="btn" @click="addNewCase"><i class="fas fa-list-alt"></i> Crear un nuevo caso</button>
             </div>
 
             <Loading v-if="loading" />
@@ -115,11 +115,11 @@
 
         <SuccessToast
             v-if="showSuccessToast"
-            :textTitle="titleModal" />
+            :textTitle="titleToast" />
 
         <FailToast 
             v-if="showFailToast"
-            :textTitle="titleModal" />
+            :textTitle="titleToast" />
 
     </div>
 </template>
@@ -167,6 +167,7 @@ export default {
             titleModal: '',
             bodyModal: '',
             button: '',
+            titleToast: '',
 
             cases: [],
             caseToAddASimulator: '',
@@ -284,10 +285,27 @@ export default {
                     case_id: theCase._id,
                     status: theCase.active
                 })
-                // console.log(updateCaseResponse)
+                
+                this.titleToast = updateCaseResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 1500);
             } catch (err) {
-                console.log(err);
+                this.isShowInfoModal = !this.isShowInfoModal;
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+                console.log(response.data.message);
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
+        },
+        addNewCase() {
+            this.$router.push({ path: `/findCase/addNewCase`, query: { length: this.cases.length } });
         },
         addToSimulatorConfirm(theCase) {
             this.titleModal = 'Agregar caso al simulador'
@@ -322,7 +340,7 @@ export default {
                 this.busyAddToSimulator = !this.busyAddToSimulator;
 
                 const response = err.response;
-                this.titleModal = response.data.message;
+                this.titleToast = response.data.message;
                 this.showFailToast = !this.showFailToast;
 
                 setTimeout(() => {
@@ -348,14 +366,26 @@ export default {
                     params: { case_id: this.caseToDelete }
                 })
 
-                console.log(deleteResponse);
-                this.cases = this.cases.filter(theCase => theCase._id != deleteResponse.data.payload);
-                this.totalCases -= 1;
+                this.titleToast = deleteResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
 
-                this.busyReject = !this.busyReject;
-                this.isShowDeleteModal = !this.isShowDeleteModal;
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.cases = this.cases.filter(theCase => theCase._id != deleteResponse.data.payload);
+                    this.totalCases -= 1;
+
+                    this.busyReject = !this.busyReject;
+                    this.isShowDeleteModal = !this.isShowDeleteModal;
+                }, 1500);
             } catch (err) {
-                console.log(err)
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+                console.log(response.data.message);
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         rowsChange() {

@@ -174,7 +174,7 @@ export default {
             let subtopic = topic.subtopics.filter(sub => sub.subtopic == subtopic_bubble);
             return subtopic[0].name
         },
-        caseDetails(theCase) {
+        caseDetails(theCase) { // ?totalCases=${this.cases.length}
             this.$router.push({ path: `/reviewNewQuestions/${theCase._id}` });
         },
         rowsChange() {

@@ -21,10 +21,14 @@
                     title="Contaseña" />
             </div>
 
-            <!-- <div class="check">
+            <div class="check-container">
                 <input v-model="checked" class="" type="checkbox">
                 <label>Recordarme</label>
-            </div> -->
+            </div>
+            <!-- <label class="check-container">
+                <input type="checkbox" v-model="checked">
+                <span class="checkmark">Recordarme</span>
+            </label> -->
             
             <!-- Loader -->
             <div class="lds-dual-ring" v-if="busy"></div>
@@ -41,11 +45,11 @@
 
         <SuccessToast
             v-if="showSuccessToast"
-            :textTitle="titleModal" />
+            :textTitle="titleToast" />
 
         <FailToast 
             v-if="showFailToast"
-            :textTitle="titleModal" />
+            :textTitle="titleToast" />
     </div>
 </template>
 
@@ -65,6 +69,7 @@ export default {
             showSuccessToast: false,
             showFailToast: false,
             titleModal: '',
+            titleToast: '',
 
             userData: {},
             checked: false,
@@ -74,6 +79,17 @@ export default {
             isShowModal: false,
             modalTitle: '',
             modalBody: ''
+        }
+    },
+    created() {
+        if(process.browser) {
+            if (localStorage.getItem('remember_me')) {
+                console.log('make login');
+                this.$router.push({ path: '/statistics' });
+            } 
+            // else {
+            //     console.log('nothing');
+            // }
         }
     },
     methods: {
@@ -99,13 +115,12 @@ export default {
                     this.$store.commit('setRememberMe', this.checked);
                 }
 
-                this.titleModal = loginResponse.data.message 
+                this.titleToast = loginResponse.data.message 
                 this.showSuccessToast = !this.showSuccessToast;
                 this.busy = !this.busy;
 
                 setTimeout(() => {
                     if (this.userData.role == 'Administrador') {
-                        // agregar los topic y las universidades al localStorage
                         this.$router.push({ path: '/statistics' });
                         this.showSuccessToast = !this.showSuccessToast;
                     } else {
@@ -115,10 +130,10 @@ export default {
                 }, 2000);
             } catch (err) {
                 this.busy = !this.busy;
-                this.showFailToast = !this.showFailToast;
 
                 const response = err.response;
-                this.titleModal = response.data.message;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
 
                 setTimeout(() => {
                     this.showFailToast = !this.showFailToast;
@@ -139,7 +154,6 @@ export default {
         justify-content: center;
         background: linear-gradient(#1D2B48, #85A5DB);
         height: 93.8vh;
-        /* padding-bottom: 3%; */
     }
 
     .frame-container {
@@ -147,7 +161,6 @@ export default {
         flex-direction: column;
         align-items: center;
         width: 35%;
-        /* height: 65%; */
         margin: 40px;
         background: #FFFFFF;
         box-shadow: 0px 0px 40px rgba(29, 43, 72, 0.5);
@@ -173,14 +186,14 @@ export default {
 
     }
 
-    .check {
+    .check-container {
         display: flex;
         flex-direction: row;
         align-items: center;
         margin: 15px;
     }
 
-    .check input {
+    .check-container input {
         position: static;
         width: 18px;
         height: 18px;
@@ -189,10 +202,10 @@ export default {
         margin: 0px 4px;
     }
 
-    .check label {
+    .check-container label {
         position: static;
-        width: 88px;
         height: 19px;
+        margin-bottom: 0;
         font-family: Montserrat;
         font-size: 16px;
         display: flex;
@@ -233,7 +246,6 @@ export default {
         display: block;
         width: 44px;
         height: 44px;
-        /* margin: 8px; */
         border-radius: 50%;
         border: 6px solid #FE9400;
         border-color: #FE9400 transparent #FE9400 transparent;

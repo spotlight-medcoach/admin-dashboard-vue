@@ -181,6 +181,7 @@ export default {
             bodyModal: '',
             button: '',
             topics: [],
+            types: [],
             simulators: [],
             simulatorSelected: '',
 
@@ -209,7 +210,7 @@ export default {
         if (process.browser) {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
             this.topics = JSON.parse(localStorage.getItem('topics'));
-            // this.types = JSON.parse(localStorage.getItem('types'));
+            this.types = JSON.parse(localStorage.getItem('types'));
         }
 
         await this.getCaseDetails();
@@ -318,6 +319,7 @@ export default {
         viewQuestion(question) {
             // Ver detalles de preguntas
             this.questionSelected = question;
+            this.questionSelected.typeDisplay = this.types.filter(typ => typ.bubble_id == question.type)[0].display;
             this.isShowQuestionDetailsModal = !this.isShowQuestionDetailsModal;
         },
 
