@@ -185,6 +185,7 @@ export default {
             caseDetails: {},
             questions: [],
             topics: [],
+            types: [],
             simulators: [],
 
             content: '',
@@ -198,10 +199,13 @@ export default {
         if (process.browser) {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
             this.topics = JSON.parse(localStorage.getItem('topics'));
+            this.types = JSON.parse(localStorage.getItem('types'));
         }
 
         await this.getCaseDetails();
         await this.getSimulators();
+        console.log('id', this.$route.params.id);
+        console.log('total', this.$route.query.totalCases)
     },
     methods: {
         onEditorReady(quill) {
@@ -286,6 +290,8 @@ export default {
 
         viewQuestion(question) {
             this.questionSelected = question;
+            console.log(question);
+            this.questionSelected.typeDisplay = this.types.filter(typ => typ.bubble_id == question.type)[0].display;
             this.isShowQuestionDetailsModal = !this.isShowQuestionDetailsModal;
         },
 
@@ -305,7 +311,8 @@ export default {
                 this.busyBank = !this.busyBank;
 
                 let bankResponse = await this.$axios.post('/addPendingToBank', {
-                    pending_case_id: this.$route.params.id
+                    pending_case_id: this.$route.params.id,
+                    // totalCases: parseInt(this.$route.query.totalCases)
                 })
 
                 console.log(bankResponse);

@@ -26,12 +26,6 @@
                 <div class="input">
                     <label for="">ID</label>
                     <input type="text" name="" id="" disabled v-model="new_id">
-                    <!-- <Input
-                        :dis="true"
-                        type="text"
-                        placeholder="12345"
-                        v-model="id"
-                        title="ID" /> -->
                 </div>
             </div>
 
@@ -213,8 +207,7 @@ export default {
             indexQuestion: 0,
             types: [],
             caseIdCreated: '',
-// Caso creado como spotlighter, para actualizar preguntas desde creación
-// Paciente de 25 años se anda paletiando por lo que hace.
+
             name: '',
             id: 'S-',
             new_id: '',
@@ -254,7 +247,6 @@ export default {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
             this.topics = JSON.parse(localStorage.getItem('topics'));
             this.userData = JSON.parse(localStorage.getItem('user'));
-
             this.types = JSON.parse(localStorage.getItem('types'));
         }
 
@@ -767,10 +759,24 @@ export default {
     }
 
     .topic-container select {
+        height: 32px;
         width: 100%;
-        border: 0px;
-        outline: 0px;
+        border: none;
         border-bottom: 1px solid lightgray;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .topic-container select:focus {
+        outline: none;
     }
 
     .subtopic-container {
@@ -788,10 +794,24 @@ export default {
     }
 
     .subtopic-container select {
+        height: 32px;
         width: 100%;
-        border: 0px;
-        outline: 0px;
+        border: none;
         border-bottom: 1px solid lightgray;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .subtopic-container select:focus {
+        outline: none;
     }
 
     .language-container {
@@ -809,10 +829,24 @@ export default {
     }
 
     .language-container select {
+        height: 32px;
         width: 100%;
-        border: 0px;
-        outline: 0px;
+        border: none;
         border-bottom: 1px solid lightgray;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .language-container select:focus {
+        outline: none;
     }
 
     .topic {

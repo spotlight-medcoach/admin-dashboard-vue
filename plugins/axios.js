@@ -8,7 +8,7 @@ export default function ({ $axios, redirect, store }) {
         const code = parseInt(error.response && error.response.status)
         if (code === 403 || code === 402) {
         store.dispatch('killSession')
-        redirect({ path: '/', query: { invalid_token: 'Su token ha expirado' } })
+        redirect({ path: '/login', query: { invalid_token: 'Su token ha expirado' } })
         }
     })
   }

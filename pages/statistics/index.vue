@@ -24,7 +24,7 @@
                             </div>
                                 
                             <div class="graphic">
-                                <span>Casos por dificultad</span>
+                                <span>Preguntas por dificultad</span>
                                 <Chart
                                     :height="180"
                                     :width="420"
@@ -34,7 +34,7 @@
                             </div>
 
                             <div class="graphic">
-                                <span>Casos por tipo</span>
+                                <span>Preguntas por tipo</span>
                                 <Chart
                                     :height="180"
                                     :width="420"
@@ -188,53 +188,77 @@ export default {
             topic: {}
         }
     },
+    // async created() {
+    //     if (process.browser){
+    //         this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
+            
+    //         if (!localStorage.getItem('universities'))
+    //             await this.getUniversities()
+    //         if (!localStorage.getItem('topics'))
+    //             await this.getTopics()
+    //         if (!localStorage.getItem('types'))
+    //             await this.getTypes()
+            
+    //         this.topics = JSON.parse(localStorage.getItem('topics'));
+    //         this.types = JSON.parse(localStorage.getItem('types'));
+    //         await this.getStatistics();
+    //     }
+    // },
     async created() {
         if (process.browser){
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
-            
+            this.loading = !this.loading;
+
+            let promises = []
             if (!localStorage.getItem('universities'))
-                await this.getUniversities()
+                promises.push(this.getUniversities());
             if (!localStorage.getItem('topics'))
-                await this.getTopics()
+                promises.push(this.getTopics());
             if (!localStorage.getItem('types'))
-                await this.getTypes()
+                promises.push(this.getTypes());
             
+            await Promise.all(promises);
+            // promises.push(this.getStatistics());
+
             this.topics = JSON.parse(localStorage.getItem('topics'));
             this.types = JSON.parse(localStorage.getItem('types'));
+
             await this.getStatistics();
+
+            this.loading = !this.loading;
         }
     },
     methods: {
         async getUniversities() {
-            this.loading = !this.loading;
+            // this.loading = !this.loading;
 
             let universities = await this.$axios.get('/getUniversities')
             localStorage.setItem('universities', JSON.stringify(universities.data.payload))
             this.$store.commit('setUniversities')
 
-            this.loading = !this.loading;
+            // this.loading = !this.loading;
         },
         async getTopics() {
-            this.loading = !this.loading;
+            // this.loading = !this.loading;
 
             let topics = await this.$axios.get('/getTopicsWithSubtopics')
             localStorage.setItem('topics', JSON.stringify(topics.data.payload))
             this.$store.commit('setTopics')
 
-            this.loading = !this.loading;
+            // this.loading = !this.loading;
         },
         async getTypes() {
-            this.loading = !this.loading;
+            // this.loading = !this.loading;
 
             let types = await this.$axios.get('/getTypes');
             localStorage.setItem('types', JSON.stringify(types.data.payload));
             this.$store.commit('setTypes');
 
-            this.loading = !this.loading;
+            // this.loading = !this.loading;
         },
         async getStatistics() {
             try {
-                this.loading = !this.loading;
+                // this.loading = !this.loading;
 
                 let statisticsResponse = await this.$axios.get('/getStatistics');
                 this.questionsByTopic = statisticsResponse.data.payload.byTopic;
@@ -254,7 +278,7 @@ export default {
 
                 // console.log('types: ', this.types);
                 
-                this.loading = !this.loading;
+                // this.loading = !this.loading;
             } catch (err) {
                 console.log(err);
             }
