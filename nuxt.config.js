@@ -11,7 +11,7 @@ export default {
 				{ hid: 'description', name: 'description', content: '' },
 			],
 			link: [
-				{ rel: 'icon', type: 'image/x-icon', href: '/1UP.ico' },
+				{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
 				{ rel: "stylesheet", href: "https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css", integrity: "sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0", crossorigin: "anonymous" },
 				{ rel: "stylesheet", href: "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css", integrity: "sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T", crossorigin:"anonymous" },
 				{ rel: "stylesheet", href: "https://use.fontawesome.com/releases/v5.2.0/css/all.css", integrity: "sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ", crossorigin: "anonymous" },
@@ -31,10 +31,6 @@ export default {
 				{ src: "https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js", integrity: "sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p", crossorigin: "anonymous" },
 				{ src: "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js", integrity: "sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF", crossorigin: "anonymous" }
 			],
-	},
-
-	server: {
-		port: 3005
 	},
 
 	// Global CSS: https://go.nuxtjs.dev/config-css
