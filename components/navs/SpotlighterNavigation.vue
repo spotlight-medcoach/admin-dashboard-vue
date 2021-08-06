@@ -5,21 +5,21 @@
 		<nav class="nav">
 			<div>
 				<LinkNavigation
-					to="/requestedQuestions"
+					to="/spotlightersPages/requestedQuestions"
 					new_class="link nuxt-link-active"
 					icon="fas fa-file-medical"
 					title="Casos solicitados" />
 			</div>
 			<div>
 				<LinkNavigation 
-					to="/casesWithFeedback"
+					to="/spotlightersPages/casesWithFeedback"
 					new_class="link nuxt-link-active"
 					icon="fas fa-folder"
 					title="Correcciones" />
 			</div>
 			<div>
 				<LinkNavigation 
-					to="/myCases"
+					to="/spotlightersPages/myCases"
 					new_class="link nuxt-link-active"
 					icon="fas fa-list-alt"
 					title="Mis casos" />
@@ -27,9 +27,22 @@
 			
 		</nav>
 			<!-- <p>Preguntas del periodo actual</p> -->
-		<div class="profile">
+		<!-- <div class="profile">
 			<OptionsModal :show="showModal" @close="showModal = false" />
 			<button class="fas fa-bars btn" @click="showModal = true"></button>
+		</div> -->
+
+		<div class="profile">
+			<!-- Default dropleft button -->
+			<div class="btn-group dropleft">
+				<button type="button" class="btn outfocus" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-bars"></i></button>
+
+				<div class="dropdown-menu">
+					<!-- Dropdown menu links -->
+					<button class="btn" @click="profile"><i class="fas fa-user-alt mr-2"></i> Perfil</button>
+					<button class="btn" @click="logout"><i class="fas fa-sign-in-alt mr-2"></i> Cerrar sesión</button>
+				</div>
+			</div>
 		</div>
 
 	</header>
@@ -50,7 +63,26 @@ export default {
 		}
 	},
 	methods: {
-		
+		profile() {
+            if (process.browser) {
+            // this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
+                this.userData = JSON.parse(localStorage.getItem('user'));
+            }
+            console.log(this.userData.role)
+            if (this.userData.role == 'Administrador') {
+                this.$router.push({ path: '/administratorsPages/profile' });
+            } else {
+                this.$router.push({ path: '/spotlightersPages/profile' });
+            }
+        },
+        logout() {
+            setTimeout(() => {
+                this.$router.push({ path: '/' });
+
+                this.$store.dispatch('killSession')
+                localStorage.clear();
+            }, 1000)
+        }
 	}
 }
 </script>
@@ -75,12 +107,25 @@ export default {
     .profile {
 		margin-left: auto;
 		margin-right: 3%;
-		color: #5F5F5F;
-		background-color: #FFF;
     }
 
-	.profile button {
+	.profile i {
 		font-size: 36px;
+	}
+
+	.dropdown-menu {
+		font-family: Montserrat;
+		width: 175px;
+		margin: 30px 0px;
+        background-color: #fff;
+        border-radius: 2px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
+        box-shadow: 0px 0px 20px #D4D5D7;
+        border-radius: 10px;
+	}
+
+	.dropdown-menu i {
+		font-size: 18px;
 	}
 
 	.nav {

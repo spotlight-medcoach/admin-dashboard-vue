@@ -18,7 +18,7 @@
                     placeholder="• • • • • • • •"
                     v-model="password"
                     icon="fas fa-lock"
-                    title="Contaseña" />
+                    title="Contraseña" />
             </div>
 
             <div class="check-container">
@@ -38,7 +38,7 @@
                     <i class="fas fa-sign-in-alt"></i>
                     Iniciar sesión
                 </button>
-                <button type="button" class="btn forgot-button">Olvidé mi contraseña</button>
+                <button type="button" class="btn forgot-button" @click="forgotPassword">Olvidé mi contraseña</button>
             </div>
 
         </div>    
@@ -87,17 +87,19 @@ export default {
                 let userInfo = JSON.parse(localStorage.getItem('user'))
 
                 if (userInfo.role == 'Administrador')
-                    this.$router.push({ path: '/statistics' });
+                    this.$router.push({ path: '/administratorsPages/statistics' });
                 else
-                    this.$router.push({ path: '/requestedQuestions'});
+                    this.$router.push({ path: '/spotlightersPages/requestedQuestions'});
             } else {
-                console.log('login again')
-                this.titleToast = 'Token no valido, inicia sesión de nuevo';
-                this.showSuccessToast = !this.showSuccessToast;
-
-                setTimeout(() => {
+                if (localStorage.getItem('user')) {
+                    console.log('login again')
+                    this.titleToast = 'Token no valido, inicia sesión de nuevo';
                     this.showSuccessToast = !this.showSuccessToast;
-                }, 2500);
+    
+                    setTimeout(() => {
+                        this.showSuccessToast = !this.showSuccessToast;
+                    }, 2500);
+                }
             }
         }
     },
@@ -130,10 +132,10 @@ export default {
 
                 setTimeout(() => {
                     if (this.userData.role == 'Administrador') {
-                        this.$router.push({ path: '/statistics' });
+                        this.$router.push({ path: '/administratorsPages/statistics' });
                         this.showSuccessToast = !this.showSuccessToast;
                     } else {
-                        this.$router.push({ path: '/requestedQuestions'});
+                        this.$router.push({ path: '/spotlightersPages/requestedQuestions'});
                         this.showSuccessToast = !this.showSuccessToast;
                     }
                 }, 2000);
@@ -148,6 +150,9 @@ export default {
                     this.showFailToast = !this.showFailToast;
                 }, 1);
             }
+        },
+        forgotPassword() {
+            this.$router.push({ path: '/forgotPassword'});
         },
         closeModal() {
             this.isShowModal = !this.isShowModal;
@@ -192,7 +197,6 @@ export default {
         margin: 20px 0px;
         padding: 20px, 0px;
         width: 80%;
-
     }
 
     .check-container {
