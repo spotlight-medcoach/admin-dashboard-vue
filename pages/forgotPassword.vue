@@ -13,7 +13,7 @@
                 <!-- Loader -->
                 <div class="lds-dual-ring" v-if="busy"></div>
 
-                <button class="btn login-button" @click="sendLink"><i class="fas fa-hand-point-up mr-2"></i> Enviar</button>
+                <button class="btn login-button" @click="sendLink"><i class="fas fa-envelope mr-2"></i> Enviar</button>
                 <button class="btn" @click="gotToLogin">Regresar al login</button>
             </div>
         </div>

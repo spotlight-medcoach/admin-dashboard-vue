@@ -24,6 +24,7 @@ export default {
         font-size: 12px;
         line-height: 18px;
         color: #212529;
+        text-align: center;
     }
 
     .link-container:not(:hover) p {

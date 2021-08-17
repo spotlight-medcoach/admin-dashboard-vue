@@ -18,7 +18,7 @@ export default {
 				{ rel: "preconnect", href: "https://fonts.gstatic.com" },
 				{ rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Montserrat" },
 				{ rel: "stylesheet", href: "https://unpkg.com/select2@4.0.3/dist/css/select2.min.css", type: "text/css" },
-				{ href: "http://cdn.quilljs.com/1.3.6/quill.snow.css", rel: "stylesheet" },
+				{ href: "https://cdn.quilljs.com/1.3.6/quill.snow.css", rel: "stylesheet" },
 				{ rel: "stylesheet", href: "style-sheet_chrome.css", type: "text/chrome/safari" }
 			],
 			script: [

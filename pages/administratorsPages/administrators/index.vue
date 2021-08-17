@@ -17,7 +17,7 @@
             <div v-else class="search-active-container">
                 <input v-model="search" type="searchText" placeholder="Buscar" @keyup.enter="searchAdministrators">
                 
-                <select v-model="selected" class="options" @change="selectedChange">
+                <select v-model="selected" class="options" @change="selectedChange(selected)">
                     <option value="true" selected>Activos</option>
                     <option value="false">Inactivos</option>
                 </select>
@@ -33,6 +33,7 @@
 
                         </tr>
                     </thead>
+                  
                     <tbody class="tbody">
                         <tr v-for="(admin, index) in administrators" :key="admin._id">
                             <td>{{ admin.name }} {{ admin.last_name }}</td>
@@ -103,25 +104,35 @@
                 :action="activateUser"
                 :isBusy="busy" />
 
+            <SuccessToast
+                v-if="showSuccessToast"
+                :textTitle="titleToast" />
+
+            <FailToast 
+                v-if="showFailToast"
+                :textTitle="titleToast" />
         </div>
     </div>
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex';
 import Navigation from '../../../components/navs/Navigation';
+import Loading from '../../../components/modals/Loading';
 import SuccessButton from '../../../components/buttons/SuccessButton';
 import DeleteUserModal from '../../../components/modals/DeleteUserModal';
 import ActiveUserModal from '../../../components/modals/ActiveUserModal';
-import Loading from '../../../components/modals/Loading';
+import SuccessToast from '../../../components/toasts/SuccessToast';
+import FailToast from '../../../components/toasts/FailToast';
 
 export default {
     components: {
         Navigation,
+        Loading,
         SuccessButton,
         DeleteUserModal,
         ActiveUserModal,
-        Loading
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
@@ -130,14 +141,17 @@ export default {
             isShowModalInactive: false,
             isShowModalActive: false,
             selected: 'true',
+            showSuccessToast: false,
+            showFailToast: false,
 
+            titleToast: '',
             search: '',
             titleModal: '',
             bodyModal: '',
             nameUser: '',
 
-            // administrators: [],
-            // totalAdmins: 0,
+            administrators: [],
+            totalAdmins: 0,
             disbaledBefore: 0,
             disabledAfter: 0,
             userIdToDelete: '',
@@ -150,35 +164,51 @@ export default {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
         
-        this.$store.dispatch('administrators/getAdministrators', this.selected, this.page, this.pageResults, this.search);
+        this.loading = !this.loading;
+        await this.$store.dispatch('administrators/getAdministrators', { selected: this.selected, page: this.page, pageResults: this.pageResults, search: this.search });
+        this.administrators = this.$store.getters['administrators/getAdministrators'];
+        this.totalAdmins = this.$store.getters['administrators/getTotalAdministrators']
+        this.loading = !this.loading;
+        
+        // this.$store.dispatch('administrators/getAdministrators', this.selected, this.page, this.pageResults, this.search);
         // await this.getAdministrators();
         this.before();
+
+        // setTimeout(() => {
+            // this.loading = !this.loading;
+        // }, 3000);
     },
-    computed: {
-        administrators() {
-            return this.$store.getters['administrators/getAdministrators'];
-        },
-        totalAdmins() {
-            return this.$store.getters['administrators/getTotalAdministrators']
-        }
-    },
+    // computed: {
+    //     administrators() {
+    //         return this.$store.getters['administrators/getAdministrators'];
+    //     },
+    //     totalAdmins() {
+    //         return this.$store.getters['administrators/getTotalAdministrators'];
+    //     }
+    // },
     methods: {
-        // ...mapActions(['administrators/getAdministrators']),
         async getAdministrators() {
             try {
                 this.loading = !this.loading
 
-                let administrators_response = await this.$axios
-                .get('/getAllAdminnistrator', {
-                    params: {
-                        status: this.selected,
-                        page: this.page,
-                        pageResults: this.pageResults,
-                        name: this.search
-                    }
-                })
-                this.administrators = administrators_response.data.payload.admins
-                this.totalAdmins = administrators_response.data.payload.length
+                // let administrators_response = await this.$axios
+                // .get('/getAllAdminnistrator', {
+                //     params: {
+                //         status: this.selected,
+                //         page: this.page,
+                //         pageResults: this.pageResults,
+                //         name: this.search
+                //     }
+                // })
+
+                // console.log('search new', this.search)
+                await this.$store.dispatch('administrators/getAdministrators', { selected: this.selected, page: this.page, pageResults: this.pageResults, search: this.search });
+
+                this.administrators = this.$store.getters['administrators/getAdministrators'];
+                this.totalAdmins = this.$store.getters['administrators/getTotalAdministrators'];
+
+                // this.administrators = administrators_response.data.payload.admins
+                // this.totalAdmins = administrators_response.data.payload.length
 
                 // this.getAdministrators(administrators_response.data.payload.admins);
                 
@@ -187,8 +217,10 @@ export default {
                 console.log(err);
             }
         },
-        selectedChange() {
-            this.getAdministrators()
+        async selectedChange(status) {
+            // let filtered = await this.$store.dispatch('administrators/filterAdministratorsByStatus', status);
+            // console.log(filtered);
+            this.getAdministrators();
         },
         searchAdministrators() {
             try {
@@ -209,19 +241,33 @@ export default {
             try {
                 this.busy = !this.busy;
 
-                let activeResponse = await this.$axios.put('/setActiveUser', { user_id: this.userIdToActive })
-                alert(activeResponse.data.message)
+                let userActivated = await this.$store.dispatch('administrators/activateUser', this.userIdToActive);
                 
-                this.busy = !this.busy;
-                this.isShowModalActive = !this.isShowModalActive;
-                
-                this.getAdministrators()
+                this.titleToast = userActivated.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+                // let activeResponse = await this.$axios.put('/setActiveUser', { user_id: this.userIdToActive })
+                // alert(activeResponse.data.message)
+                this.getAdministrators();
+
+                setTimeout(() => {
+                    this.busy = !this.busy;
+                    this.isShowModalActive = !this.isShowModalActive;
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 1500);
             } catch (err) {
+                this.busy = !this.busy;
                 console.log(err);
-                alert(JSON.stringify(err));
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         update(admin_data) {
+            // this.$store.dispatch('administrators/getAdministrator', admin_data._id);
             this.$router.push({ path: `/administratorsPages/administrators/${admin_data._id}` });
         },
         confirmModalInactive(admin_data) {
@@ -233,15 +279,34 @@ export default {
             this.isShowModalInactive = !this.isShowModalInactive;
         },
         async inactivateUser() {
-            this.busy = !this.busy;
-            
-            let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.userIdToDelete });
-            alert(inactive_response.data.message);
-            
-            this.busy = !this.busy;
-            this.isShowModalInactive = !this.isShowModalInactive;
+            try {
+                this.busy = !this.busy;
+                
+                let userInactivated = await this.$store.dispatch('administrators/deleteAdministrator', this.userIdToDelete);
+                
+                this.titleToast = userInactivated.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+                // let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.userIdToDelete });
+                // alert(inactive_response.data.message);
 
-            this.getAdministrators();
+                this.getAdministrators();
+
+                setTimeout(() => {
+                    this.busy = !this.busy;
+                    this.isShowModalInactive = !this.isShowModalInactive;
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 1500);
+            } catch (err) {
+                this.busy = !this.busy;
+                console.log(err);
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
+            }
         },
         rowsChange() {
             this.page = 1;
