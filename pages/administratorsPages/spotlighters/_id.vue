@@ -202,8 +202,16 @@ export default {
             this.universities = JSON.parse(localStorage.getItem('universities'))
         }
         
-        await this.getUser();
+        // await this.getUser();
+        this.loading = !this.loading;
+
+        await this.$store.dispatch('spotlighters/getSpotlighter', this.$route.params.id);
+        this.user_data = this.$store.getters['spotlighters/getSpotlighter'];
+        console.log('user_data', this.user_data)
+        this.setValueInputs();
         await this.getCountries()
+        
+        this.loading = !this.loading;
     },
     methods: {
         async getUser() {
@@ -246,12 +254,13 @@ export default {
         setValueInputs() {
             this.new_name = this.user_data.name
             this.new_last_name = this.user_data.last_name
-            this.new_country = this.user_data.spotlighter_id.country
-            this.new_state = this.user_data.spotlighter_id.state
+            this.new_country = this.user_data.country
+            this.new_state = this.user_data.state
             this.new_email = this.user_data.email
-            this.new_phone = this.user_data.spotlighter_id.phone
-            this.new_account_number = this.user_data.spotlighter_id.account_number
-            let myUniversity = this.universities.filter(uni => uni._id == this.user_data.spotlighter_id.university_id)[0]
+            this.new_phone = this.user_data.phone
+            this.new_account_number = this.user_data.account_number
+            console.log(this.universities.filter(uni => uni._id == this.user_data.university_id))
+            let myUniversity = this.universities.filter(uni => uni._id == this.user_data.university_id)[0]
             this.new_university = myUniversity._id
         },
         changeIconClassPass() {
@@ -453,10 +462,24 @@ export default {
     }
 
     .input select {
+        height: 32px;
         width: 100%;
-        border: 0px;
-        outline: 0px;
+        border: none;
         border-bottom: 2px solid lightgray;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .input select:focus {
+        outline: none;
     }
 
     /* estilos para el loading predeterminado */

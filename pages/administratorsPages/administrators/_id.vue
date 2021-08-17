@@ -65,7 +65,6 @@
             <div class="load-container">
                 <div class="lds-dual-ring" v-if="busy"></div>
             </div>
-
             <div v-if="!loading" class="btn-container">
                 <SuccessButton
                     :text="'Guardar cambios'"
@@ -125,7 +124,7 @@ export default {
             showFailToast: false,
             titleToast: '',
 
-            user_data: {},
+            // userData: this.user_data,
             new_name: '',
             new_last_name: '',
             new_email: '',
@@ -141,7 +140,23 @@ export default {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
         
-        await this.getUser();
+        // await this.getUser();
+        console.log('created _id')
+        this.loading = !this.loading
+        // Traer al store el admin
+        this.$store.dispatch('administrators/getAdministrator', this.$route.params.id);
+
+        this.loading = !this.loading
+
+        this.user_data
+    },
+    computed: {
+        user_data() {
+            let userData = this.$store.getters['administrators/getAdministrator'];
+            this.new_name = userData.name
+            this.new_last_name = userData.last_name
+            this.new_email = userData.email
+        }
     },
     methods: {
         async getUser() {
@@ -160,15 +175,15 @@ export default {
             }
         },
         setValueInput() {
-            this.new_name = this.user_data.name
-            this.new_last_name = this.user_data.last_name
-            this.new_email = this.user_data.email
-            console.log('name', this.new_name)
+            this.new_name = this.userData.name
+            this.new_last_name = this.userData.last_name
+            this.new_email = this.userData.email
         },
         async updateAdministrator() {
             try {
                 this.busy = !this.busy
-                let updated_response = await this.$axios.put('/updateUser', {
+
+                let userUpdated = this.$store.dispatch('administrators/updateAdministrator', {
                     user_id: this.$route.params.id,
                     name: this.new_name,
                     last_name: this.new_last_name,
@@ -176,13 +191,11 @@ export default {
                     password: this.new_password
                 });
 
-                this.busy = !this.busy
-
-                // alert(updated_response.data.message)
-                this.titleToast = updated_response.data.message;
+                this.titleToast = "Administrador actualizado!";
                 this.showSuccessToast = !this.showSuccessToast;
 
                 setTimeout(() => {
+                    this.busy = !this.busy
                     this.showSuccessToast = !this.showSuccessToast;
                     this.$router.push({ path: '/administratorsPages/administrators' })
                 }, 1500);

@@ -144,25 +144,34 @@ export default {
         async addAdministrator() {
             try {
                 this.busy = !this.busy;
-    
-                let add_response = await this.$axios.post('/createUser', {
-                    name: this.name,
-                    last_name: this.last_name,
-                    email: this.email,
-                    password: this.password,
-                    role: 'Administrador'
-                });
-    
-                this.busy = !this.busy;
-    
-                // alert(add_response.data.message);
-                this.titleToast = add_response.data.message;
-                this.showSuccessToast = !this.showSuccessToast;
 
-                setTimeout(() => {
+                if (this.password === this.confirm_password) {
+                    let administratorAdded = await this.$store.dispatch('administrators/addAdministrator', {
+                        name: this.name,
+                        last_name: this.last_name,
+                        email: this.email,
+                        password: this.password,
+                        role: 'Administrador'
+                    });
+        
+                    this.busy = !this.busy;
+                    this.titleToast = administratorAdded.data.message;
                     this.showSuccessToast = !this.showSuccessToast;
-                    this.$router.push({ path: '/administratorsPages/administrators' })
-                }, 1500)
+    
+                    setTimeout(() => {
+                        this.showSuccessToast = !this.showSuccessToast;
+                        this.$router.push({ path: '/administratorsPages/administrators' })
+                    }, 1500)
+                } else {
+                    this.busy = !this.busy;
+                    this.titleToast = 'Las contraseñas deben coincidir';
+                    this.showFailToast = !this.showFailToast;
+
+                    setTimeout(() => {
+                        this.showFailToast = !this.showFailToast;
+                    }, 1)
+                }
+
             } catch (err) {
                 this.busy = !this.busy;
                 console.log(err);

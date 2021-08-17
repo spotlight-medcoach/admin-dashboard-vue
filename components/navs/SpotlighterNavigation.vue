@@ -131,19 +131,15 @@ export default {
 	.nav {
 		display: flex;
 		flex-direction: row;
-
 		margin-left: 7%;
-		margin-right: 4%;
+		margin: 0px 3%;
 	}
 
 	.nav div {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 125px;
-		/* height: 48px; */
-		/* margin: 0px 21.145px; */
-		
+		width: 8vw;
 	}
 
 	.nuxt-link-exact-active {

@@ -128,6 +128,14 @@
                 :name="nameUser"
                 :action="activateUser"
                 :isBusy="busy" />
+
+            <SuccessToast
+                v-if="showSuccessToast"
+                :textTitle="titleToast" />
+
+            <FailToast 
+                v-if="showFailToast"
+                :textTitle="titleToast" />
         </div>
     </div>
 </template>
@@ -139,6 +147,8 @@ import ActionsModal from '../../../components/modals/ActionsModal';
 import MakePayment from '../../../components/modals/administrators/MakePayment';
 import DeleteUserModal from '../../../components/modals/DeleteUserModal';
 import ActiveUserModal from '../../../components/modals/ActiveUserModal';
+import SuccessToast from '../../../components/toasts/SuccessToast';
+import FailToast from '../../../components/toasts/FailToast';
 
 export default { 
     components: {
@@ -147,7 +157,9 @@ export default {
         ActionsModal,
         MakePayment,
         DeleteUserModal,
-        ActiveUserModal
+        ActiveUserModal,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
@@ -157,9 +169,12 @@ export default {
             isShowModalActive: false,
             isShowPaymentModal: false,
             busyPayment: false,
+            showSuccessToast: false,
+            showFailToast: false,
 
             selected: 'true',
             search: '',
+            titleToast: '',
             titleModal: '',
             bodyModal: '',
             nameUser: '',
@@ -178,12 +193,18 @@ export default {
             pageResults: 10,
             page: 1
         }
-    }, // Instituto de Estudios Superiores de Tamaulipas (IEST Anáhuac) Escuela de Medicina
+    },
     async created() {
         if (process.browser) {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
         }
-        await this.getSpotlighters();
+
+        // await this.getSpotlighters();
+        this.loading = !this.loading;
+        await this.$store.dispatch('spotlighters/getSpotlighters', {selected: this.selected, page: this.page, pageResults: this.pageResults, search: this.search });
+        this.spotlighters = this.$store.getters['spotlighters/getSpotlighters'];
+        this.totalSpotlighters = this.$store.getters['spotlighters/getTotalSpotlighters']
+        this.loading = !this.loading;
         this.before();
         // console.log(this.spotlighters)
     },
@@ -237,15 +258,26 @@ export default {
                 this.busy = !this.busy;
 
                 let activeResponse = await this.$axios.put('/setActiveUser', { user_id: this.userIdToActive })
-                alert(activeResponse.data.message)
-                
-                this.busy = !this.busy;
-                this.isShowModalActive = !this.isShowModalActive;
-                
+                // alert(activeResponse.data.message)
+                this.titleToast = activeResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+
                 this.getSpotlighters()
+                setTimeout(() => {
+                    this.busy = !this.busy;
+                    this.isShowModalActive = !this.isShowModalActive;
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 1500);
             } catch (err) {
+                this.busy = !this.busy;
                 console.log(err);
-                alert(JSON.stringify(err));
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         confirmModalInactive(admin_data) {
@@ -258,17 +290,33 @@ export default {
             this.isShowModalInactive = !this.isShowModalInactive;
         },
         async inactivateUser() {
-            this.busy = !this.busy;
+            try {
+                this.busy = !this.busy;
+    
+                let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.userIdToDelete });
 
-            let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.userIdToDelete });
-            console.log(inactive_response);
-            alert(inactive_response.data.message);
-            this.bodyModal = inactive_response.data.message;
-            
-            this.busy = !this.busy;
-            this.isShowModalInactive = !this.isShowModalInactive;
-            
-            this.getSpotlighters()
+                // alert(inactive_response.data.message);
+                this.titleToast = inactive_response.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+
+                this.getSpotlighters();
+
+                setTimeout(() => {
+                    this.busy = !this.busy;
+                    this.isShowModalInactive = !this.isShowModalInactive;
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 1500);
+            } catch (err) {
+                this.busy = !this.busy;
+                console.log(err);
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
+            }
         },
         makePaymentConfirm(user) {
             this.spotlighterIdToPay = user.spotlighter_id;

@@ -141,12 +141,15 @@ export default {
         if (process.browser) {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
             
-            if (!localStorage.getItem('universities'))
-                await this.getUniversities()
-            if (!localStorage.getItem('topics'))
-                await this.getTopics()
-            if (!localStorage.getItem('types'))
-                await this.getTypes()
+            // if (!localStorage.getItem('universities'))
+            //     await this.getUniversities()
+            // if (!localStorage.getItem('topics'))
+            //     await this.getTopics()
+            // if (!localStorage.getItem('types'))
+            //     await this.getTypes()
+            
+            if (!localStorage.getItem('universities') || !localStorage.getItem('types') || !localStorage.getItem('topics'))
+                await this.getToLocalStorage();
             
             this.topics = JSON.parse(localStorage.getItem('topics'));
             this.universities = JSON.parse(localStorage.getItem('universities'));
@@ -157,6 +160,23 @@ export default {
         this.before();
     },
     methods: {
+        async getToLocalStorage() {
+            try {
+                let localResponse = await this.$axios.get('/localStorage');
+
+                localStorage.setItem('universities', JSON.stringify(localResponse.data.payload.universities));
+                this.$store.commit('setUniversities');
+
+                localStorage.setItem('topics', JSON.stringify(localResponse.data.payload.topics));
+                this.$store.commit('setTopics');
+
+                localStorage.setItem('types', JSON.stringify(localResponse.data.payload.types));
+                this.$store.commit('setTypes');
+
+            } catch (err) {
+                console.log(err);
+            }
+        },
         async getUniversities() {
             let universities = await this.$axios.get('/getUniversities');
             localStorage.setItem('universities', JSON.stringify(universities.data.payload));
