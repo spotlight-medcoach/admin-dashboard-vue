@@ -3,7 +3,7 @@
         <Navigation />
         <div class="profile-container">
             <div class="header-profile">
-                <nuxt-link to="/administrators">
+                <nuxt-link to="/administratorsPages/administrators">
                     <i class="fas fa-chevron-left"></i>
                     Salir de perfil
                 </nuxt-link>

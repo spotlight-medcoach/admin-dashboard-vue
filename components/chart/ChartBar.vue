@@ -8,6 +8,8 @@
             return {
                 max: 0,
                 options: {
+                    tooltips: { enabled: false },
+                    hover: { mode: null },
                     datasets: {
                         bar: {
                             categoryPercentage: 0.6

@@ -9,7 +9,7 @@
                     <!-- :length="cases.filter(cas => cas.requested == true).length" -->
                 <nuxt-link 
                     v-if="!loading"
-                    :to="{ path: '/requestedCases/addRequestedCase', query: { length: cases.filter(cas => cas.requested == true).length } }"
+                    :to="{ path: '/administratorsPages/requestedCases/addRequestedCase', query: { length: cases.filter(cas => cas.requested == true).length } }"
                     class="add-button" >
                     <i class="fas fa-list-alt"></i>
                         Solicitar nuevo caso

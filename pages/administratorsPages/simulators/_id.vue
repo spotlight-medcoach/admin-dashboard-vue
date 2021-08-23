@@ -399,7 +399,7 @@ export default {
             let typesNames = [];
             let totalQuestions = [];
             this.questionsByType.forEach(type => {
-                typesNames.push(type.type_display)
+                typesNames.push(type.type_display + " (" + type.total_questions + ")")
                 totalQuestions.push(type.total_questions);
             });
 
@@ -425,7 +425,7 @@ export default {
             let dificultyName = [];
             let totalDificulty = [];
             this.questionsByDificulty.forEach(dificulty => {
-                dificultyName.push(dificulty.dificulty);
+                dificultyName.push(dificulty.dificulty + " (" + dificulty.total_questions + ")");
                 totalDificulty.push(dificulty.total_questions);
             });
 
@@ -505,7 +505,7 @@ export default {
             let typesNames = [];
             let totalQuestions = [];
             this.questionsSubtopicType.forEach(type => {
-                typesNames.push(type.type_display)
+                typesNames.push(type.type_display + " (" + type.total_questions + ")")
                 totalQuestions.push(type.total_questions);
             });
 
@@ -531,7 +531,7 @@ export default {
             let dificultyName = [];
             let totalDificulty = [];
             this.questionsSubtopicDificulty.forEach(dificulty => {
-                dificultyName.push(dificulty.dificulty);
+                dificultyName.push(dificulty.dificulty+ " (" + dificulty.total_questions + ")");
                 totalDificulty.push(dificulty.total_questions);
             });
 
