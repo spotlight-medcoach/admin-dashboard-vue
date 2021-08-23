@@ -15,9 +15,9 @@
                         <div class="accordion-body">
                             <div class="graphic">
                                 <span>Casos por tema</span>
+                                    <!-- :width="420" -->
                                 <Chart
-                                    :height="180"
-                                    :width="420"
+                                    :height="220"
                                     :render="renderCount"
                                     :chartData="chartDataTopic"
                                     :pos="'bottom'" />
@@ -25,9 +25,9 @@
                                 
                             <div class="graphic">
                                 <span>Preguntas por dificultad</span>
+                                    <!-- :width="420" -->
                                 <Chart
-                                    :height="180"
-                                    :width="420"
+                                    :height="200"
                                     :render="renderCount"
                                     :chartData="chartDataDificulty"
                                     :pos="'bottom'" />
@@ -35,9 +35,9 @@
 
                             <div class="graphic">
                                 <span>Preguntas por tipo</span>
+                                    <!-- :width="420" -->
                                 <Chart
-                                    :height="180"
-                                    :width="420"
+                                    :height="240"
                                     :render="renderCount"
                                     :chartData="chartDataType"
                                     :pos="'bottom'" />
@@ -51,6 +51,7 @@
                             <i class="fas fa-list-alt"></i> Total de casos: <p>{{totalCases}}</p>
                         </button>
                     </h2>
+
                     <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
                         <div class="accordion-body">
                             <div class="topics-container">
@@ -106,7 +107,7 @@
                                     <div class="by-dificult">
                                         <h3>Preguntas por dificultad</h3>
                                         <Chart
-                                            :height="180"
+                                            :height="210"
                                             :width="420"
                                             :render="renderCount"
                                             :chartData="chartDataTypeTopics"
@@ -296,7 +297,7 @@ export default {
                 this.questionsByType = statisticsResponse.data.payload.byType;
                 this.totalCases = statisticsResponse.data.payload.totalCases;
                 this.casesByYear = statisticsResponse.data.payload.byYear;
-                console.log('payload', statisticsResponse.data.payload);
+                // console.log('byTopic', this.questionsByTopic);
                 this.createDataToCharts();
 
                 // this.questionsByTopic.forEach(topic => {
@@ -318,7 +319,7 @@ export default {
             let topicsName = [];
             let totalTopics = [];
             this.questionsByTopic.forEach(ques => {
-                topicsName.push(ques.topic_name);
+                topicsName.push(ques.topic_name + " (" + ques.total_questions + ")");
                 totalTopics.push(ques.total_questions);
             })
 
@@ -339,7 +340,7 @@ export default {
             let typesNames = [];
             let totalTypes = [];
             this.questionsByType.forEach(type => {
-                typesNames.push(this.types.filter(typ => typ.bubble_id == type.type)[0].display)
+                typesNames.push(this.types.filter(typ => typ.bubble_id == type.type)[0].display + " (" + type.total_questions + ")")
                 totalTypes.push(type.total_questions);
             });
 
@@ -361,7 +362,7 @@ export default {
             let dificultyName = [];
             let totalDificulty = [];
             this.questionsByDificulty.forEach(dificulty => {
-                dificultyName.push(dificulty.dificulty);
+                dificultyName.push(dificulty.dificulty + " (" + dificulty.total_questions + ")");
                 totalDificulty.push(dificulty.total_questions);
             });
 
@@ -414,7 +415,7 @@ export default {
             let typesNames = [];
             let totalTypes = [];
             totalQuestionsByType.forEach(type => {
-                typesNames.push(type.display);
+                typesNames.push(type.display + " (" + type.total + ")");
                 totalTypes.push(type.total);
             });
 
@@ -454,7 +455,7 @@ export default {
             let dificultyNames = [];
             let dificultyTotal = [];
             totalQuestionsByDificulty.forEach(question => {
-                dificultyNames.push(question.label);
+                dificultyNames.push(question.label + " (" + question.total + ")");
                 dificultyTotal.push(question.total);
             });
 

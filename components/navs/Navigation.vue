@@ -68,8 +68,8 @@
 
 		<div class="profile">
 			<!-- Default dropleft button -->
-			<div class="btn-group dropleft">
-				<button type="button" class="btn outfocus" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-bars"></i></button>
+			<div class="btn-group">
+				<button type="button" class="btn dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-bars"></i></button>
 
 				<div class="dropdown-menu">
 					<!-- Dropdown menu links -->
@@ -147,10 +147,13 @@ export default {
 		font-size: 36px;
 	}
 
+	.show div {
+		transform: translate3d(-130px, 50px, 0px) !important;
+	}
+
 	.dropdown-menu {
 		font-family: Montserrat;
 		width: 175px;
-		margin: 30px 0px;
         background-color: #fff;
         border-radius: 2px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
