@@ -96,6 +96,14 @@
             :textButton="button"
             :isBusy="busyDeleteQuestion" />
 
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleToast" />
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleToast" />
+
     </div>
 </template>
 
@@ -108,6 +116,8 @@ import QuestionCardSpotlighter from '../../../components/cards/spotlighters/Ques
 import CaseQuestionDetailsModalAdministrator from '../../../components/modals/administrators/CaseQuestionDetailsModalAdministrator';
 import AcceptModal from '../../../components/modals/AcceptModal';
 import RejectModal from '../../../components/modals/RejectModal';
+import SuccessToast from '../../../components/toasts/SuccessToast';
+import FailToast from '../../../components/toasts/FailToast';
 
 export default {
     components: {
@@ -118,7 +128,9 @@ export default {
         QuestionCardSpotlighter,
         CaseQuestionDetailsModalAdministrator,
         AcceptModal,
-        RejectModal
+        RejectModal,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
@@ -128,6 +140,8 @@ export default {
             isBusyUpdateReport: false,
             isShowModalDeleteQuestion: false,
             busyDeleteQuestion: false,
+            showSuccessToast: false,
+            showFailToast: false,
 
             topics: [],
             types: [],
@@ -136,6 +150,7 @@ export default {
             titleModal: '',
             bodyModal: '',
             button: '',
+            titleToast: '',
 
             reportDetails: {},
             caseDetails: {},
@@ -276,20 +291,21 @@ export default {
                         html: this.contentHtml
                     }
                 })
-                alert(caseUpdateResponse.data.message)
 
                 // actualizamos el estado del reporte
                 let reportResponse = await this.$axios.put('/putReportResolved', {
                     report_id: this.$route.params.id
                 })
 
-                alert(reportResponse.data.message)
-                console.log(caseUpdateResponse);
-
+                this.titleToast = reportResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
                 this.isBusyUpdateReport = !this.isBusyUpdateReport;
-                this.isShowUpdateReportModal = !this.isShowUpdateReportModal;
-
-                this.$router.push({ path: `/administratorsPages/reports` });
+                
+                setTimeout(() => {
+                    this.isShowUpdateReportModal = !this.isShowUpdateReportModal;
+                    this.$router.push({ path: `/administratorsPages/reports` });
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 1500)
             } catch (err) {
                 console.log(err);
             }

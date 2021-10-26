@@ -122,11 +122,11 @@
 
         <SuccessToast
             v-if="showSuccessToast"
-            :textTitle="titleModal" />
+            :textTitle="titleToast" />
 
         <FailToast 
             v-if="showFailToast"
-            :textTitle="titleModal" />
+            :textTitle="titleToast" />
     </div>
 </template>
 
@@ -175,6 +175,7 @@ export default {
             showSuccessToast: false,
             showFailToast: false,
 
+            titleToast: '',
             titleModal: '',
             bodyModal: '',
             button: '',
@@ -204,8 +205,8 @@ export default {
 
         await this.getCaseDetails();
         await this.getSimulators();
-        console.log('id', this.$route.params.id);
-        console.log('total', this.$route.query.totalCases)
+        // console.log('id', this.$route.params.id);
+        // console.log('total', this.$route.query.totalCases)
     },
     methods: {
         onEditorReady(quill) {
@@ -221,7 +222,7 @@ export default {
                 this.caseDetails.name_topic = this.filterTopicName(this.caseDetails.topic_bubble);
                 this.caseDetails.name_subtopic = this.filterSubtopicName(this.caseDetails.topic_bubble, this.caseDetails.subtopic_bubble)
 
-                console.log('case', this.caseDetails)
+                // console.log('case', this.caseDetails)
 
                 this.loading = !this.loading;
             } catch (err) {
@@ -380,17 +381,26 @@ export default {
             this.button = 'Descartar caso'
         },
         async deleteSpotlighterFromCase() {
-            this.busyReject = !this.busyReject;
-
-            let deleteResponse = await this.$axios.delete('/deletePendingCase', {
-                case_id: this.$route.params.id
-            })
-
-            setTimeout(() => {
+            try {
                 this.busyReject = !this.busyReject;
-                alert(deleteResponse.data.message)
-                this.$router.push({ path: '/administratorsPages/reviewNewQuestions'});
-            })
+    
+                let deleteResponse = await this.$axios.delete('/deletePendingCase', {
+                    params: {
+                        case_id: this.$route.params.id
+                    }
+                })
+
+                this.titleToast = deleteResponse.data.message;
+                this.showSuccessToast = !this.showSuccessToast;
+    
+                setTimeout(() => {
+                    this.busyReject = !this.busyReject;
+                    this.showSuccessToast = !this.showSuccessToast;
+                    this.$router.push({ path: '/administratorsPages/reviewNewQuestions'});
+                }, 1500);
+            } catch (err) {
+                console.log('Error: ', err);
+            }
         },
         closeRejectModal() {
             this.isShowModalReject = false;

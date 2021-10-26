@@ -221,7 +221,7 @@ export default {
             this.myCases = casesUpdated;
         },
         addCase() {
-            this.$router.push({ path: '/myCases/addNewCase', query: { length: this.myCases.filter(cas => cas.requested == false).length } });
+            this.$router.push({ path: './myCases/addNewCase', query: { length: this.myCases.filter(cas => cas.requested == false).length } });
             // console.log('myCases', this.myCases.filter(cas => cas.requested == false));
         },
         requestPaymentConfirm() {
@@ -295,7 +295,7 @@ export default {
             this.getMyCases();
         },
         viewCase(theCase) {
-            this.$router.push({ path: `/myCases/${theCase._id}` });
+            this.$router.push({ path: `./myCases/${theCase._id}` });
         },
         closePaymentModal() {
             this.isShowPaymentModal = false;

@@ -175,7 +175,7 @@ export default {
             return subtopic[0].name
         },
         caseDetails(theCase) { // ?totalCases=${this.cases.length}
-            this.$router.push({ path: `/administratorsPages/reviewNewQuestions/${theCase._id}` });
+            this.$router.push({ path: `/administratorsPages/reviewNewQuestions/${theCase._id}?totalCases=${this.cases.length}` });
         },
         rowsChange() {
             this.page = 1;
