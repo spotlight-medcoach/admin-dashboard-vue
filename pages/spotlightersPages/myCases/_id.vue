@@ -452,7 +452,7 @@ export default {
                     this.showFailToast = !this.showFailToast;
                 }, 1);
             } else {
-                this.titleModal = 'Guardar como borrador';
+                this.titleModal = 'Guardar y enviar caso a revisión';
                 this.bodyModal = "Tu caso se enviará al panel de administración para ser revísado. Si toda la información es correcta, se publicará en los simuladores o en caso de ser necesario, recibirás comentarios y feedback para su corrección. \n Una vez enviado no podrás modificarlo a menos que lo solicite el administrador. ¿Deseas enviarlo?";
                 this.button = 'Guardar y enviar caso';
     
