@@ -275,6 +275,7 @@ export default {
             this.caseDetails.name_subtopic = this.filterSubtopic(this.caseDetails.topic_bubble, this.caseDetails.subtopic_bubble)
             
             this.questions = this.caseDetails.pending_questions;
+            this.indexQuestion = this.questions.length;
             this.contentDescription = this.caseDetails.description.content.ops[0].insert;
             this.contentHtml = this.caseDetails.description.html;
 
@@ -440,6 +441,9 @@ export default {
             }, 1500);
         },
         saveAndSendConfirm() {
+            console.log('contentHtml: ', this.contentHtml)
+            console.log('indexQuestion: ', this.indexQuestion)
+
             if (this.contentHtml.trim() == '' || this.indexQuestion == 0) {
                 this.titleModal = 'Todos los campos deben ser llenados o falta agregar preguntas';
                 this.showFailToast = !this.showFailToast;
