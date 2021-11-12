@@ -317,6 +317,8 @@ export default {
         async addToSimulator() {
             try {
                 this.busyAddToSimulator = !this.busyAddToSimulator;
+                console.log('caseToAdd', this.caseToAddASimulator);
+                console.log('simulator', this.simulatorSelected);
 
                 let addResponse = await this.$axios.put('/addCaseToSimulator', {
                     case_id: this.caseToAddASimulator,

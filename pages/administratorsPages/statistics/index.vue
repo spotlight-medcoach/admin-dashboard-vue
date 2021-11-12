@@ -246,6 +246,7 @@ export default {
         async getToLocalStorage() {
             try {
                 let localResponse = await this.$axios.get('/localStorage');
+                console.log('response: ', localResponse)
 
                 localStorage.setItem('universities', JSON.stringify(localResponse.data.payload.universities));
                 this.$store.commit('setUniversities');
@@ -292,6 +293,7 @@ export default {
                 // this.loading = !this.loading;
 
                 let statisticsResponse = await this.$axios.get('/getStatistics');
+                console.log('statistics: ', statisticsResponse)
                 this.questionsByTopic = statisticsResponse.data.payload.byTopic;
                 this.questionsByDificulty = statisticsResponse.data.payload.byDificulty;
                 this.questionsByType = statisticsResponse.data.payload.byType;

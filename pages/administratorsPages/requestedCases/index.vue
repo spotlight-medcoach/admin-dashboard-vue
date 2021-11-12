@@ -52,7 +52,7 @@
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
-                            <td>{{ theCase.description.content.ops[0].insert }}</td>
+                            <td data-toggle="tooltip" data-placement="right" :title="theCase.description.content.ops[0].insert" class="over">{{ theCase.description.content.ops[0].insert }}</td>
 
                             <td v-if="theCase.status == 'Pending'"><div class="pending">Pendiente</div></td>
                             <td v-else-if="theCase.status == 'Accepted by Spotlighter'"><div class="accepted">Aceptado</div></td>
@@ -445,7 +445,16 @@ export default {
 
     td {
         vertical-align: middle;
-        /* max-width: fit-content !important; */
+    }
+
+    .over {
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        display: -webkit-box;
+        text-overflow: ellipsis;
+        -webkit-line-clamp: 4;
+        margin-bottom: 8px;
+        border: none;
     }
 
     .pending {

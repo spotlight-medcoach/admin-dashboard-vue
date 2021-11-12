@@ -46,7 +46,7 @@
                             <td>{{ theCase.name }}</td>
                             <td>{{ theCase.topic_name }}</td>
                             <td>{{ theCase.subtopic_name }}</td>
-                            <td>{{ theCase.description.content.ops[0].insert }}</td>
+                            <td data-toggle="tooltip" data-placement="right" :title="theCase.description.content.ops[0].insert" class="over">{{ theCase.description.content.ops[0].insert }}</td>
                             <td>{{ theCase.approved_date ? new Date(theCase.approved_date).toLocaleDateString('es-ES') : 'Sin fecha de aceptación' }}</td>
                             <td>{{ theCase.spotlighter_id.admin_id.name }} {{ theCase.spotlighter_id.admin_id.last_name }}</td>
                             <td>
@@ -350,6 +350,16 @@ export default {
 
     td {
         vertical-align: middle;
+    }
+
+    .over {
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        display: -webkit-box;
+        text-overflow: ellipsis;
+        -webkit-line-clamp: 4;
+        margin-bottom: 8px;
+        border: none;
     }
 
     .options {
