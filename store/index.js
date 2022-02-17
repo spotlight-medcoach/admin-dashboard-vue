@@ -30,14 +30,16 @@ export const mutations = {
 
 export const actions = {
     killSession ({ commit }) {
-        if (localStorage.getItem('remember_me')) {
-            localStorage.removeItem('user_token')
-            commit('setToken', null)
-        } else {
-            localStorage.removeItem('user_token')
-            localStorage.removeItem('user')
-            commit('setToken', null)
-            commit('setUserInfo', null)
+        if (process.browser) {
+            if (localStorage.getItem('remember_me')) {
+                localStorage.removeItem('user_token')
+                commit('setToken', null)
+            } else {
+                localStorage.removeItem('user_token')
+                localStorage.removeItem('user')
+                commit('setToken', null)
+                commit('setUserInfo', null)
+            }
         }
     }
 }

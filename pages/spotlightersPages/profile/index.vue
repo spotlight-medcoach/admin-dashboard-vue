@@ -3,7 +3,7 @@
         <SpotlighterNavigation />
         <div class="profile-container">
             <div class="header-profile">
-                <nuxt-link to="/myCases">
+                <nuxt-link to="/spotlightersPages/myCases">
                     <i class="fas fa-chevron-left"></i>
                     Salir de perfil
                 </nuxt-link>
