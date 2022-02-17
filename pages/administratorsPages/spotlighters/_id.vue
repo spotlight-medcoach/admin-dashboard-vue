@@ -1,26 +1,24 @@
 <template>
     <div>
-        <SpotlighterNavigation />
-        <div class="profile-container">
-            <div class="header-profile">
-                <nuxt-link to="/myCases">
+        <Navigation />
+        <div class="add-container">
+            <div class="button-container">
+                <nuxt-link to="/administratorsPages/spotlighters">
                     <i class="fas fa-chevron-left"></i>
-                    Salir de perfil
+                    Cancelar y volver
                 </nuxt-link>
-
-                <button v-if="disabled && !loading" class="btn" @click="editProfile"><i class="fas fa-pencil-alt"></i> Edital perfil</button>
+                <button v-if="!loading" class="btn" @click="confirmModal"><i class="fas fa-trash"></i> Eliminar usuario</button>
             </div>
-            
+
             <Loading v-if="loading" />
-            <div v-else class="body-profile">
-                <h1>Configurar perfil</h1>
+            <div v-else class="form-container">
+                <p class="title">Editar spotlighter</p>
                 <hr>
 
                 <div class="inputs-container">
                     <div class="inputs">
                         <div class="inp-cont">
                             <Input
-                                :dis="disabled"
                                 type="text"
                                 placeholder="Nombre"
                                 v-model="new_name"
@@ -29,7 +27,6 @@
                         </div>
                         <div class="inp-cont">
                             <Input
-                                :dis="disabled"
                                 type="text"
                                 placeholder="Apellidos"
                                 v-model="new_last_name"
@@ -39,31 +36,25 @@
                     </div>
 
                     <div class="inputs">
-                        <div class="inp-cont">
-                            <Input
-                                :dis="disabled"
-                                type="text"
-                                placeholder="País"
-                                v-model="new_country"
-                                :val="new_country"
-                                title="País"
-                                class="disabled" />
+                        <div class="input">
+                            <h3>País</h3>
+                            <select v-model="new_country" class="js-example-basic-single" @change="changeCountry()">
+                                <option :value="''" disabled selected>País</option>
+                                <option :value="country.code" v-for="country in countries" :key="country.code">{{country.name}}</option>
+                            </select>
                         </div>
-                        <div class="inp-cont">
-                            <Input
-                                :dis="disabled"
-                                type="text"
-                                placeholder="Estado"
-                                v-model="new_state"
-                                :val="new_state"
-                                title="Estado" />
+                        <div class="input">
+                            <h3>Estado</h3>
+                            <select v-model="new_state" class="js-example-basic-single" @change="changeState()">
+                                <option :value="''" disabled selected>Estado</option>
+                                <option :value="state.region" v-for="state in states" :key="state.region">{{state.region}}</option>
+                            </select>
                         </div>
                     </div>
 
                     <div class="inputs">
                         <div class="inp-cont">
                             <InputIcon
-                                :dis="disabled"
                                 type="text"
                                 placeholder="example@example.com"
                                 v-model="new_email"
@@ -73,7 +64,6 @@
                         </div>
                         <div class="inp-cont">
                             <InputIcon
-                                :dis="disabled"
                                 type="text"
                                 placeholder="341 111 2233"
                                 v-model="new_phone"
@@ -84,29 +74,15 @@
                     </div>
 
                     <div class="inputs">
-                        <div v-if="disabled" class="inp-cont">
-                            <InputIcon
-                                :dis="disabled"
-                                type="text"
-                                placeholder="Universidad"
-                                v-model="new_university"
-                                :val="new_university"
-                                icon="fas fa-university"
-                                title="Universidad" />
-                        </div>
-
-                        <div v-else class="input">
+                        <div class="input">
                             <h3><i class="fas fa-university"></i> Universidad</h3>
                             <select v-model="new_university" class="js-example-basic-single">
                                 <option :value="''" disabled selected>Universidad</option>
                                 <option :value="university._id" v-for="university in universities" :key="university._id">{{university.name}}</option>
                             </select>
                         </div>
-
-
                         <div class="inp-cont">
                             <InputIcon
-                                :dis="disabled"
                                 type="text"
                                 placeholder="5555 5555 5555 5555"
                                 v-model="new_account_number"
@@ -119,55 +95,72 @@
                     <div class="inputs-pass">
                         <div class="inp-cont-pass">
                             <InputIcon
-                                :dis="disabled"
                                 :type="typePassword"
                                 placeholder="• • • • • • • •"
-                                v-model="password"
-                                icon="fas fa-lock"
+                                v-model="new_password"
+                                :val="new_password"
+                                icon="fas fa-envelope"
                                 title="Contraseña" />
 
-                            <button :class="classPassword" @click="changeIconClassPass"></button>
+                                <button :class="classPassword" @click="changeIconClassPass"></button>
                         </div>
                     </div>
                 </div>
-
-                <div class="load-container">
-                    <div class="lds-dual-ring" v-if="busy"></div>
-                </div>
-
-                <div v-if="!disabled" class="button-container">
-                    <button class="btn cancel" @click="cancel"><i class="fas fa-window-close mr-1"></i> Cancelar</button>
-                    <button class="btn save" @click="saveProfile"><i class="fas fa-check-circle mr-1"></i> Guardar cambios</button>
-                </div>
             </div>
+
+            <div class="load-container">
+                <div class="lds-dual-ring" v-if="busy"></div>
+            </div>
+
+            <div class="btn-container">
+                <SuccessButton
+                    v-if="!loading"
+                    :text="'Guardar cambios'"
+                    :click="updateSpotlighter"
+                    :new_class="'btn'"
+                    :i_class="'fas fa-save'"
+                />
+            </div>
+
+            <DeleteUserModal 
+                v-if="isShowModal"
+                @close="closeModal"
+                :textTitle="titleModal"
+                :textBody="bodyModal"
+                :name="nameUser"
+                :action="deleteUser"
+                :isBusy="busy" />
+            
         </div>
 
         <SuccessToast
             v-if="showSuccessToast"
-            :textTitle="titleModal" />
+            :textTitle="titleToast" />
 
         <FailToast 
             v-if="showFailToast"
-            :textTitle="titleModal" />
+            :textTitle="titleToast" />
     </div>
 </template>
 
 <script>
-import SpotlighterNavigation from '../../../components/navs/SpotlighterNavigation'
-import Loading from '../../../components/modals/Loading';
-import Input from '../../../components/inputs/Input';
+import Navigation from '../../../components/navs/Navigation';
 import InputIcon from '../../../components/inputs/InputIcon';
+import Input from '../../../components/inputs/Input';
+import Loading from '../../../components/modals/Loading';
+import SuccessButton from '../../../components/buttons/SuccessButton';
+import DeleteUserModal from '../../../components/modals/DeleteUserModal';
 import SuccessToast from '../../../components/toasts/SuccessToast';
 import FailToast from '../../../components/toasts/FailToast';
 
-// var bcrypt = require('bcryptjs');
-
 export default {
     components: {
-        SpotlighterNavigation,
-        Loading,
-        Input,
+        Navigation,
         InputIcon,
+        Input,
+        Loading,
+        SuccessButton,
+        DeleteUserModal,
         SuccessToast,
         FailToast
     },
@@ -175,11 +168,19 @@ export default {
         return {
             loading: false,
             busy: false,
+            isShowModal: false,
             showSuccessToast: false,
             showFailToast: false,
-            titleModal: '',
 
-            userInfo: {},
+            universities: [],
+            countries: [],
+            states: [],
+            titleModal: '',
+            bodyModal: '',
+            titleToast: '',
+            
+            nameUser: '',
+            user_data: {},
             new_name: '',
             new_last_name: '',
             new_country: '',
@@ -188,10 +189,8 @@ export default {
             new_phone: '',
             new_university: '',
             new_account_number: '',
-            password: '',
-            disabled: true,
-
-            universities: [],
+            new_password: '',
+            new_confirm_password: '',
 
             typePassword: 'password',
             classPassword: 'btn fas fa-eye-slash',
@@ -200,34 +199,69 @@ export default {
     async created() {
         if (process.browser){
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
-            
             this.universities = JSON.parse(localStorage.getItem('universities'))
         }
+        
+        // await this.getUser();
+        this.loading = !this.loading;
 
-        await this.getUserInfo();
-    }, 
+        await this.$store.dispatch('spotlighters/getSpotlighter', this.$route.params.id);
+        this.user_data = this.$store.getters['spotlighters/getSpotlighter'];
+        console.log('user_data', this.user_data)
+        this.setValueInputs();
+        await this.getCountries()
+        
+        this.loading = !this.loading;
+    },
     methods: {
-        async getUserInfo() {
+        async getUser() {
             try {
                 this.loading = !this.loading;
-
-                let userResponse = await this.$axios.get('/getMyInfo')
-                this.userInfo = userResponse.data.payload;
-                console.log(this.userInfo)
                 
-                this.new_name = this.userInfo.name
-                this.new_last_name = this.userInfo.last_name
-                this.new_country = this.userInfo.spotlighter_id.country
-                this.new_state = this.userInfo.spotlighter_id.state
-                this.new_email = this.userInfo.email
-                this.new_phone = this.userInfo.spotlighter_id.phone
-                this.new_account_number = this.userInfo.spotlighter_id.account_number
-                this.new_university = this.universities.filter(uni => uni._id == this.userInfo.spotlighter_id.university_id)[0].name
+                let user_response = await this.$axios.get('/getOneAdminUser', { params: { user_id: this.$route.params.id } });
+                let user_data = user_response.data.payload;
+                this.user_data = user_data;
+                this.setValueInputs();
+    
+                this.loading = !this.loading;
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        async getCountries() {
+            try {
+                this.loading = !this.loading;
+                
+                let contriesResponse = await this.$axios.get('https://vsbs6hgmxf.execute-api.us-west-2.amazonaws.com/refinery/api/countries');
+                this.countries = contriesResponse.data;
+
+                let statesResponse = await this.$axios.get(`https://vsbs6hgmxf.execute-api.us-west-2.amazonaws.com/refinery/api/countries/cities?country_code=${this.new_country}`)
+                this.states = statesResponse.data;
 
                 this.loading = !this.loading;
             } catch (err) {
                 console.log(err);
             }
+        },
+        async changeCountry() {
+            console.log('newCountry', this.new_country);
+            let statesResponse = await this.$axios.get(`https://vsbs6hgmxf.execute-api.us-west-2.amazonaws.com/refinery/api/countries/cities?country_code=${this.new_country}`)
+            this.states = statesResponse.data;
+        },
+        changeState() {
+            console.log('newState', this.new_state);
+        },
+        setValueInputs() {
+            this.new_name = this.user_data.name
+            this.new_last_name = this.user_data.last_name
+            this.new_country = this.user_data.country
+            this.new_state = this.user_data.state
+            this.new_email = this.user_data.email
+            this.new_phone = this.user_data.phone
+            this.new_account_number = this.user_data.account_number
+            console.log(this.universities.filter(uni => uni._id == this.user_data.university_id))
+            let myUniversity = this.universities.filter(uni => uni._id == this.user_data.university_id)[0]
+            this.new_university = myUniversity._id
         },
         changeIconClassPass() {
             if (this.typePassword == 'password') {
@@ -238,20 +272,12 @@ export default {
                 this.classPassword = 'btn fas fa-eye-slash'
             }
         },
-        editProfile() {
-            this.disabled = false;
-            this.new_university = this.userInfo.spotlighter_id.university_id;
-        },
-        cancel() {
-            this.disabled = true;
-            this.new_university = this.universities.filter(uni => uni._id == this.new_university)[0].name
-        },
-        async saveProfile() {
+        async updateSpotlighter() {
             try {
                 this.busy = !this.busy;
-
-                let updateResponse = await this.$axios.put('/updateUser', {
-                    user_id: this.userInfo._id,
+    
+                let updated_response = await this.$axios.put('/updateUser', {
+                    user_id: this.$route.params.id,
                     name: this.new_name,
                     last_name: this.new_last_name,
                     country: this.new_country,
@@ -261,21 +287,21 @@ export default {
                     university_id: this.new_university,
                     account_number: this.new_account_number,
                     password: this.new_password
-                })
-                console.log(updateResponse)
-                alert(updateResponse.data.message);
-                this.titleModal = updateResponse.data.message;
+                });
+    
+                // alert(updated_response.data.message);
+                this.titleToast = updated_response.data.message;
                 this.showSuccessToast = !this.showSuccessToast;
-
+    
+                this.busy = !this.busy;
+    
                 setTimeout(() => {
                     this.showSuccessToast = !this.showSuccessToast;
-                    this.busy = !this.busy;
-                });
-
-                this.$router.push({ path: '/myCases' })
+                    this.$router.push({ path: '/administratorsPages/spotlighters' })
+                }, 1500);
             } catch (err) {
-                console.log(err);
                 this.busy = !this.busy;
+                console.log(err);
 
                 const response = err.response;
                 this.titleModal = response.data.message;
@@ -285,56 +311,89 @@ export default {
                     this.showFailToast = !this.showFailToast;
                 }, 1);
             }
+        },
+        confirmModal() {
+            this.titleModal = 'Eliminar spotlighter';
+            this.bodyModal = '¿Deseas eliminar el siguiente usuario?'
+            this. nameUser = this.user_data.name + " " + this.user_data.last_name
+            this.isShowModal = !this.isShowModal;
+        },
+        async deleteUser() {
+            try {
+                let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.$route.params.id });
+
+                this.titleToast = inactive_response.data.message;
+                this.showSuccessToast = !this.showSuccessToast
+                
+                setTimeout(() => {
+                    this.isShowModal = !this.isShowModal;
+                    this.showSuccessToast = !this.showSuccessToast
+                    this.$router.push({ path: '/administratorsPages/spotlighters' })
+                }, 1500);
+            } catch (err) {
+                console.log(err);
+                const response = err.response;
+                this.titleModal = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
+            }
+        },
+        closeModal() {
+            this.isShowModal = !this.isShowModal;
         }
     }
 }
 </script>
 
 <style scoped>
-    .profile-container {
+    .add-container {
         display: flex;
         flex-direction: column;
-        margin: 20px 40px;
         font-family: Montserrat;
     }
 
-    .header-profile {
+    .button-container {
         display: flex;
+        flex-direction: row;
         justify-content: space-between;
+        margin-top: 10px;
+        margin-left: 40px;
     }
 
-    .header-profile a {
-        color: #000;
-        text-decoration: none;
+    .button-container button {
+        color: #DB1212;
+        margin-right: 5%;
     }
 
-    .header-profile i {
-        margin: 0px 8px;
-    }
-
-    .header-profile button {
-        color: #1CA4FC;
-    }
-
-    .body-profile {
-        display: flex;
-        flex-direction: column;
-        margin: 10px 80px;
-
-    }
-
-    .body-profile h1 {
+    .title {
         font-style: normal;
-        font-weight: bold;
+        font-weight: 500;
         font-size: 32px;
         line-height: 39px;
-        color: #000000;
     }
 
     hr {
         margin: 0;
         opacity: 1;
         border: 2px solid #000;
+    }
+
+    .button-container a {
+        color: #000;
+        text-decoration: none;
+    }
+
+    .form-container {
+        display: flex;
+        flex-direction: column;
+        /* align-items: center; */
+        width: 90%;
+        margin-top: 10px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .inputs-container {
@@ -350,10 +409,37 @@ export default {
         align-items: center;
         width: 90%;
     }
-    
+
+    .inputs-pass {
+        display: flex;
+        align-items: flex-start;
+        width: 90%;
+    }
+
     .inp-cont {
         width: 100%;
         margin: 20px 40px;
+    }
+
+    .inp-cont-pass {
+        display: flex;
+        align-items: flex-end;
+        width: 42%;
+        margin: 0px 40px;
+    }
+
+    .btn-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-top: 3%;
+        margin-right: 10%;
+        margin-bottom: 3%;
+    }
+
+    .load-container {
+        display: flex;
+        justify-content: center;
     }
 
     .input {
@@ -379,7 +465,7 @@ export default {
         height: 32px;
         width: 100%;
         border: none;
-        border-bottom: 1px solid lightgray;
+        border-bottom: 2px solid lightgray;
         background-color: transparent;
         background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
         background-size: 12px;
@@ -392,56 +478,11 @@ export default {
         border-bottom-left-radius: 0px;
     }
 
-    .input-container select:focus {
+    .input select:focus {
         outline: none;
     }
 
-    .inputs-pass {
-        display: flex;
-        align-items: flex-start;
-        width: 90%;
-    }
-
-    .inp-cont-pass {
-        display: flex;
-        align-items: flex-end;
-        width: 42%;
-        margin: 0px 40px;
-    }
-
-    .disabled {
-        border-bottom: 2px bold white;
-    }
-
-    .button-container {
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    .cancel {
-        padding: 12px 20px;
-        background: #DB1212;
-        color: #FFF;
-        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
-        border-radius: 10px;
-        margin: 45px 40px;
-    }
-
-    .save {
-        padding: 12px 20px;
-        background: #20B000;
-        color: #FFF;
-        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
-        border-radius: 10px;
-        margin: 45px 40px;
-    }
-
     /* estilos para el loading predeterminado */
-    .load-container {
-        display: flex;
-        justify-content: center;
-    }
-
     .lds-dual-ring {
         display: inline-block;
         width: 50px;

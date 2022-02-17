@@ -119,11 +119,11 @@
 
                     <SuccessToast
                         v-if="showSuccessToast"
-                        :textTitle="titleModal" />
+                        :textTitle="titleToast" />
 
                     <FailToast 
                         v-if="showFailToast"
-                        :textTitle="titleModal" />
+                        :textTitle="titleToast" />
                 </div>
             </div>
         </div>
@@ -144,7 +144,7 @@ export default {
         return {
             showSuccessToast: false,
             showFailToast: false,
-            titleModal: '',
+            titleToast: '',
 
             isBusy: false,
             dificultySelected: '',
@@ -213,7 +213,7 @@ export default {
 
                 if (this.dificultySelected == '' || this.typeSelected == '' || this.correctAnswer == '' || this.answer1.ops[0].insert.trim() == '' || this.answer2.ops[0].insert.trim() == '' || this.answer3.ops[0].insert.trim() == '' || this.answer4.ops[0].insert.trim() == '' || this.questionContent.ops[0].insert.trim() == '' || this.retroContent.ops[0].insert.trim() == '') {
                     this.isBusy = !this.isBusy;
-                    this.titleModal = 'Todos los campos deben ser llenados';
+                    this.titleToast = 'Todos los campos deben ser llenados';
                     this.showFailToast = !this.showFailToast;
 
                     setTimeout(() => {
@@ -264,7 +264,7 @@ export default {
                 }
             } catch (err) {
                 console.log(err);
-                this.titleModal = err;
+                this.titleToast = err;
                 this.showFailToast = !this.showFailToast;
 
                 setTimeout(() => {
@@ -351,10 +351,24 @@ export default {
     }
 
     .dificulty-container select {
+        height: 32px;
         width: 100%;
-        border: 0px;
-        outline: 0px;
+        border: none;
         border-bottom: 1px solid lightgray;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .dificulty-container select:focus {
+        outline: none;
     }
 
     .type-container {
@@ -372,10 +386,24 @@ export default {
     }
 
     .type-container select {
+        height: 32px;
         width: 100%;
-        border: 0px;
-        outline: 0px;
+        border: none;
         border-bottom: 1px solid lightgray;
+        background-color: transparent;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 12px;
+        background-position: calc(100% - 10px) center;
+        background-repeat: no-repeat;
+        -webkit-appearance: none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+
+    .type-container select:focus {
+        outline: none;
     }
 
     .editor-container {

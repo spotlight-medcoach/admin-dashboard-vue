@@ -1,38 +1,32 @@
 <template>
     <div>
         <Navigation />
-        <div class="profile-container">
-            <div class="header-profile">
+        <div class="add-container">
+            <div class="button-container">
                 <nuxt-link to="/administratorsPages/administrators">
                     <i class="fas fa-chevron-left"></i>
-                    Salir de perfil
+                    Cancelar y volver
                 </nuxt-link>
-
-                <button v-if="disabled" class="btn" @click="editProfile"><i class="fas fa-pencil-alt"></i> Edital perfil</button>
             </div>
-            
+
             <Loading v-if="loading" />
-            <div v-else class="body-profile">
-                <h1>Configurar perfil</h1>
+            <div v-else class="form-container">
+                <p class="title">Crear administrador</p>
                 <hr>
 
                 <div class="inputs">
                     <div class="int-cont">
                         <Input
-                            :dis="disabled"
                             type="text"
                             placeholder="Ingresa tu(s) nombre(s)"
                             v-model="name"
-                            :val="name"
                             title="Nombre(s)" />
                     </div>
                     <div class="int-cont">
                         <Input
-                            :dis="disabled"
                             type="text"
                             placeholder="Ingresa tus apellidos"
                             v-model="last_name"
-                            :val="last_name"
                             title="Apellidos" />
                     </div>
                 </div>
@@ -40,21 +34,18 @@
                 <div class="inputs">
                     <div class="int-cont-email">
                         <InputIcon
-                            :dis="disabled"
-                            type="text"
+                            type="email"
                             placeholder="example@example.com"
                             v-model="email"
-                            :val="email"
                             icon="fas fa-envelope"
                             title="Correo electrónico" />
                     </div>
                 </div>
 
                 <div class="inputs">
-                    <div class="int-cont-pass">
+                    <div class="int-cont">
                         <div class="password">
                             <InputIcon
-                                :dis="disabled"
                                 :type="typePassword"
                                 placeholder="• • • • • • • •"
                                 v-model="password"
@@ -65,7 +56,7 @@
                         </div>
                     </div>
 
-                    <!-- <div class="int-cont">
+                    <div class="int-cont">
                         <div class="password">
                             <InputIcon
                                 :type="typeConfirm"
@@ -75,116 +66,140 @@
                                 title="Confirmar contraseña" />
                             <button :class="classConfirm" @click="changeIconClassConf"></button>
                         </div>
-                    </div> -->
-                </div>
-
-                <div class="load-container">
-                    <div class="lds-dual-ring" v-if="busy"></div>
-                </div>
-
-                <div v-if="!disabled" class="button-container">
-                    <button class="btn cancel" @click="cancel"><i class="fas fa-window-close mr-1"></i> Cancelar</button>
-                    <button class="btn save" @click="saveProfile"><i class="fas fa-check-circle"></i> Guardar cambios</button>
+                    </div>
                 </div>
             </div>
+
+            <div class="load-container">
+                <div class="lds-dual-ring" v-if="busy"></div>
+            </div>
+
+            <div class="btn-container">
+                <SuccessButton
+                    :text="'Agregar usuario'"
+                    :click="addAdministrator"
+                    :new_class="'btn'"
+                    :i_class="'fas fa-check-circle'"
+                />
+            </div>
         </div>
+
+        <SuccessToast
+            v-if="showSuccessToast"
+            :textTitle="titleToast" />
+
+        <FailToast 
+            v-if="showFailToast"
+            :textTitle="titleToast" />
     </div>
 </template>
 
 <script>
-import Navigation from '../../../components/navs/Navigation'
-import Loading from '../../../components/modals/Loading';
+import Navigation from '../../../components/navs/Navigation';
+import SuccessButton from '../../../components/buttons/SuccessButton';
+import InputTitle from '../../../components/inputs/InputTitle';
 import Input from '../../../components/inputs/Input';
+import Loading from '../../../components/modals/Loading';
 import InputIcon from '../../../components/inputs/InputIcon';
-
-// var bcrypt = require('bcryptjs');
+import SuccessToast from '../../../components/toasts/SuccessToast';
+import FailToast from '../../../components/toasts/FailToast';
 
 export default {
     components: {
         Navigation,
-        Loading,
+        SuccessButton,
+        InputTitle,
         Input,
-        InputIcon
+        Loading,
+        InputIcon,
+        SuccessToast,
+        FailToast
     },
     data() {
         return {
-            loading: false,
             busy: false,
+            loading: true,
+            showSuccessToast: false,
+            showFailToast: false,
+            titleToast: '',
 
-            userInfo: {},
             name: '',
             last_name: '',
             email: '',
             password: '',
-            disabled: true,
-
-            universities: [],
-
+            confirm_password: '',
             typePassword: 'password',
-            classPassword: 'btn fas fa-eye',
+            classPassword: 'btn fas fa-eye-slash',
+
+            typeConfirm: 'password',
+            classConfirm: 'btn fas fa-eye-slash',
         }
     },
-    async created() {
-        if (process.browser){
+    created() {
+        if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
-            
-            this.universities = JSON.parse(localStorage.getItem('universities'))
-        }
-
-        await this.getUserInfo();
-    }, 
+        this.loading = !this.loading
+    },
     methods: {
-        async getUserInfo() {
+        async addAdministrator() {
             try {
-                this.loading = !this.loading;
+                this.busy = !this.busy;
 
-                let userResponse = await this.$axios.get('/getMyInfo')
-                this.userInfo = userResponse.data.payload;
-                console.log(this.userInfo)
-                
-                this.name = this.userInfo.name
-                this.last_name = this.userInfo.last_name
-                this.email = this.userInfo.email
+                if (this.password === this.confirm_password) {
+                    let administratorAdded = await this.$store.dispatch('administrators/addAdministrator', {
+                        name: this.name,
+                        last_name: this.last_name,
+                        email: this.email,
+                        password: this.password,
+                        role: 'Administrador'
+                    });
+        
+                    this.busy = !this.busy;
+                    this.titleToast = administratorAdded.data.message;
+                    this.showSuccessToast = !this.showSuccessToast;
+    
+                    setTimeout(() => {
+                        this.showSuccessToast = !this.showSuccessToast;
+                        this.$router.push({ path: '/administratorsPages/administrators' })
+                    }, 1500)
+                } else {
+                    this.busy = !this.busy;
+                    this.titleToast = 'Las contraseñas deben coincidir';
+                    this.showFailToast = !this.showFailToast;
 
-                this.loading = !this.loading;
+                    setTimeout(() => {
+                        this.showFailToast = !this.showFailToast;
+                    }, 1)
+                }
+
             } catch (err) {
+                this.busy = !this.busy;
                 console.log(err);
+                const response = err.response;
+                this.titleToast = response.data.message;
+                this.showFailToast = !this.showFailToast;
+
+                setTimeout(() => {
+                    this.showFailToast = !this.showFailToast;
+                }, 1);
             }
         },
         changeIconClassPass() {
             if (this.typePassword == 'password') {
                 this.typePassword = 'text'
-                this.classPassword = 'btn fas fa-eye-slash'
+                this.classPassword = 'btn fas fa-eye'
             } else if (this.typePassword == 'text') {
                 this.typePassword = 'password'
-                this.classPassword = 'btn fas fa-eye'
+                this.classPassword = 'btn fas fa-eye-slash'
             }
         },
-        editProfile() {
-            this.disabled = false;
-        },
-        cancel() {
-            this.disabled = true;
-        },
-        async saveProfile() {
-            try {
-                this.busy = !this.busy;
-
-                let updateResponse = await this.$axios.put('/updateUser', {
-                    user_id: this.userInfo._id,
-                    name: this.name,
-                    last_name: this.last_name,
-                    email: this.email,
-                    password: this.password
-                })
-                console.log(updateResponse)
-                alert(updateResponse.data.message);
-
-                this.busy = !this.busy;
-
-                this.$router.push({ path: '/administrators' })
-            } catch (err) {
-                console.log(err);
+        changeIconClassConf() {
+            if (this.typeConfirm == 'password') {
+                this.typeConfirm = 'text'
+                this.classConfirm = 'btn fas fa-eye'
+            } else if (this.typeConfirm == 'text') {
+                this.typeConfirm = 'password'
+                this.classConfirm = 'btn fas fa-eye-slash'
             }
         }
     }
@@ -192,59 +207,42 @@ export default {
 </script>
 
 <style scoped>
-    .profile-container {
+    .add-container {
         display: flex;
         flex-direction: column;
-        margin: 20px 40px;
         font-family: Montserrat;
     }
 
-    .header-profile {
-        display: flex;
-        justify-content: space-between;
+    .button-container {
+        margin-top: 1.5%;
+        margin-left: 3%;
     }
 
-    .header-profile a {
+    .button-container a {
         color: #000;
         text-decoration: none;
     }
 
-    .header-profile i {
-        margin: 0px 8px;
-    }
-
-    .header-profile button {
-        color: #1CA4FC;
-    }
-
-    .body-profile {
+    .form-container {
         display: flex;
         flex-direction: column;
         width: 85%;
         margin-top: 1%;
         margin-left: auto;
         margin-right: auto;
-
     }
 
-    .body-profile h1 {
+    .title {
         font-style: normal;
-        font-weight: bold;
+        font-weight: 500;
         font-size: 32px;
         line-height: 39px;
-        color: #000000;
     }
 
     hr {
         margin: 0;
         opacity: 1;
         border: 2px solid #000;
-    }
-
-    .inputs-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
     }
 
     .inputs {
@@ -270,11 +268,6 @@ export default {
         margin: 0px 80px;
     }
 
-    .int-cont-pass {
-        width: 36%;
-        margin: 30px 80px;
-    }
-
     .input-container {
         margin-left: auto;
         margin-right: auto;
@@ -290,61 +283,20 @@ export default {
         margin-bottom: 2%;
     }
 
-    .inputs-pass {
+    .btn-container {
         display: flex;
-        align-items: flex-start;
-        width: 90%;
-    }
-
-    .inp-cont-pass {
-        display: flex;
-        align-items: flex-end;
-        width: 42%;
-        margin: 0px 40px;
-    }
-
-    .disabled {
-        border-bottom: 2px bold white;
-    }
-
-    .button-container {
-        display: flex;
+        align-items: center;
         justify-content: flex-end;
+        margin-top: 3%;
+        margin-right: 10%;
     }
 
-    .cancel {
-        padding: 12px 20px;
-        background: #DB1212;
-        color: #FFF;
-        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
-        border-radius: 10px;
-        margin: 45px 40px;
-    }
-
-    .save {
-        padding: 12px 20px;
-        background: #20B000;
-        color: #FFF;
-        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
-        border-radius: 10px;
-        margin: 45px 40px;
-    }
-
-    /* .button-container button {
-        padding: 12px 20px;
-        background: #20B000;
-        color: #FFF;
-        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
-        border-radius: 10px;
-        margin: 45px 40px;
-    } */
-
-    /* estilos para el loading predeterminado */
     .load-container {
         display: flex;
         justify-content: center;
     }
 
+    /* estilos para el loading predeterminado */
     .lds-dual-ring {
         display: inline-block;
         width: 50px;

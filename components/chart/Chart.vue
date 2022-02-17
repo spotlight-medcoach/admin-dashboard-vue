@@ -7,9 +7,11 @@
         data () {
             return {
                 options: {
+                    tooltips: { enabled: false },
+                    hover: { mode: null },
                     legend: {
                         display: true,
-                        position: this.pos ? this.pos : 'right'
+                        position: this.pos ? this.pos : 'right',
                     },
                     responsive: true,
                     maintainAspectRatio: false,

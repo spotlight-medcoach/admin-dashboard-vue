@@ -17,7 +17,7 @@
 
                             <div class="type-container">
                                 <h3>Tipo: </h3>
-                                {{question.type}}
+                                {{question.typeDisplay}}
                             </div>
                         </div>
 

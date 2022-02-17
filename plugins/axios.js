@@ -1,14 +1,17 @@
 export default function ({ $axios, redirect, store }) {
     // Base URL
-    $axios.setBaseURL(process.env.BASE_PATH || 'https://8i22vr7bh1.execute-api.us-west-2.amazonaws.com/refinery/api/')
+    
+    $axios.setBaseURL(process.env.BASE_PATH || 'https://k2tk81y2ob.execute-api.us-east-1.amazonaws.com/api')
+    // $axios.setBaseURL(process.env.BASE_PATH || 'http://localhost:3005/api')
     // Content Type
     $axios.setHeader('Content-Type', 'application/json')
     // Interceptors
     $axios.onError((error) => {
         const code = parseInt(error.response && error.response.status)
-        if (code === 403 || code === 402) {
-        store.dispatch('killSession')
-        redirect({ path: '/', query: { invalid_token: 'Su token ha expirado' } })
+        console.log('axios code', code);
+        if (code === 403 || code === 402 || code === 500) {
+            store.dispatch('killSession')
+            redirect({ path: '/' })
         }
     })
   }
