@@ -67,5 +67,8 @@ export default {
 		// 		'Quill': 'quill/dist/quill.js'
 		// 	})
 		// ],
+	},
+	env: {
+		baseUrl: process.env.BASE_PATH || 'https://1ux80d7y1m.execute-api.us-east-1.amazonaws.com/api'
 	}
 }
