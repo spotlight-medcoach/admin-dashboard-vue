@@ -131,9 +131,7 @@
                                     <div class="year">
                                         <h3>Filtrar por año</h3>
                                         <select v-model="yearSelected" class="options" @change="createBarData">
-                                            <option value=2019 selected>2019</option>
-                                            <option value=2020>2020</option>
-                                            <option value=2021>2021</option>
+                                            <option v-for="year in years" :key="year">{{year}}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -180,8 +178,8 @@ export default {
             barData: {},
             totalCases: 0,
             topicTotalQuestions: 0,
-            yearSelected: 2019,
-
+            yearSelected: (new Date()).getFullYear(),
+            years: Array.from({ length: (2019 - (new Date()).getFullYear()) / -1 + 1}, (_, i) => (new Date()).getFullYear() + (i * -1)),
             types: [],
             topics: [],
             subtopics: [],
