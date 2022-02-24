@@ -9,7 +9,7 @@ export default function ({ $axios, redirect, store }) {
     $axios.onError((error) => {
         const code = parseInt(error.response && error.response.status)
         console.log('axios code', code);
-        if (code === 403 || code === 402 || code === 500) {
+        if (code === 403 || code === 402) {
             store.dispatch('killSession')
             redirect({ path: '/' })
         }
