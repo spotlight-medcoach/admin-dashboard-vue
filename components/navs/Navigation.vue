@@ -54,6 +54,13 @@
 			</div>
 			<div>
 				<LinkNavigation 
+					to="/administratorsPages/infographics"
+					new_class="link nuxt-link-active"
+					icon="fas far fa-file-image"
+					title="Infográficos" />
+			</div>
+			<div>
+				<LinkNavigation 
 					to="/administratorsPages/administrators"
 					new_class="link nuxt-link-active"
 					icon="fas fa-user-shield"

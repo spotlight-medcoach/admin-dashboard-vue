@@ -1,5 +1,12 @@
 export default {
-  // Global page headers: https://go.nuxtjs.dev/config-head
+	ssr: false,
+	// Global page headers: https://go.nuxtjs.dev/config-head
+	env: {
+		BASE_PATH: process.env.BASE_PATH,
+		BASE_PATH_BUBBLE: process.env.BASE_PATH_BUBBLE,
+		STORAGE_BASE_URL: process.env.STORAGE_BASE_URL,
+		IN_MAINTENANCE: process.env.IN_MAINTENANCE || false,
+	},
 	head: {
 			title: 'Dashboard - Medcoach',
 			htmlAttrs: {
@@ -35,6 +42,7 @@ export default {
 
 	// Global CSS: https://go.nuxtjs.dev/config-css
 	css: [
+		'@assets/css/_custom_theme.scss',
 		'quill/dist/quill.core.css',
 		'quill/dist/quill.snow.css',
 		'quill/dist/quill.bubble.css',
@@ -56,9 +64,15 @@ export default {
 
 	// Modules: https://go.nuxtjs.dev/config-modules
 	modules: [
+		// Doc: https://bootstrap-vue.js.org
+		'bootstrap-vue/nuxt',
 		'@nuxtjs/axios'
 	],
-
+	bootstrapVue: {
+		bootstrapCSS: true, // Or `css: false`
+		bootstrapVueCSS: true, // Or `bvCSS: false`
+		icons: true // Install the IconsPlugin (in addition to BootStrapVue plugin
+	},
 	// Build Configuration: https://go.nuxtjs.dev/config-build
 	build: {
 		// plugins: [
@@ -67,8 +81,5 @@ export default {
 		// 		'Quill': 'quill/dist/quill.js'
 		// 	})
 		// ],
-	},
-	env: {
-		baseUrl: process.env.BASE_PATH || 'https://1ux80d7y1m.execute-api.us-east-1.amazonaws.com/api'
 	}
 }
