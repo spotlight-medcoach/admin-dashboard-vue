@@ -95,7 +95,6 @@ export default {
                     console.log('login again')
                     this.titleToast = 'Token no valido, inicia sesión de nuevo';
                     this.showSuccessToast = !this.showSuccessToast;
-    
                     setTimeout(() => {
                         this.showSuccessToast = !this.showSuccessToast;
                     }, 2500);

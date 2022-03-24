@@ -1,0 +1,81 @@
+// File: custom.scss
+// Variables
+//
+@import '@/assets/css/variables/color-palette.scss';
+
+// Variables should follow the `$component-state-property-size` formula for
+// consistent naming. Ex: $nav-link-disabled-color and $modal-content-box-shadow-xs.
+
+// Color system
+
+$white:    #fff !default;
+$gray-100: $neutral-100 !default;
+$gray-200: $neutral-200 !default;
+$gray-300: $neutral-300 !default;
+$gray-400: $neutral-400 !default;
+$gray-500: $neutral-500 !default;
+$gray-600: $neutral-600 !default;
+$gray-700: $neutral-700 !default;
+$gray-800: $neutral-800 !default;
+$gray-900: $neutral-900 !default;
+$black:    #000 !default;
+
+$grays: () !default;
+$grays: map-merge(
+  (
+    "100": $neutral-100,
+    "200": $neutral-200,
+    "300": $neutral-300,
+    "400": $neutral-400,
+    "500": $neutral-500,
+    "600": $neutral-600,
+    "700": $neutral-700,
+    "800": $neutral-800,
+    "900": $neutral-900
+  ),
+  $grays
+);
+
+$primary:       $main-500 !default;
+$secondary:     $accent_b-500 !default;
+$success:       $success-500 !default;
+$info:          $info-500 !default;
+$warning:       $accent_a-500 !default;
+$danger:        $error-500 !default;
+$light:         $neutral-100 !default;
+$dark:          $neutral-800 !default;
+
+$theme-colors: () !default;
+$theme-colors: map-merge(
+  (
+    "primary":    $primary,
+    "secondary":  $secondary,
+    "success":    $success,
+    "info":       $info,
+    "warning":    $warning,
+    "danger":     $danger,
+    "light":      $light,
+    "dark":       $dark
+  ),
+  $theme-colors
+);
+
+// The yiq lightness value that determines when the lightness of color changes from "dark" to "light". Acceptable values are between 0 and 255.
+$yiq-contrasted-threshold:  170 !default;
+
+$font-family-sans-serif:      "Avenir", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
+$font-family-monospace:       "Avenir", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !default;
+$font-family-base:            $font-family-sans-serif !default;
+
+// $border-radius:               .5rem !default;
+// $border-radius-lg:            .6rem !default;
+// $border-radius-sm:            .4rem !default;
+
+// Include Bootstrap and BootstrapVue SCSS files
+@import '~bootstrap/scss/bootstrap.scss';
+@import '~bootstrap-vue/src/index.scss';
+
+.btn:focus {
+    outline: none;
+    box-shadow: none;
+}
