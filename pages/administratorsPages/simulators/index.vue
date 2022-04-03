@@ -33,7 +33,6 @@ export default {
     data() {
         return {
             loading: false,
-
             simulators: []
         }
     },
@@ -42,7 +41,6 @@ export default {
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
             // this.topics = JSON.parse(localStorage.getItem('topics'));
         }
-
         await this.getSimulators();
         console.log(this.simulators)
     },
