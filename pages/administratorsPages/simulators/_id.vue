@@ -33,7 +33,7 @@
 
             <div v-if="subtopicIdSelected == ''" class="body-container">
                 <div class="content-container">
-                    <h3>Contenido</h3>
+                    <h4>Contenido</h4>
                     <hr>
 
                     <div class="topics-container">
@@ -65,8 +65,78 @@
                     </div>
                 </div>
 
+                <div class="config-container">
+                    <h4>Configuración de Simulador</h4>
+                    <hr>
+                    <div class="d-flex align-items-center my-4">
+                        <div class="align-middle w-25">
+                            <b>No. de bloques</b>
+                        </div>
+                        <div class="mx-2 w-75">
+                            <b-form-input class="rounded-lg text-center" v-model="simulatorsBlocksNumber"></b-form-input>
+                        </div>
+                        <b-button variant="primary" class="rounded-lg" @click="calculeSimulatorBlocks()">
+                            <b-icon icon="check2" aria-label="Help"></b-icon>
+                        </b-button>
+                    </div>
+                </div>
+                <div class="blocks-container" v-if="simulatorsBlocks">
+                    <h4>Bloques</h4>
+                    <hr>
+                    <div class="px-3 py-3">
+                        <div
+                            v-for="(block, index) in simulatorsBlocks"
+                            :key="index"
+                            :set="blockKey=Math.ceil((index+1)/2)"
+                            :class="{'shadowed': block.type === 'block'}"
+                            class="block d-flex align-items-center justify-content-between px-3 py-2 my-2 bg-white rounded-lg"
+                        >
+                            <h3> {{ block.type==='block' ? `Bloque ${blockKey}` : `Descanso ${blockKey}` }} </h3>
+                            <div class="d-flex align-items-center">
+                                <template v-if="block.type==='block'">
+                                    <div class="text-secondary">Preguntas:</div>
+                                    <b-form-input class="mx-1 text-center" type="number" v-model.number="block.questions"></b-form-input>
+                                </template>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="text-secondary">Tiempo:</div>
+                                <b-form-input class="mx-1 text-center" type="number" v-model.number="block.time"></b-form-input>
+                                <small><strong>MINS</strong></small>
+                            </div>
+                            <span class="text-danger">
+                                <b-icon
+                                    class="trash-icon"
+                                    v-if="block.type==='block'"
+                                    icon="trash-fill"
+                                    aria-label="Help"
+                                    role="button"
+                                    @click="removeSimulatorBlock(index)"
+                                />
+                            </span>
+                        </div>
+                    </div>
+                    <div
+                        class="block d-flex align-items-center justify-content-between py-2 my-2 bg-white line-up"
+                    >
+                        <h3> Total </h3>
+                        <div class="d-flex align-items-center">
+                            <div class="text-secondary">PREGUNTAS:</div>
+                            <b class="mx-2">{{ blocksSimulatorTotals.questions }}</b>
+                            / {{ simulatorData.questions.length }}
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="text-secondary">TIEMPO:</div>
+                            <b class="mx-2">{{ blocksSimulatorTotals.time }}</b>
+                            <small><strong>MINS</strong></small>
+                        </div>
+                        <b-button variant="primary" class="rounded-lg" @click="saveSimulatorBlock()">
+                            <b-icon icon="upload" aria-label="Help"></b-icon>
+                        </b-button>
+                    </div>
+                </div>
+
                 <div class="analitics-container">
-                    <h3>Análisis del simulador</h3>
+                    <h4>Análisis del simulador</h4>
                     <hr>
 
                     <span>Preguntas por dificultad</span>
@@ -267,6 +337,16 @@ import RejectModal from '../../../components/modals/RejectModal';
 import SuccessToast from '../../../components/toasts/SuccessToast';
 import FailToast from '../../../components/toasts/FailToast';
 
+const default_block_questions = {
+    "type": "block",
+    "time": 60,
+    "questions": 80
+}
+const default_block_break = {
+    "type": "break",
+    "time": 60
+}
+
 export default {
     
     components: {
@@ -346,7 +426,10 @@ export default {
                         ['link', 'image']
                     ]
                 }
-            }
+            },
+
+            simulatorsBlocksNumber: 2,
+            simulatorsBlocks: []
         }
     },
     async created() {
@@ -356,11 +439,24 @@ export default {
             this.types = JSON.parse(localStorage.getItem('types'));
         }
 
-        await this.getSimulator();
+        await this.getSimulator()
+        this.calculeSimulatorBlocks()
+        
         // await this.getQuestionsByType();
         // await this.getQuestionsByDificulty();
 
         // this.createDataForType();
+    },
+    computed: {
+        blocksSimulatorTotals () {
+            return this.simulatorsBlocks.reduce((acc, curr) => {
+                acc.time += curr.time
+                if (curr.questions) {
+                    acc.questions += curr.questions
+                }
+                return acc
+            }, { 'time': 0, 'questions': 0 })
+        }
     },
     methods: {
         onEditorReady(quill) {
@@ -764,12 +860,40 @@ export default {
         },
         closeRejectDeleteQuestionModal() {
             this.isShowDeleteQuestionModal = false;
+        },
+        calculeSimulatorBlocks () {
+            this.simulatorsBlocks = []
+            for (let i = 0; i < this.simulatorsBlocksNumber; i++) {
+                this.simulatorsBlocks.push(structuredClone(default_block_questions))
+                if (i < this.simulatorsBlocksNumber - 1) {
+                    this.simulatorsBlocks.push(structuredClone(default_block_break))
+                }
+            }
+        },
+        async saveSimulatorBlock () {
+            console.log('save')
+            console.log(this.simulatorsBlocks);
+            const response = await this.$axios.put('/simulator/blocks', {
+                "simulator_id": this.$route.params.id,
+                "blocks": this.simulatorsBlocks
+            })
+            console.log(response);
+        },
+        removeSimulatorBlock (idx) {
+            const nDeletions = this.simulatorsBlocksNumber > 1 ? 2 : 1
+            this.simulatorsBlocksNumber--
+            if (this.simulatorsBlocks.length - 1 === idx) {
+                this.simulatorsBlocks.splice(idx - 1, 2)
+            } else {
+                this.simulatorsBlocks.splice(idx, nDeletions)
+            }
         }
     }
 }
 </script>
 
 <style scoped>
+
     .sim-container {
         display: flex;
         flex-direction: column;
@@ -851,9 +975,15 @@ export default {
     }
 
     .body-container {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
+        display: grid;
+        grid-template-areas: "content config" "content blocks" "analitics analitics";
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto 1fr 1fr;
+        justify-items: center;
+    }
+    .body-container > div {
+        width: 100%;
+        padding: 1rem 4vw;
     }
 
     hr {
@@ -861,21 +991,77 @@ export default {
         opacity: 1;
         margin: 0;
     }
-
-    .content-container {
-        display: flex;
-        flex-direction: column;
-        width: 45%;
-        margin: 20px 40px;
+    .line-up {
+        border-top: 3px solid #000000;
     }
 
-    .content-container h3 {
+    h3 {
+        font-style: normal;
+        font-weight: bold;
+        font-size: 18px;
+        line-height: 18px;
+        color: #000000;
+        margin-bottom: 0;
+    }
+    h4 {
         font-style: normal;
         font-weight: bold;
         font-size: 20px;
         line-height: 24px;
         color: #000000;
         margin-bottom: 0;
+    }
+
+    .config-container {
+        grid-area: config;
+    }
+    .config-container input {
+        background-color: #F1F1F1 !important;
+        font-weight: 600;
+        border: none;
+    }
+
+    .blocks-container {
+        grid-area: blocks;
+    }
+    .blocks-container input {
+        background-color: #F1F1F1 !important;
+        font-weight: 600;
+        border: none;
+        width: 60px;
+    }
+    .blocks-container > div {
+        overflow-y: auto;
+        max-height: 40vh;
+    }
+    .blocks-container .block.shadowed {
+        box-shadow: 0 0 10px #CCCCCC;
+    }
+    .blocks-container .block > * {
+        min-width: 20px;
+    }
+    .blocks-container .block > div,
+    .blocks-container .block > h3 {
+        min-width: 180px;
+    }
+    .blocks-container .block .trash-icon {
+        min-width: 20px;
+    }
+    .block input::-webkit-outer-spin-button,
+    .block input::-webkit-inner-spin-button {
+        /* display: none; <- Crashes Chrome on hover */
+        -webkit-appearance: none;
+        margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+    }
+
+    .block input[type=number] {
+        -moz-appearance:textfield; /* Firefox */
+    }
+
+    .content-container {
+        grid-area: content;
+        display: flex;
+        flex-direction: column;
     }
 
     .topics-container {
@@ -888,7 +1074,7 @@ export default {
         flex-direction: column;
         margin: 40px 0px;
         width: 50%;
-        border-right: 2px solid #000000;
+        border-right: 1px solid #000000;
     }
 
     .topics button {
@@ -911,14 +1097,12 @@ export default {
         font-weight: bold;
     }
 
-
-
     .subtopics {
         display: flex;
         flex-direction: column;
         margin: 40px 0px;
         width: 50%;
-        border-left: 2px solid #000000;
+        border-left: 1px solid #000000;
     }
 
     .subtopics h3 {
@@ -970,13 +1154,12 @@ export default {
         font-size: 8px;
     }
 
-
+    .config-container {
+        grid-area: config;
+    }
 
     .analitics-container {
-        display: flex;
-        flex-direction: column;
-        width: 45%;
-        margin: 20px 40px;
+        grid-area: analitics;
     }
 
     .analitics-container h3 {
@@ -1007,11 +1190,6 @@ export default {
         /* width: 173px !important; */
         height: 800px !important;
     }
-
-
-
-
-
 
 
     /* Estilos para los casos por subtema */
