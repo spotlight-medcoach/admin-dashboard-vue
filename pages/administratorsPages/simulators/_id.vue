@@ -428,7 +428,7 @@ export default {
                 }
             },
 
-            simulatorsBlocksNumber: 2,
+            simulatorsBlocksNumber: 0,
             simulatorsBlocks: []
         }
     },
@@ -440,7 +440,7 @@ export default {
         }
 
         await this.getSimulator()
-        this.calculeSimulatorBlocks()
+        // this.calculeSimulatorBlocks()
         
         // await this.getQuestionsByType();
         // await this.getQuestionsByDificulty();
@@ -478,6 +478,9 @@ export default {
                 this.questionsByType = simulatorResponse.data.payload.byType;
                 this.questionsByDificulty = simulatorResponse.data.payload.byDificulty;
                 this.simulatorStatus = this.simulatorData.enabled;
+                this.simulatorsBlocksNumber = this.simulatorData.blocks.filter((block) => block.type === 'block').length
+                this.simulatorsBlocks = this.simulatorData.blocks
+                console.log('Blocks:', this.simulatorData.blocks)
 
                 this.createDataForType();
                 this.createDataForDificulty();
