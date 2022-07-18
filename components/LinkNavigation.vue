@@ -22,7 +22,7 @@ export default {
         font-style: normal;
         font-weight: 500;
         font-size: 12px;
-        line-height: 18px;
+        /* line-height: 18px; */
         color: #212529;
         text-align: center;
     }

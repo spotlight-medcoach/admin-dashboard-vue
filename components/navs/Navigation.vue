@@ -173,17 +173,22 @@ export default {
 	}
 
 	.nav {
-		display: flex;
-		flex-direction: row;
-		margin-top: 4px;
-		margin: 0px 3%;
+		display: grid;
+		/* flex-direction: row; */
+		grid-template-columns: repeat(auto-fit, 60px);
+		width: 100%;
+		justify-content: space-evenly;
+		line-height: 12px;
+		/* margin-top: 4px;
+		margin: 0px 3%; */
 	}
 
 	.nav div {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 8vw;
+		/* width: 8vw; */
+		flex-basis: 69px;
 	}
 
 	.nuxt-link-exact-active {

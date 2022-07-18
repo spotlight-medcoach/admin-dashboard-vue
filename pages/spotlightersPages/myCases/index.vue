@@ -92,8 +92,8 @@
 
                 <div class="arrows-container">
                     <span>{{ (page - 1) * pageResults + 1 }} - {{ pageResults > totalCases ? totalCases : (page * pageResults) > totalCases ? totalCases : page * pageResults }} de {{totalCases}} casos</span>
-                    <button class="btn fas fa-chevron-left" @click="before" :disabled="disbaledBefore == 1"></button>
-                    <button class="btn fas fa-chevron-right" @click="after" :disabled="disabledAfter == 1"></button>
+                    <button class="btn" @click="before" :disabled="disbaledBefore == 1"><i class="fas fa-chevron-left"></i></button>
+                    <button class="btn" @click="after" :disabled="disabledAfter == 1"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
         </div>
@@ -295,7 +295,7 @@ export default {
             this.getMyCases();
         },
         viewCase(theCase) {
-            this.$router.push({ path: `./myCases/${theCase._id}` });
+            this.$router.push({ path: `/spotlightersPages/myCases/${theCase._id}` });
         },
         closePaymentModal() {
             this.isShowPaymentModal = false;

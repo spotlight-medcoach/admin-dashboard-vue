@@ -5,7 +5,7 @@
                 <div class="modal-container">
                     <div class="modal-header">
                         <h3>Agregar pregunta</h3>
-                        <button class="fas fa-times btn close-btn" @click="$emit('close')"></button>
+                        <button class="btn close-btn" @click="$emit('close')"><i class="fas fa-times"></i></button>
                     </div>
 
                     <div class="modal-body">

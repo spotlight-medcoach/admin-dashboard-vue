@@ -283,9 +283,26 @@ export default {
         },
         async updateCaseDraft(newStatus) {
             try {
+                let id = this.caseDetails.pending_case_id
+                let arrayName = id.split('-')
+                if (arrayName.length >= 4) {
+                    console.log('ArrayName:', arrayName)
+                    if (arrayName[1] === 'undefined') {
+                        console.log('Folio:', this.topics.find(top => top.bubble_id == this.caseDetails.topic_bubble).topic_folio)
+                        arrayName[1] = this.topics.find(top => top.bubble_id == this.caseDetails.topic_bubble).topic_folio ?? arrayName[1]
+                    }
+                    if (arrayName[2] === 'undefined') {
+                        console.log('Folio:', this.topics.find(top => top.bubble_id == this.caseDetails.topic_bubble).subtopics.find(sub => sub.subtopic == this.caseDetails.subtopic_bubble).subtopic_folio)
+                        arrayName[2] = this.topics.find(top => top.bubble_id == this.caseDetails.topic_bubble).subtopics.find(sub => sub.subtopic == this.caseDetails.subtopic_bubble).subtopic_folio ?? arrayName[2]
+                    }
+                    console.log('ArrayName:', arrayName)
+                    id = arrayName.join('-')
+                }
+                console.log('ID:', id)
                 let updateCaseResponse = await this.$axios.put('/updatePendingCase', {
                     case_id: this.caseDetails._id,
                     status: newStatus,
+                    pending_case_id: id,
                     description: {
                         content: this.contentDescription,
                         html: this.contentHtml
