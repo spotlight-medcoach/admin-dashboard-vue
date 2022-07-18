@@ -307,12 +307,22 @@
         <!-- Eliminar caso del simulador -->
         <RejectModal 
             v-if="isShowDeleteCaseModal"
-            @close="closeDeleteCaseModal"
+            @close="closeConfirmModal"
             :textTitle="titleModal"
             :textBody="bodyModal"
             :action="deleteCase"
             :textButton="button"
             :isBusy="busyDelete" />
+
+        <accept-modal
+            key="case"
+            v-if="isShowConfirmUpdate"
+            @close="closeUpdateModal"
+            :action="saveCase"
+            :textTitle="titleModal"
+            :textBody="bodyModal"
+            :textButton="button"
+        />
 
         <SuccessToast
             v-if="showSuccessToast"
@@ -366,6 +376,7 @@ export default {
         return {
             loading: false,
             isShowAddQuestionsModal: false,
+            isShowConfirmUpdate: false,
             busyQuestions: false,
             isShowDeleteCaseModal: false,
             busyDelete: false,
@@ -732,12 +743,11 @@ export default {
         },
         async addQuestion() {
             try {
-                this.questionData.type = this.types.filter(typ => typ.display == this.questionData.type)[0].bubble_id;
 
                 let addQuestionResponse = await this.$axios.post('/addSimulatorCaseQuestion', {
                     ...this.questionData,
                     index: this.caseToView.individual_questions.length + 1,
-                    case_id: this.caseToView.case_id,
+                    case_id: this.caseToView._id,
                     simulator_question: this.caseToView._id
                 });
 
@@ -799,11 +809,33 @@ export default {
             this.caseToView = {}
         },
         saveCaseConfirm() {
-            alert('Save case')
             console.log("case", this.caseToView);
+            this.titleModal = 'Actualizar caso'
+            this.bodyModal = '¿Deseas actualizar este caso?'
+            this.button = 'Actualizar'
+            this.isShowConfirmUpdate = true
         },
         async saveCase() {
-
+            try {
+                await this.$axios.put('/updateSimulatorQuestion', {
+                    question: {
+                        content: this.contentDescription,
+                        html: this.contentHtml
+                    },
+                    case_id: this.caseToView._id
+                })
+                this.titleModal = "Caso actualizado";
+                this.isShowConfirmUpdate = false
+                this.showSuccessToast = !this.showSuccessToast;
+                setTimeout(() => {
+                    this.showSuccessToast = !this.showSuccessToast;
+                }, 3000);
+            } catch (err) {
+                console.log('Error:', err)
+            }
+        },
+        closeUpdateModal() {
+            this.isShowConfirmUpdate = false
         },
         deleteCaseConfirm(theCase) {
             this.titleModal = 'Eliminar caso';
