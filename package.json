@@ -22,7 +22,7 @@
     "vue-quill-editor": "^3.0.6"
   },
   "devDependencies": {
-    "node-sass": "^4.14.1",
+    "sass": "^1.32.13",
     "sass-loader": "^10.2.1"
   }
 }
