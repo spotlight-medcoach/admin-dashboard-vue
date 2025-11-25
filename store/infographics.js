@@ -128,6 +128,7 @@ export const actions = {
         body: fileBlob,
         headers: {
           "Content-Type": `image/${fileExtension}`,
+          "x-amz-acl": "public-read",
         },
       });
 
