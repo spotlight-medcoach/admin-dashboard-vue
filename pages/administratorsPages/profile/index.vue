@@ -1,6 +1,5 @@
 <template>
     <div>
-        <Navigation />
         <div class="profile-container">
             <div class="header-profile">
                 <nuxt-link to="/administratorsPages/administrators">
@@ -10,7 +9,7 @@
 
                 <button v-if="disabled" class="btn" @click="editProfile"><i class="fas fa-pencil-alt"></i> Edital perfil</button>
             </div>
-            
+
             <Loading v-if="loading" />
             <div v-else class="body-profile">
                 <h1>Configurar perfil</h1>
@@ -36,7 +35,7 @@
                             title="Apellidos" />
                     </div>
                 </div>
-                    
+
                 <div class="inputs">
                     <div class="int-cont-email">
                         <InputIcon
@@ -92,7 +91,6 @@
 </template>
 
 <script>
-import Navigation from '../../../components/navs/Navigation'
 import Loading from '../../../components/modals/Loading';
 import Input from '../../../components/inputs/Input';
 import InputIcon from '../../../components/inputs/InputIcon';
@@ -101,7 +99,6 @@ import InputIcon from '../../../components/inputs/InputIcon';
 
 export default {
     components: {
-        Navigation,
         Loading,
         Input,
         InputIcon
@@ -127,12 +124,12 @@ export default {
     async created() {
         if (process.browser){
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
-            
+
             this.universities = JSON.parse(localStorage.getItem('universities'))
         }
 
         await this.getUserInfo();
-    }, 
+    },
     methods: {
         async getUserInfo() {
             try {
@@ -141,7 +138,7 @@ export default {
                 let userResponse = await this.$axios.get('/getMyInfo')
                 this.userInfo = userResponse.data.payload;
                 console.log(this.userInfo)
-                
+
                 this.name = this.userInfo.name
                 this.last_name = this.userInfo.last_name
                 this.email = this.userInfo.email
@@ -278,7 +275,7 @@ export default {
     .input-container {
         margin-left: auto;
         margin-right: auto;
-        
+
     }
 
     .inputs-email {

@@ -1,6 +1,5 @@
 <template>
     <div>
-        <Navigation />
         <div class="simulator-container">
             <h1>Simuladores</h1>
 
@@ -20,13 +19,11 @@
 </template>
 
 <script>
-import Navigation from '../../../components/navs/Navigation';
 import Loading from '../../../components/modals/Loading';
 import SimulatorCard from '../../../components/cards/administrators/SimulatorCard';
 
 export default {
     components: {
-        Navigation,
         Loading,
         SimulatorCard
     },
@@ -51,7 +48,7 @@ export default {
 
                 let simulatorsResponse = await this.$axios.get('/getAllSimulators');
                 this.simulators = simulatorsResponse.data.payload;
-                
+
                 this.loading = !this.loading;
             } catch (err) {
                 console.log(err);

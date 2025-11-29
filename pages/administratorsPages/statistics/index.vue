@@ -1,6 +1,5 @@
 <template>
     <div>
-        <Navigation />
         <div class="statistics-container">
             <Loading v-if="loading" />
 
@@ -22,7 +21,7 @@
                                     :chartData="chartDataTopic"
                                     :pos="'bottom'" />
                             </div>
-                                
+
                             <div class="graphic">
                                 <span>Preguntas por dificultad</span>
                                     <!-- :width="420" -->
@@ -59,7 +58,7 @@
                                     <button
                                         class="btn"
                                         v-for="topic in questionsByTopic"
-                                        :key="topic.topic_id" 
+                                        :key="topic.topic_id"
                                         @click="changeSubtopics(topic)" >
                                         {{topic.topic_name == "Gine&Obstetricia" ? 'Ginecología y obstetricia' : topic.topic_name}}
                                         <br>
@@ -149,14 +148,12 @@
 </template>
 
 <script>
-import Navigation from '../../../components/navs/Navigation';
 import Loading from '../../../components/modals/Loading';
 import Chart from '../../../components/chart/Chart';
 import ChartBar from '../../../components/chart/ChartBar';
 
 export default {
     components: {
-        Navigation,
         Loading,
         Chart,
         ChartBar
@@ -190,14 +187,14 @@ export default {
     // async created() {
     //     if (process.browser){
     //         this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
-            
+
     //         if (!localStorage.getItem('universities'))
     //             await this.getUniversities()
     //         if (!localStorage.getItem('topics'))
     //             await this.getTopics()
     //         if (!localStorage.getItem('types'))
     //             await this.getTypes()
-            
+
     //         this.topics = JSON.parse(localStorage.getItem('topics'));
     //         this.types = JSON.parse(localStorage.getItem('types'));
     //         await this.getStatistics();
@@ -209,16 +206,16 @@ export default {
             this.loading = !this.loading;
 
             let promises = []
-            
+
             if (!localStorage.getItem('universities') || !localStorage.getItem('types') || !localStorage.getItem('topics'))
                 await this.getToLocalStorage();
-            
+
             this.topics = JSON.parse(localStorage.getItem('topics'));
             this.types = JSON.parse(localStorage.getItem('types'));
-            
+
             await this.getStatistics();
 
-            
+
             // if (!localStorage.getItem('universities'))
             //     promises.push(this.getUniversities());
             // if (!localStorage.getItem('topics'))
@@ -229,9 +226,9 @@ export default {
             // if (!localStorage.getItem('types'))
             //     // promises.push(this.getTypes());
             //     await this.getTypes();
-            
+
             // this.types = JSON.parse(localStorage.getItem('types'));
-            
+
             // promises.push(this.getStatistics());
             // await Promise.all(promises);
             // promises.push(this.getStatistics());
@@ -303,12 +300,12 @@ export default {
                 // this.questionsByTopic.forEach(topic => {
                 //     topic.cases.forEach(eachCase => {
                 //         eachCase.topic_name = this.topics.filter(top => top.bubble_id == eachCase.topic)[0].name
-                //         // eachCase.subtopic_name = 
+                //         // eachCase.subtopic_name =
                 //     })
                 // })
 
                 // console.log('types: ', this.types);
-                
+
                 // this.loading = !this.loading;
             } catch (err) {
                 console.log(err);
@@ -336,7 +333,7 @@ export default {
                     data: totalTopics
                 }]
             }
-            
+
             let typesNames = [];
             let totalTypes = [];
             this.questionsByType.forEach(type => {
@@ -392,7 +389,7 @@ export default {
                 { value: 2, label: "Moderada" },
                 { value: 3, label: "Alta" }
             ]
-            
+
             // Preguntas por tipo y datos para la grafica
             let totalQuestionsByType = [];
             this.types.forEach(type => {
@@ -485,7 +482,7 @@ export default {
             });
 
             let filterYear = ordered.filter(obj => obj._id.year == this.yearSelected)
-            let months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'] 
+            let months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
             let newData = new Array(months.length).fill(0);
             filterYear.forEach(obj => {
                 newData[obj._id.month - 1] = obj.count
@@ -659,7 +656,7 @@ export default {
         font-size: 15px;
         line-height: 21px;
         color: #212529;
-        
+
     }
 
     .subtopics button:focus {

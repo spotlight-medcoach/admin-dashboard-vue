@@ -1,6 +1,5 @@
 <template>
 	<div id="infographics" class="p-2">
-		<Navigation />
 		<!-- MAIN CONTENT (RIGHT) -->
 		<section class="infographics-container">
 			<article class="full m-2 mb-3 p-5">
@@ -28,7 +27,6 @@
 </template>
 <script>
 import { mapGetters } from 'vuex'
-import Navigation from '../../../components/navs/Navigation'
 import LoadingState from '@/components/LoadingState.vue'
 import InfographicsAdminHeader from './InfographicsAdminHeader.vue'
 import ManageInfographicsGrid from './ManageInfographicsGrid.vue'
@@ -36,7 +34,6 @@ import InfographicCreateModal from './InfographicCreateModal.vue'
 import InfographicDeleteModal from './InfographicDeleteModal.vue'
 export default {
 	components: {
-		Navigation,
 		LoadingState,
 		InfographicsAdminHeader,
 		ManageInfographicsGrid,

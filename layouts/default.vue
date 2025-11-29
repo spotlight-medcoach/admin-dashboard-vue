@@ -1,15 +1,26 @@
 <template>
-  <div class="layout-wrapper" :class="{ 'has-sidebar': hasSidebar }">
+  <div class="layout-wrapper" :class="{ 'has-sidebar-pinned': isAdministratorPage && sidebarPinned }">
+    <Navigation v-if="isAdministratorPage" />
     <Nuxt />
   </div>
 </template>
 
 <script>
+import Navigation from '../components/navs/Navigation'
+
 export default {
+  components: {
+    Navigation,
+  },
   data() {
     return {
-      hasSidebar: false,
+      sidebarPinned: false,
     };
+  },
+  computed: {
+    isAdministratorPage() {
+      return this.$route.path.startsWith('/administratorsPages')
+    }
   },
   mounted() {
     if (process.browser) {
@@ -18,6 +29,8 @@ export default {
       window.addEventListener("storage", this.handleStorageChange);
       // Escuchar evento personalizado para cambios en el mismo tab
       window.addEventListener("navigation-changed", this.updateSidebarState);
+      // Escuchar evento de cambio de estado del sidebar
+      window.addEventListener("sidebar-state-changed", this.handleSidebarStateChange);
       // Polling como fallback
       this.intervalId = setInterval(this.updateSidebarState, 200);
     }
@@ -26,6 +39,7 @@ export default {
     if (process.browser) {
       window.removeEventListener("storage", this.handleStorageChange);
       window.removeEventListener("navigation-changed", this.updateSidebarState);
+      window.removeEventListener("sidebar-state-changed", this.handleSidebarStateChange);
       if (this.intervalId) {
         clearInterval(this.intervalId);
       }
@@ -34,12 +48,17 @@ export default {
   methods: {
     updateSidebarState() {
       if (!process.browser) return;
-      const mode = localStorage.getItem("navigation_mode");
-      const sidebarVisible = localStorage.getItem("sidebar_visible");
-      this.hasSidebar = mode === "lateral" && sidebarVisible === "true";
+      const sidebarPinned = localStorage.getItem("sidebar_pinned");
+      this.sidebarPinned = sidebarPinned === "true";
+    },
+    handleSidebarStateChange(event) {
+      if (!process.browser) return;
+      if (event.detail) {
+        this.sidebarPinned = event.detail.isPinned;
+      }
     },
     handleStorageChange(e) {
-      if (e.key === "navigation_mode" || e.key === "sidebar_visible") {
+      if (e.key === "sidebar_pinned" || e.key === "sidebar_visible") {
         this.updateSidebarState();
       }
     },
@@ -72,12 +91,13 @@ html {
   transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.layout-wrapper.has-sidebar {
+.layout-wrapper.has-sidebar-pinned {
   padding-left: 280px;
+  transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (max-width: 768px) {
-  .layout-wrapper.has-sidebar {
+  .layout-wrapper.has-sidebar-pinned {
     padding-left: 0;
   }
 }
