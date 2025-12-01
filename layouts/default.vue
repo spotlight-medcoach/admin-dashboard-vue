@@ -1,6 +1,6 @@
 <template>
   <div class="layout-wrapper" :class="sidebarClasses">
-    <Navigation v-if="isAdministratorPage" />
+    <Navigation v-if="isAdministratorPage || showNavigation" />
     <div v-if="hasHeader" class="page-header-navbar">
       <div
         class="page-header-container"
@@ -59,12 +59,23 @@ export default {
       sidebarPinned: false,
       sidebarCollapsed: true,
       sidebarExpanded: false,
+      showNavigation: false, // Flag para forzar renderizado después de hidratación
     };
   },
   computed: {
     ...mapGetters('pageHeader', ['title', 'buttonConfig', 'hasHeader']),
     isAdministratorPage() {
-      return this.$route.path.startsWith('/administratorsPages');
+      // En modo SPA (ssr: false), this.$route puede no estar disponible durante el build
+      // Usar window.location como fuente principal de verdad en el cliente
+      if (process.client && typeof window !== 'undefined' && window.location) {
+        return window.location.pathname.startsWith('/administratorsPages');
+      }
+      // Fallback: usar this.$route si está disponible (útil durante la hidratación)
+      if (this.$route && this.$route.path) {
+        return this.$route.path.startsWith('/administratorsPages');
+      }
+      // Por defecto false (solo si nada está disponible)
+      return false;
     },
     sidebarClasses() {
       if (!this.isAdministratorPage) return {};
@@ -77,6 +88,16 @@ export default {
   },
   mounted() {
     if (process.browser) {
+      // Verificar si deberíamos mostrar el Navigation basándose en la URL actual
+      // Esto es crítico en modo SPA cuando se recarga la página
+      const currentPath = window.location.pathname;
+      if (currentPath.startsWith('/administratorsPages')) {
+        this.showNavigation = true;
+      }
+
+      // Forzar actualización para asegurar que el componente se renderice
+      this.$forceUpdate();
+
       // Actualizar estado inmediatamente
       this.updateSidebarState();
 
@@ -154,7 +175,11 @@ export default {
     },
   },
   watch: {
-    $route() {
+    $route(to) {
+      // Actualizar showNavigation cuando cambia la ruta
+      if (process.browser) {
+        this.showNavigation = to.path.startsWith('/administratorsPages');
+      }
       // Limpiar header al cambiar de ruta
       this.$store.dispatch('pageHeader/clearHeader');
     },
