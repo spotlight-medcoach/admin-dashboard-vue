@@ -368,7 +368,6 @@ export default {
 
     .input-country {
         width: 100%;
-        margin: 20px 40px;
     }
 
     .input-country i {
@@ -408,7 +407,6 @@ export default {
 
     .int-cont {
         width: 100%;
-        margin: 10px 40px;
     }
 
     .password {

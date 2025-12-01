@@ -340,7 +340,7 @@ export default {
     .report-container {
         display: flex;
         flex-direction: column;
-        margin: 10px 40px;
+        width: 100%;
         font-family: Montserrat;
     }
 

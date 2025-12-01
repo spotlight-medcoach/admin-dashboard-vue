@@ -454,7 +454,7 @@ export default {
         display: flex;
         flex-direction: column;
         font-family: Montserrat;
-        margin: 20px 40px;
+        width: 100%;
     }
 
     .title {

@@ -1,15 +1,10 @@
 <template>
-  <div
-    class="link-container"
-    :class="{
-      'mode-horizontal': mode === 'horizontal',
-      'mode-lateral': mode === 'lateral',
-    }"
-  >
-    <NuxtLink :to="to" :class="new_class"> <i :class="icon"></i></NuxtLink>
-    <p v-if="mode === 'lateral'" class="link-title">{{ title }}</p>
-    <p v-else class="link-title-hover">{{ title }}</p>
-  </div>
+  <NuxtLink :to="to" class="link-container-link">
+    <div class="link-container" :class="{ 'is-collapsed': isCollapsed }">
+      <div :class="`${new_class} icon-container`"><i :class="icon"></i></div>
+      <p class="link-title" v-if="!isCollapsed">{{ title }}</p>
+    </div>
+  </NuxtLink>
 </template>
 
 <script>
@@ -19,10 +14,9 @@ export default {
     new_class: String,
     icon: String,
     title: String,
-    mode: {
-      type: String,
-      default: "horizontal",
-      validator: (value) => ["horizontal", "lateral"].includes(value),
+    isCollapsed: {
+      type: Boolean,
+      default: false,
     },
   },
 };
@@ -31,12 +25,6 @@ export default {
 <style scoped>
 .link-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: all 0.2s ease;
-}
-
-.link-container.mode-lateral {
   flex-direction: row;
   align-items: center;
   width: 100%;
@@ -44,64 +32,62 @@ export default {
   border-radius: 8px;
   margin-bottom: 4px;
   box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  /* Usar variable CSS para la velocidad */
+  transition: padding var(--sidebar-transition-duration, 0.5s)
+    var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  --sidebar-transition-duration: 0.5s;
+  --sidebar-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.link-container.mode-horizontal {
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-bottom: 0;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
+a.link-container-link {
+  text-decoration: none;
 }
 
-.link-container.mode-horizontal:hover {
-  background-color: #e9f6ff;
+.link-container.is-collapsed {
+  justify-content: center;
+  padding: 10px;
 }
 
-.link-container.mode-horizontal .link-title-hover {
-  display: block;
-  margin-left: 12px;
-  font-size: 14px;
-  text-align: left;
-  flex: 1;
-}
-
-.link-container.mode-lateral:hover {
-  background-color: #e9f6ff;
-}
-
-.link-title,
-.link-title-hover {
-  margin: 0;
-  font-style: normal;
-  font-weight: 500;
-  font-size: 12px;
-  color: #212529;
-  text-align: center;
-  transition: all 0.2s ease;
+.link-container:hover {
+  background-color: rgba(233, 246, 255, 0.6);
 }
 
 .link-title {
+  margin: 0;
   margin-left: 12px;
+  font-style: normal;
+  font-weight: 500;
   font-size: 14px;
+  color: #212529;
   text-align: left;
   flex: 1;
+  /* Usar variable CSS para la velocidad - ocultar texto detrás del contenedor */
+  transition: opacity var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+    width var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+    margin var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  --sidebar-transition-duration: 0.5s;
+  --sidebar-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
 }
 
-.link-container.mode-horizontal:not(:hover) .link-title-hover {
-  display: none;
+.link-container.is-collapsed .link-title {
+  width: 0;
+  opacity: 0;
+  margin: 0;
+  overflow: hidden;
 }
 
-.link-container.mode-lateral .link-title {
-  display: block;
-}
-
-a:hover {
+.link-container:hover .icon-container {
   color: #fff;
   background-color: #ff9300;
-  border-color: #afc7dd;
+  border-color: #ff9300;
 }
 
 .link {
@@ -118,19 +104,23 @@ a:hover {
   transition: all 0.2s ease;
 }
 
-.link-container.mode-lateral .link {
+.link-container .link {
   width: 32px;
   height: 32px;
   flex-shrink: 0;
 }
 
-.nuxt-link-exact-active {
+.nuxt-link-exact-active .link-container {
+  background-color: rgba(233, 246, 255, 0.6);
+}
+
+.nuxt-link-exact-active .icon-container {
   color: #fff;
   background-color: #ff9300;
   border-color: #ff9300;
 }
 
-.link-container.mode-lateral .nuxt-link-exact-active + .link-title {
+.link-container .nuxt-link-exact-active + .link-title {
   color: #ff9300;
   font-weight: 600;
 }

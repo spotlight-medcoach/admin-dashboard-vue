@@ -52,15 +52,15 @@ export const mutations = {
 
 export const actions = {
   fetchInfographics({ commit }) {
-    commit("setLoadingState", true);
+    commit('setLoadingState', true);
     this.$axios
-      .get("/infographics")
+      .get('/infographics')
       .then((infographicsResponse) => {
-        const allInfographics = infographicsResponse.data.infographics;
+        const allInfographics = infographicsResponse.data.data;
         commit(
-          "setInfographics",
+          'setInfographics',
           allInfographics.map((infographic) => {
-            infographic.image = storage + "/infographics/" + infographic.image;
+            infographic.image = storage + '/infographics/' + infographic.image;
             return infographic;
           })
         );
@@ -70,27 +70,27 @@ export const actions = {
         return error;
       })
       .finally(() => {
-        commit("setLoadingState", false);
+        commit('setLoadingState', false);
       });
   },
   async createInfographic({ commit }, infographic) {
-    commit("setLoadingState", true);
+    commit('setLoadingState', true);
     try {
       // Obtener la extensión del archivo desde el base64 o del objeto File
-      let fileExtension = "jpg"; // default
+      let fileExtension = 'jpg'; // default
       if (infographic.file) {
         // Si tenemos el objeto File, usar su tipo
         const fileType = infographic.file.type;
-        fileExtension = fileType.split("/")[1] || "jpg";
+        fileExtension = fileType.split('/')[1] || 'jpg';
       } else if (infographic.base64) {
         // Si solo tenemos base64, extraer la extensión
         const match = infographic.base64.match(/data:image\/(\w+);base64/);
-        fileExtension = match ? match[1] : "jpg";
+        fileExtension = match ? match[1] : 'jpg';
       }
 
       // Obtener presigned URL del backend
       const presignedResponse = await this.$axios.post(
-        "/infographic/upload-image",
+        '/infographic/upload-image',
         {
           name: infographic.name,
           topic_id: infographic.topic_id,
@@ -109,7 +109,7 @@ export const actions = {
         // Convertir base64 a blob
         const base64Data = infographic.base64.replace(
           /^data:image\/\w+;base64,/,
-          ""
+          ''
         );
         const byteCharacters = atob(base64Data);
         const byteNumbers = new Array(byteCharacters.length);
@@ -119,24 +119,24 @@ export const actions = {
         const byteArray = new Uint8Array(byteNumbers);
         fileBlob = new Blob([byteArray], { type: `image/${fileExtension}` });
       } else {
-        throw new Error("No file or base64 provided");
+        throw new Error('No file or base64 provided');
       }
 
       // Subir directamente a S3 usando la presigned URL
       const uploadResponse = await fetch(uploadUrl, {
-        method: "PUT",
+        method: 'PUT',
         body: fileBlob,
         headers: {
-          "Content-Type": `image/${fileExtension}`,
+          'Content-Type': `image/${fileExtension}`,
         },
       });
 
       if (!uploadResponse.ok) {
-        throw new Error("Failed to upload image to S3");
+        throw new Error('Failed to upload image to S3');
       }
 
       // Crear la infografía con el nombre del archivo
-      const response = await this.$axios.post("/infographic", {
+      const response = await this.$axios.post('/infographic', {
         name: infographic.name,
         topic_id: infographic.topic_id,
         subtopic_id: infographic.subtopic_id,
@@ -144,46 +144,46 @@ export const actions = {
       });
 
       const newInfographic = response.data;
-      newInfographic.image = storage + "/infographics/" + newInfographic.image;
-      commit("addInfographic", newInfographic);
+      newInfographic.image = storage + '/infographics/' + newInfographic.image;
+      commit('addInfographic', newInfographic);
       return newInfographic;
     } catch (error) {
-      console.error("Error creating infographic:", error);
+      console.error('Error creating infographic:', error);
       return error;
     } finally {
-      commit("setLoadingState", false);
+      commit('setLoadingState', false);
     }
   },
   deleteInfographic({ commit }, infographicId) {
-    commit("setLoadingState", true);
+    commit('setLoadingState', true);
     return this.$axios
-      .delete("/infographic", { data: { infographic_id: infographicId } })
+      .delete('/infographic', { data: { infographic_id: infographicId } })
       .then((response) => {
-        commit("removeInfographic", infographicId);
+        commit('removeInfographic', infographicId);
         return response;
       })
       .catch((error) => {
         return error;
       })
       .finally(() => {
-        commit("setLoadingState", false);
+        commit('setLoadingState', false);
       });
   },
   setInfographicToStudent({ commit }, infographicId) {
-    commit("setLoadingState", true);
+    commit('setLoadingState', true);
     return this.$axios
-      .post("/student/infographic", { infographic_id: infographicId })
+      .post('/student/infographic', { infographic_id: infographicId })
       .then((sudentInfographic) => {
-        commit("addStudentInfographic", sudentInfographic);
-        commit("markInfographicAsLearned", infographicId);
-        commit("sendInfographicToLast", infographicId);
+        commit('addStudentInfographic', sudentInfographic);
+        commit('markInfographicAsLearned', infographicId);
+        commit('sendInfographicToLast', infographicId);
         return sudentInfographic;
       })
       .catch((error) => {
         return error;
       })
       .finally(() => {
-        commit("setLoadingState", false);
+        commit('setLoadingState', false);
       });
   },
 };

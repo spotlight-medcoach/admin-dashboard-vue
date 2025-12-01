@@ -428,7 +428,7 @@ export default {
     .details-container {
         display: flex;
         flex-direction: column;
-        margin: 20px 40px;
+        width: 100%;
         font-family: Montserrat;
     }
 

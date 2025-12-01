@@ -1,9 +1,7 @@
 <template>
     <div>
-        <Navigation />
-
         <Loading v-if="loading" />
-        
+
         <!-- Vista cuando entras a ver los detalles del simulador -->
         <div v-else class="sim-container">
             <nuxt-link to="/administratorsPages/simulators" v-if="subtopicIdSelected == ''">
@@ -41,7 +39,7 @@
                             <button
                                 class="btn"
                                 v-for="topic in topics"
-                                :key="topic.topic_id" 
+                                :key="topic.topic_id"
                                 @click="changeSubtopics(topic)" >
                                 {{topic.topic_name == "Gine&Obstetricia" ? 'Ginecología y obstetricia' : topic.topic_name}}
                                 <br>
@@ -145,7 +143,7 @@
                         :chartData="chartDataDificulty" />
 
                     <span>Preguntas por tipo</span>
-                    <Chart 
+                    <Chart
                         :height="180"
                         :chartData="chartDataType" />
                 </div>
@@ -207,7 +205,7 @@
                             :chartData="chartSubtopicDificulty" />
 
                         <span>Preguntas por tipo</span>
-                        <Chart 
+                        <Chart
                             :height="180"
                             :chartData="chartSubtopicType" />
                     </div>
@@ -219,7 +217,7 @@
                 <div class="back">
                     <button class="btn" @click="goToSubtopics"><i class="fas fa-chevron-left mr-2"></i>Volver a casos por subtema</button>
                 </div>
-                
+
                 <div class="cancel-container">
                     <h1>Detalles del caso</h1>
                     <button class="btn">Eliminar caso del simulador</button>
@@ -232,15 +230,15 @@
                     :language="caseToView.language"
                     :topic="caseToView.topic_name"
                     :subtopic="caseToView.subtopic_name" />
-                
+
                 <div class="description-container">
                     <h1>Descripción del caso</h1>
 
                     <quill-editor
                         :options="editorOption"
-                        @ready="onEditorReady($event)" 
+                        @ready="onEditorReady($event)"
                         @change="onEditorChange($event)" />
-                    
+
                 </div>
 
                 <div class="questions-container">
@@ -266,7 +264,7 @@
         </div>
 
         <!-- Agregar preguntas al banco -->
-        <AcceptModal 
+        <AcceptModal
             v-if="isShowAddQuestionsModal"
             @close="closeAddQuestionsModal"
             :textTitle="titleModal"
@@ -274,7 +272,7 @@
             :action="sendQuestions"
             :textButton="button"
             :isBusy="busyQuestions" />
-        
+
         <!-- Agregar una pregunta a un caso -->
         <AddCaseQuestion
             v-if="isShowAddQuestionModal"
@@ -295,7 +293,7 @@
             :simulatorFlag="true" />
 
         <!-- Eliminar pregunta -->
-        <RejectModal 
+        <RejectModal
             v-if="isShowDeleteQuestionModal"
             @close="closeRejectDeleteQuestionModal"
             :textTitle="titleModal"
@@ -305,7 +303,7 @@
             :isBusy="busyDeleteQuestion" />
 
         <!-- Eliminar caso del simulador -->
-        <RejectModal 
+        <RejectModal
             v-if="isShowDeleteCaseModal"
             @close="closeConfirmModal"
             :textTitle="titleModal"
@@ -328,14 +326,13 @@
             v-if="showSuccessToast"
             :textTitle="titleModal" />
 
-        <FailToast 
+        <FailToast
             v-if="showFailToast"
             :textTitle="titleModal" />
     </div>
 </template>
 
 <script>
-import Navigation from '../../../components/navs/Navigation';
 import Loading from '../../../components/modals/Loading';
 import Chart from '../../../components/chart/Chart.vue';
 import CaseSimulatorDetailsCard from '../../../components/cards/administrators/CaseSimulatorDetailsCard';
@@ -358,9 +355,8 @@ const default_block_break = {
 }
 
 export default {
-    
+
     components: {
-        Navigation,
         Loading,
         Chart,
         CaseSimulatorDetailsCard,
@@ -406,7 +402,7 @@ export default {
             chartDataType: {},
             chartSubtopicType: {},
             simulatorStatus: false,
-            
+
             caseToView: {},
 
             questionsSubtopicType: [],
@@ -432,7 +428,7 @@ export default {
                 modules: {
                     toolbar: [
                         [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline'], 
+                        ['bold', 'italic', 'underline'],
                         [{ 'align': [] }, { 'list': 'ordered'}, { 'list': 'bullet' },{ 'indent': '-1'}, { 'indent': '+1' }, { 'script': 'sub'}, { 'script': 'super' }],
                         ['link', 'image']
                     ]
@@ -452,7 +448,7 @@ export default {
 
         await this.getSimulator()
         // this.calculeSimulatorBlocks()
-        
+
         // await this.getQuestionsByType();
         // await this.getQuestionsByDificulty();
 
@@ -481,9 +477,9 @@ export default {
         async getSimulator() {
             try {
                 this.loading = !this.loading;
-                
+
                 let simulatorResponse = await this.$axios.get('/getNumSimulatorQuestionsTopic', { params: { simulator_id: this.$route.params.id } })
-                
+
                 this.simulatorData = simulatorResponse.data.payload.simulator;
                 this.topics = simulatorResponse.data.payload.topics;
                 this.questionsByType = simulatorResponse.data.payload.byType;
@@ -578,14 +574,14 @@ export default {
                 // console.log('bubbleS', subtopic_bubble)
 
 
-                let casesResponse = await this.$axios.get('/getCasesFromSimulator', { 
+                let casesResponse = await this.$axios.get('/getCasesFromSimulator', {
                         params: {
                             topic: topic_bubble,
                             subtopic: subtopic_bubble,
                             simulator_id: this.$route.params.id
                         }
                     });
-                
+
                 // console.log('response: ', casesResponse);
                 this.casesFiltered = casesResponse.data.payload.cases;
                 this.questionsSubtopicType = casesResponse.data.payload.byType;
@@ -762,10 +758,10 @@ export default {
             this.questionToUpdate = question;
             this.questionToUpdate.indexInArray = index;
             this.questionToUpdate.case_id = this.caseToView.case_id;
-            
-            
+
+
             this.isShowCaseQuestionDetailsModal = !this.isShowCaseQuestionDetailsModal;
-            
+
             console.log('questionToUpdate', this.questionToUpdate);
             console.log('caseToView', this.caseToView);
         },
@@ -843,7 +839,7 @@ export default {
             this.button = 'Eliminar caso';
 
             this.isShowDeleteCaseModal = !this.isShowDeleteCaseModal;
-            
+
             this.caseToDelete = theCase;
             // console.log('case!!!!', theCase)
         },
@@ -938,7 +934,6 @@ export default {
     .sim-container a {
         color: #000;
         text-decoration: none;
-        margin: 10px 40px;
     }
 
     .header-container {
@@ -946,7 +941,7 @@ export default {
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        margin: 20px 40px;
+        width: 100%;
     }
 
     .header-container h1 {
@@ -1231,7 +1226,7 @@ export default {
     .filter-container {
         display: flex;
         flex-direction: column;
-        margin: 10px 40px;
+        width: 100%;
     }
 
     .back {
@@ -1377,7 +1372,7 @@ export default {
     .case-details-container {
         display: flex;
         flex-direction: column;
-        margin: 20px 40px;
+        width: 100%;
         font-family: Montserrat;
     }
 
@@ -1460,7 +1455,7 @@ export default {
         height: 22px;
     }
 
-    .switch input { 
+    .switch input {
         opacity: 0;
         width: 0;
         height: 0;

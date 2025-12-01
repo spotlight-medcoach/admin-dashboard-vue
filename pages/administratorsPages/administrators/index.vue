@@ -1,10 +1,9 @@
 <template>
     <div>
-        <Navigation />
         <div class="admin-container">
             <div class="head-container">
                 <p class="title">Administradores</p>
-                <nuxt-link 
+                <nuxt-link
                     v-if="!loading"
                     to="/administratorsPages/administrators/addAdministrator"
                     class="add-button" >
@@ -16,7 +15,7 @@
             <Loading v-if="loading" />
             <div v-else class="search-active-container">
                 <input v-model="search" type="searchText" placeholder="Buscar" @keyup.enter="searchAdministrators">
-                
+
                 <select v-model="selected" class="options" @change="selectedChange(selected)">
                     <option value="true" selected>Activos</option>
                     <option value="false">Inactivos</option>
@@ -33,7 +32,7 @@
 
                         </tr>
                     </thead>
-                  
+
                     <tbody class="tbody">
                         <tr v-for="(admin, index) in administrators" :key="admin._id">
                             <td>{{ admin.name }} {{ admin.last_name }}</td>
@@ -85,8 +84,8 @@
                     <button class="btn fas fa-chevron-right" @click="after" :disabled="disabledAfter == 1"></button>
                 </div>
             </div>
-            
-            <DeleteUserModal 
+
+            <DeleteUserModal
                 v-if="isShowModalInactive"
                 @close="closeModalInactive"
                 :textTitle="titleModal"
@@ -94,8 +93,8 @@
                 :name="nameUser"
                 :action="inactivateUser"
                 :isBusy="busy" />
-            
-            <ActiveUserModal 
+
+            <ActiveUserModal
                 v-if="isShowModalActive"
                 @close="closeModalActive"
                 :textTitle="titleModal"
@@ -108,7 +107,7 @@
                 v-if="showSuccessToast"
                 :textTitle="titleToast" />
 
-            <FailToast 
+            <FailToast
                 v-if="showFailToast"
                 :textTitle="titleToast" />
         </div>
@@ -116,7 +115,6 @@
 </template>
 
 <script>
-import Navigation from '../../../components/navs/Navigation';
 import Loading from '../../../components/modals/Loading';
 import SuccessButton from '../../../components/buttons/SuccessButton';
 import DeleteUserModal from '../../../components/modals/DeleteUserModal';
@@ -126,7 +124,6 @@ import FailToast from '../../../components/toasts/FailToast';
 
 export default {
     components: {
-        Navigation,
         Loading,
         SuccessButton,
         DeleteUserModal,
@@ -163,13 +160,13 @@ export default {
     async created() {
         if (process.browser)
             this.$axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('user_token')}`
-        
+
         this.loading = !this.loading;
         await this.$store.dispatch('administrators/getAdministrators', { selected: this.selected, page: this.page, pageResults: this.pageResults, search: this.search });
         this.administrators = this.$store.getters['administrators/getAdministrators'];
         this.totalAdmins = this.$store.getters['administrators/getTotalAdministrators']
         this.loading = !this.loading;
-        
+
         // this.$store.dispatch('administrators/getAdministrators', this.selected, this.page, this.pageResults, this.search);
         // await this.getAdministrators();
         this.before();
@@ -211,7 +208,7 @@ export default {
                 // this.totalAdmins = administrators_response.data.payload.length
 
                 // this.getAdministrators(administrators_response.data.payload.admins);
-                
+
                 this.loading = !this.loading
             } catch (err) {
                 console.log(err);
@@ -242,7 +239,7 @@ export default {
                 this.busy = !this.busy;
 
                 let userActivated = await this.$store.dispatch('administrators/activateUser', this.userIdToActive);
-                
+
                 this.titleToast = userActivated.data.message;
                 this.showSuccessToast = !this.showSuccessToast;
                 // let activeResponse = await this.$axios.put('/setActiveUser', { user_id: this.userIdToActive })
@@ -272,18 +269,18 @@ export default {
         },
         confirmModalInactive(admin_data) {
             this.titleModal = 'Eliminar usuario'
-            this.bodyModal = "¿Deseas eliminar el siguiente usuario?" 
+            this.bodyModal = "¿Deseas eliminar el siguiente usuario?"
             this.nameUser = "" + admin_data.name + " " + admin_data.last_name
             this.userIdToDelete = admin_data._id
-            
+
             this.isShowModalInactive = !this.isShowModalInactive;
         },
         async inactivateUser() {
             try {
                 this.busy = !this.busy;
-                
+
                 let userInactivated = await this.$store.dispatch('administrators/deleteAdministrator', this.userIdToDelete);
-                
+
                 this.titleToast = userInactivated.data.message;
                 this.showSuccessToast = !this.showSuccessToast;
                 // let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.userIdToDelete });
@@ -338,7 +335,7 @@ export default {
 
                 if (this.page == 1)
                     this.disbaledBefore = 1
-                
+
                 this.getAdministrators();
             }
         },
@@ -370,7 +367,7 @@ export default {
     .admin-container {
         display: flex;
         flex-direction: column;
-        margin: 20px 40px;
+        width: 100%;
         font-family: Montserrat;
     }
 
@@ -572,7 +569,7 @@ export default {
         align-items: center;
         justify-content: center;
     }
-    
+
     .drop {
         margin-right: 5%;
     }
