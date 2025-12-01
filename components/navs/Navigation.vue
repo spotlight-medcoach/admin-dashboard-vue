@@ -162,43 +162,74 @@ export default {
   },
   computed: {
     shouldShowSidebar() {
-      // En desktop siempre visible, en móvil solo si sidebarVisible es true
+      // En SSR, siempre mostrar (se ajustará en el cliente)
       if (!process.browser) return true;
+      // Si windowWidth aún no se ha inicializado, asumir desktop
+      if (this.windowWidth === 0) {
+        return typeof window !== 'undefined' && window.innerWidth >= 768
+          ? true
+          : this.sidebarVisible;
+      }
+      // En desktop siempre visible, en móvil solo si sidebarVisible es true
       return this.windowWidth >= 768 ? true : this.sidebarVisible;
     },
   },
   mounted() {
     if (process.browser) {
-      // Cargar preferencias guardadas
-      const savedIsPinned = localStorage.getItem('sidebar_pinned');
-      const savedIsCollapsed = localStorage.getItem('sidebar_collapsed');
+      try {
+        // Cargar preferencias guardadas
+        const savedIsPinned = localStorage.getItem('sidebar_pinned');
+        const savedIsCollapsed = localStorage.getItem('sidebar_collapsed');
+        const savedSidebarVisible = localStorage.getItem('sidebar_visible');
 
-      if (savedIsPinned !== null) {
-        this.isPinned = savedIsPinned === 'true';
+        // Cargar estado del sidebar visible
+        if (savedSidebarVisible !== null) {
+          this.sidebarVisible = savedSidebarVisible === 'true';
+        } else {
+          // Por defecto, visible en desktop
+          this.sidebarVisible = window.innerWidth >= 768;
+        }
+
+        // Cargar estado pinned
+        if (savedIsPinned !== null) {
+          this.isPinned = savedIsPinned === 'true';
+        }
+
+        // Cargar estado collapsed
+        if (savedIsCollapsed !== null) {
+          this.isCollapsed = savedIsCollapsed === 'true';
+        } else {
+          // Por defecto comprimido
+          this.isCollapsed = true;
+        }
+
+        // Asegurar que en desktop siempre esté visible
+        if (window.innerWidth >= 768) {
+          this.sidebarVisible = true;
+        }
+
+        // Auto-expandir grupos que contengan la ruta actual
+        this.autoExpandActiveGroups();
+
+        // Listener para responsive
+        this.windowWidth = window.innerWidth;
+        window.addEventListener('resize', this.handleResize);
+        this.handleResize();
+
+        // Guardar estado inicial si no existía
+        this.savePreferences();
+
+        // Notificar estado inicial después de cargar preferencias
+        this.$nextTick(() => {
+          this.notifySidebarState();
+        });
+      } catch (error) {
+        console.error('Error al cargar estado del sidebar:', error);
+        // En caso de error, asegurar que el sidebar esté visible en desktop
+        if (window.innerWidth >= 768) {
+          this.sidebarVisible = true;
+        }
       }
-
-      if (savedIsCollapsed !== null) {
-        this.isCollapsed = savedIsCollapsed === 'true';
-      } else {
-        // Por defecto comprimido
-        this.isCollapsed = true;
-      }
-
-      // Sidebar siempre visible en desktop (comprimido por defecto)
-      this.sidebarVisible = window.innerWidth >= 768;
-
-      // Auto-expandir grupos que contengan la ruta actual
-      this.autoExpandActiveGroups();
-
-      // Listener para responsive
-      this.windowWidth = window.innerWidth;
-      window.addEventListener('resize', this.handleResize);
-      this.handleResize();
-
-      // Notificar estado inicial después de cargar preferencias
-      this.$nextTick(() => {
-        this.notifySidebarState();
-      });
     }
   },
   beforeDestroy() {
@@ -317,22 +348,22 @@ export default {
 
 <style scoped>
 /* ===== VARIABLES DE ANIMACIÓN ===== */
-/* 
+/*
  * ⚠️⚠️⚠️ CAMBIAR AQUÍ LA VELOCIDAD DE TODAS LAS ANIMACIONES DEL SIDEBAR ⚠️⚠️⚠️
- * 
+ *
  * Modifica estos dos valores para ajustar la velocidad de apertura/cierre:
- * 
+ *
  * 1. DURACIÓN (--sidebar-transition-duration):
  *    - 0.3s = rápido
  *    - 0.5s = medio (actual)
  *    - 0.8s = lento
  *    - 1.0s = muy lento
- * 
+ *
  * 2. TIMING (--sidebar-transition-timing):
  *    - cubic-bezier(0.4, 0, 0.2, 1) = suave (actual)
  *    - cubic-bezier(0.25, 0.1, 0.25, 1) = más suave
  *    - ease-in-out = estándar
- * 
+ *
  * Estos valores se aplican a:
  * - Apertura/cierre del sidebar
  * - Mostrar/ocultar texto de menús

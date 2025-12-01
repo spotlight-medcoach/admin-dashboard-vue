@@ -77,7 +77,14 @@ export default {
   },
   mounted() {
     if (process.browser) {
+      // Actualizar estado inmediatamente
       this.updateSidebarState();
+
+      // Actualizar estado después de que todos los componentes estén montados
+      this.$nextTick(() => {
+        this.updateSidebarState();
+      });
+
       // Escuchar cambios en localStorage
       window.addEventListener('storage', this.handleStorageChange);
       // Escuchar evento personalizado para cambios en el mismo tab
@@ -87,8 +94,8 @@ export default {
         'sidebar-state-changed',
         this.handleSidebarStateChange
       );
-      // Polling como fallback
-      this.intervalId = setInterval(this.updateSidebarState, 200);
+      // Polling como fallback (reducido a 500ms para mejor rendimiento)
+      this.intervalId = setInterval(this.updateSidebarState, 500);
     }
   },
   beforeDestroy() {
@@ -107,11 +114,20 @@ export default {
   methods: {
     updateSidebarState() {
       if (!process.browser) return;
-      const sidebarPinned = localStorage.getItem('sidebar_pinned');
-      const sidebarCollapsed = localStorage.getItem('sidebar_collapsed');
-      this.sidebarPinned = sidebarPinned === 'true';
-      this.sidebarCollapsed = sidebarCollapsed === 'true';
-      this.sidebarExpanded = !this.sidebarCollapsed;
+      try {
+        const sidebarPinned = localStorage.getItem('sidebar_pinned');
+        const sidebarCollapsed = localStorage.getItem('sidebar_collapsed');
+        // Si hay valores guardados, usarlos; si no, mantener valores por defecto
+        if (sidebarPinned !== null) {
+          this.sidebarPinned = sidebarPinned === 'true';
+        }
+        if (sidebarCollapsed !== null) {
+          this.sidebarCollapsed = sidebarCollapsed === 'true';
+        }
+        this.sidebarExpanded = !this.sidebarCollapsed;
+      } catch (error) {
+        console.error('Error al leer estado del sidebar:', error);
+      }
     },
     handleSidebarStateChange(event) {
       if (!process.browser) return;
