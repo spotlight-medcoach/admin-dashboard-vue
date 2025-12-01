@@ -934,7 +934,6 @@ export default {
     .sim-container a {
         color: #000;
         text-decoration: none;
-        margin: 10px 40px;
     }
 
     .header-container {
@@ -942,7 +941,7 @@ export default {
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        margin: 20px 40px;
+        width: 100%;
     }
 
     .header-container h1 {
@@ -1227,7 +1226,7 @@ export default {
     .filter-container {
         display: flex;
         flex-direction: column;
-        margin: 10px 40px;
+        width: 100%;
     }
 
     .back {
@@ -1373,7 +1372,7 @@ export default {
     .case-details-container {
         display: flex;
         flex-direction: column;
-        margin: 20px 40px;
+        width: 100%;
         font-family: Montserrat;
     }
 

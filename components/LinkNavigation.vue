@@ -1,8 +1,10 @@
 <template>
-  <div class="link-container" :class="{ 'is-collapsed': isCollapsed }">
-    <NuxtLink :to="to" :class="new_class"> <i :class="icon"></i></NuxtLink>
-    <p class="link-title" v-if="!isCollapsed">{{ title }}</p>
-  </div>
+  <NuxtLink :to="to" class="link-container-link">
+    <div class="link-container" :class="{ 'is-collapsed': isCollapsed }">
+      <div :class="`${new_class} icon-container`"><i :class="icon"></i></div>
+      <p class="link-title" v-if="!isCollapsed">{{ title }}</p>
+    </div>
+  </NuxtLink>
 </template>
 
 <script>
@@ -30,7 +32,17 @@ export default {
   border-radius: 8px;
   margin-bottom: 4px;
   box-sizing: border-box;
-  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  /* Usar variable CSS para la velocidad */
+  transition: padding var(--sidebar-transition-duration, 0.5s)
+    var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  --sidebar-transition-duration: 0.5s;
+  --sidebar-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+a.link-container-link {
+  text-decoration: none;
 }
 
 .link-container.is-collapsed {
@@ -39,7 +51,7 @@ export default {
 }
 
 .link-container:hover {
-  background-color: #e9f6ff;
+  background-color: rgba(233, 246, 255, 0.6);
 }
 
 .link-title {
@@ -51,21 +63,31 @@ export default {
   color: #212529;
   text-align: left;
   flex: 1;
-  transition: opacity 0.2s ease, width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Usar variable CSS para la velocidad - ocultar texto detrás del contenedor */
+  transition: opacity var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+    width var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+    margin var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  --sidebar-transition-duration: 0.5s;
+  --sidebar-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   white-space: nowrap;
+  position: relative;
 }
 
 .link-container.is-collapsed .link-title {
   width: 0;
   opacity: 0;
   margin: 0;
+  overflow: hidden;
 }
 
-a:hover {
+.link-container:hover .icon-container {
   color: #fff;
   background-color: #ff9300;
-  border-color: #afc7dd;
+  border-color: #ff9300;
 }
 
 .link {
@@ -88,7 +110,11 @@ a:hover {
   flex-shrink: 0;
 }
 
-.nuxt-link-exact-active {
+.nuxt-link-exact-active .link-container {
+  background-color: rgba(233, 246, 255, 0.6);
+}
+
+.nuxt-link-exact-active .icon-container {
   color: #fff;
   background-color: #ff9300;
   border-color: #ff9300;

@@ -203,8 +203,8 @@ export default {
     .report-conteiner {
         display: flex;
         flex-direction: column;
+        width: 100%;
         font-family: Montserrat;
-        margin: 20px 40px;
     }
 
     .title h1 {

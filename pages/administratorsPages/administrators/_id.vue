@@ -315,12 +315,10 @@ export default {
 
     .int-cont {
         width: 100%;
-        margin: 40px 80px;
     }
 
     .int-cont-email {
         width: 36%;
-        margin: 0px 80px;
         margin-bottom: 40px;
     }
 

@@ -79,17 +79,17 @@
   </b-modal>
 </template>
 <script>
-import PictureInput from "vue-picture-input";
+import PictureInput from 'vue-picture-input';
 // https://github.com/alessiomaffeis/vue-picture-input
 const formDefault = {
-  name: "",
+  name: '',
   topic: null,
   subtopic: null,
-  image: "",
+  image: '',
   file: null,
 };
 export default {
-  name: "InfographicsCreateModal",
+  name: 'InfographicsCreateModal',
   components: {
     PictureInput,
   },
@@ -105,29 +105,29 @@ export default {
       infographicIdx: 0,
       topics: [],
       form: {
-        name: "",
+        name: '',
         topic: null,
         subtopic: null,
-        image: "",
+        image: '',
         file: null,
       },
       pictureInputStrings: {
-        upload: "<h3>Cargado</h3>", // HTML allowed
-        drag: "<h1>☁️</h1>Sube un archivo JPEG o PNG aquí", // HTML allowed
-        tap: "Tap here to select a photo <br>from your gallery", // HTML allowed
-        change: "Cambiar Imágen", // Text only
-        remove: "Eliminar Imágen", // Text only
-        select: "Seleccionar foto", // Text only
-        selected: "<p>Foto seleccionada correctamente</p>", // HTML allowed
-        fileSize: "El archivo es demasiado grande", // Text only
-        fileType: "El tipo de archivo no está permitido", // Text only
+        upload: '<h3>Cargado</h3>', // HTML allowed
+        drag: '<h1>☁️</h1>Sube un archivo JPEG o PNG aquí', // HTML allowed
+        tap: 'Tap here to select a photo <br>from your gallery', // HTML allowed
+        change: 'Cambiar Imágen', // Text only
+        remove: 'Eliminar Imágen', // Text only
+        select: 'Seleccionar foto', // Text only
+        selected: '<p>Foto seleccionada correctamente</p>', // HTML allowed
+        fileSize: 'El archivo es demasiado grande', // Text only
+        fileType: 'El tipo de archivo no está permitido', // Text only
       },
     };
   },
   computed: {
     topicOptions() {
       const initial = [
-        { text: "-- Tema de infografía", value: null, disabled: true },
+        { text: '-- Tema de infografía', value: null, disabled: true },
       ];
       return initial.concat(
         this.topics.map((topic) => {
@@ -137,7 +137,7 @@ export default {
     },
     subtopicOptions() {
       const initial = [
-        { text: "-- Subtema de infografía", value: null, disabled: true },
+        { text: '-- Subtema de infografía', value: null, disabled: true },
       ];
       if (this.form.topic === null) {
         return initial;
@@ -156,7 +156,7 @@ export default {
   },
   async created() {
     if (process.browser) {
-      this.topics = JSON.parse(localStorage.getItem("topics"));
+      this.topics = JSON.parse(localStorage.getItem('topics'));
     }
   },
   mounted() {
@@ -171,15 +171,15 @@ export default {
           this.form.file = this.$refs.pictureInput.file;
         }
       } else {
-        this.form.image = "";
+        this.form.image = '';
         this.form.file = null;
-        console.log("FileReader API not supported: use the <form>, Luke!");
+        console.log('FileReader API not supported: use the <form>, Luke!');
       }
     },
     async createInfographic(event) {
       event.preventDefault();
       const data = await this.$store.dispatch(
-        "infographics/createInfographic",
+        'infographics/createInfographic',
         {
           name: this.form.name,
           topic_id: this.form.topic._id,
@@ -190,8 +190,8 @@ export default {
       );
       if (data) {
         this.form = Object.assign({}, formDefault);
-        this.$emit("onCreate", this.infographicIdx);
-        this.$refs["infographic-create-modal"].hide();
+        this.$emit('onCreate', this.infographicIdx);
+        this.$refs['infographic-create-modal'].hide();
       }
     },
   },
@@ -217,10 +217,6 @@ export default {
     .picture-inner-text {
       font-size: 1rem;
     }
-  }
-  #infographic-form {
-    max-width: 310px;
-    margin-left: auto;
   }
   .modal-content {
     border: none;

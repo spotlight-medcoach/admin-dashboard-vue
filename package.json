@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "nuxt",
-    "build": "nuxt build",
+    "dev": "NODE_OPTIONS=--openssl-legacy-provider nuxt",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider nuxt build",
     "start": "nuxt start",
-    "generate": "nuxt generate"
+    "generate": "NODE_OPTIONS=--openssl-legacy-provider nuxt generate"
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.13.3",
+    "@tinymce/tinymce-vue": "^3.0.1",
     "bcryptjs": "^2.4.3",
     "bootstrap": "^4.6.1",
     "bootstrap-vue": "^2.21.2",
@@ -17,12 +18,23 @@
     "core-js": "^3.9.1",
     "normalize.css": "^8.0.1",
     "nuxt": "^2.15.8",
+    "tinymce": "^5.10.9",
+    "vue": "2.6.14",
     "vue-chartjs": "^3.5.1",
     "vue-picture-input": "^2.1.6",
-    "vue-quill-editor": "^3.0.6"
+    "vue-quill-editor": "^3.0.6",
+    "vue-server-renderer": "2.6.14",
+    "vuex": "^3.6.2"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-vue": "^9.28.0",
     "sass": "^1.32.13",
-    "sass-loader": "^10.2.1"
+    "sass-loader": "^10.2.1",
+    "vue-eslint-parser": "^9.4.3"
   }
 }

@@ -418,7 +418,6 @@ export default {
 
     .inp-cont {
         width: 100%;
-        margin: 20px 40px;
     }
 
     .inp-cont-pass {
@@ -444,7 +443,6 @@ export default {
 
     .input {
         width: 100%;
-        margin: 20px 40px;
     }
 
     .input i {

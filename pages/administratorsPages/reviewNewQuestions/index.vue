@@ -231,8 +231,8 @@ export default {
     .cases-container {
         display: flex;
         flex-direction: column;
+        width: 100%;
         font-family: Montserrat;
-        margin: 40px 40px;
     }
 
     .head-container {

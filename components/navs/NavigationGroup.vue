@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import LinkNavigation from "../LinkNavigation";
+import LinkNavigation from '../LinkNavigation';
 
 export default {
   components: {
@@ -79,7 +79,7 @@ export default {
         if (item.to === currentPath) return true;
         // También verificar si la ruta actual empieza con la ruta del item
         return (
-          currentPath.startsWith(item.to) && item.to !== "/administratorsPages"
+          currentPath.startsWith(item.to) && item.to !== '/administratorsPages'
         );
       });
     },
@@ -97,8 +97,15 @@ export default {
 </script>
 
 <style scoped>
+/* 
+ * ⚠️ VARIABLES DE VELOCIDAD ⚠️
+ * Las variables se definen en Navigation.vue (líneas 342-344)
+ * Para cambiar la velocidad, modifica esos valores en Navigation.vue
+ * Los valores por defecto aquí son: 0.5s y cubic-bezier(0.4, 0, 0.2, 1)
+ */
 .navigation-group {
   position: relative;
+  overflow: hidden;
 }
 
 .group-header {
@@ -107,16 +114,22 @@ export default {
   cursor: pointer;
   padding: 8px 12px;
   border-radius: 8px;
-  transition: all 0.3s ease;
+  /* Usar variable CSS para la velocidad */
+  transition: all var(--sidebar-transition-duration, 0.5s)
+    var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  --sidebar-transition-duration: 0.5s;
+  --sidebar-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
+  position: relative;
+  overflow: hidden;
 }
 
 .group-header:hover {
-  background-color: #e9f6ff;
+  background-color: rgba(233, 246, 255, 0.6);
 }
 
 .group-header.has-active {
-  background-color: #e9f6ff;
+  background-color: rgba(233, 246, 255, 0.6);
   color: #1ca4fc;
 }
 
@@ -127,7 +140,11 @@ export default {
   padding: 12px 16px;
   margin-bottom: 4px;
   box-sizing: border-box;
-  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Usar variable CSS para la velocidad */
+  transition: padding var(--sidebar-transition-duration, 0.5s)
+    var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  --sidebar-transition-duration: 0.5s;
+  --sidebar-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .navigation-group.is-collapsed .group-header {
@@ -144,7 +161,13 @@ export default {
 .group-icon {
   font-size: 18px;
   color: #5f5f5f;
-  transition: color 0.3s ease, margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Usar variable CSS para la velocidad */
+  transition: color var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+    margin var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  --sidebar-transition-duration: 0.5s;
+  --sidebar-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
   margin-right: 12px;
   flex-shrink: 0;
 }
@@ -162,17 +185,27 @@ export default {
   font-weight: 600;
   font-size: 14px;
   color: #212529;
-  transition: opacity 0.2s ease, width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Usar variable CSS para la velocidad - ocultar texto detrás del contenedor */
+  transition: opacity var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+    width var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+    margin var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  --sidebar-transition-duration: 0.5s;
+  --sidebar-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
   flex: 1;
   margin-left: 0;
   overflow: hidden;
   white-space: nowrap;
+  position: relative;
 }
 
 .navigation-group.is-collapsed .group-title {
   width: 0;
   opacity: 0;
   margin: 0;
+  overflow: hidden;
 }
 
 .group-header.has-active .group-title {
@@ -182,7 +215,15 @@ export default {
 .expand-icon {
   font-size: 12px;
   color: #5f5f5f;
-  transition: transform 0.3s ease, color 0.3s ease, opacity 0.2s ease;
+  /* Usar variable CSS para la velocidad */
+  transition: transform var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+    color var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+    opacity var(--sidebar-transition-duration, 0.5s)
+      var(--sidebar-transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  --sidebar-transition-duration: 0.5s;
+  --sidebar-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
   margin-left: auto;
   flex-shrink: 0;
 }
