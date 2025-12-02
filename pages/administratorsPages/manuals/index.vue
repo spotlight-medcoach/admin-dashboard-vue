@@ -25,6 +25,11 @@
             @page-change="handlePageChange"
             @page-results-change="handlePageResultsChange"
           >
+            <template #cell-conversion_status="{ row }">
+              <conversion-status
+                :status="getConversionStatusForManual(row._id)"
+              />
+            </template>
             <template #cell-actions="{ row }">
               <div class="td-actions">
                 <button class="btn edit" @click="editManual(row._id)">
@@ -57,6 +62,8 @@ import LoadingState from '@/components/LoadingState.vue';
 import DataTableContainer from '@/components/tables/DataTableContainer.vue';
 import ManualCreateModal from './ManualCreateModal.vue';
 import ManualDeleteModal from './ManualDeleteModal.vue';
+import ConversionStatus from '@/components/ConversionStatus.vue';
+import conversionTracking from '@/mixins/conversionTracking';
 
 export default {
   components: {
@@ -64,7 +71,9 @@ export default {
     DataTableContainer,
     ManualCreateModal,
     ManualDeleteModal,
+    ConversionStatus,
   },
+  mixins: [conversionTracking],
   data() {
     return {
       selectedManualId: null,
@@ -128,8 +137,14 @@ export default {
           key: 'subtopic_name',
           label: 'Subtema',
           scope: 'col',
-          width: 25,
+          width: 20,
           value: (row) => row.subtopic_name || row.subtopic,
+        },
+        {
+          key: 'conversion_status',
+          label: 'Estado',
+          scope: 'col',
+          width: 15,
         },
         {
           key: 'actions',
@@ -208,6 +223,10 @@ export default {
       // Recargar manuales después de crear
       this.page = 1; // Reset a la primera página
       await this.getManuals();
+      // El tracking de conversión se iniciará automáticamente desde el store
+    },
+    getConversionStatusForManual(manualId) {
+      return this.$store.getters['manuals/getConversionStatus'](manualId);
     },
     async getManuals() {
       try {
@@ -292,6 +311,9 @@ export default {
 
     await this.getManuals();
     this.isInitialLoad = false;
+
+    // Iniciar polling para manuales en conversión
+    this.resumeConversionTracking();
   },
   beforeDestroy() {
     // Limpiar header al salir de la página

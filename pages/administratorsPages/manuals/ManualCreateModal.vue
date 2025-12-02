@@ -17,11 +17,7 @@
     <template #modal-header-close>
       <b-icon icon="x" font-scale="1.1" />
     </template>
-    <b-form
-      id="manual-form"
-      name="manual-form"
-      @submit="createManual"
-    >
+    <b-form id="manual-form" name="manual-form" @submit="createManual">
       <b-form-group label="Nombre" label-for="name">
         <b-form-input
           id="name"
@@ -47,6 +43,32 @@
           :options="subtopicOptions"
           :disabled="form.topic === null || isUploading"
           required
+        />
+      </b-form-group>
+      <b-form-group
+        label="Tiempo de Lectura (minutos)"
+        label-for="reading_time"
+      >
+        <b-form-input
+          id="reading_time"
+          v-model.number="form.reading_time"
+          type="number"
+          min="1"
+          placeholder="Ej: 15"
+          required
+          :disabled="isUploading"
+        />
+        <small class="text-muted mt-1 d-block">
+          Tiempo estimado de lectura en minutos
+        </small>
+      </b-form-group>
+      <b-form-group label="Importancia" label-for="importance">
+        <b-form-select
+          id="importance"
+          v-model.number="form.importance"
+          :options="importanceOptions"
+          required
+          :disabled="isUploading"
         />
       </b-form-group>
       <b-form-group label="Archivo .docx" label-for="file">
@@ -78,12 +100,18 @@
         type="submit"
         form="manual-form"
         variant="primary"
-        :disabled="!form.file || !form.name || !form.topic || !form.subtopic || isUploading"
+        :disabled="
+          !form.file ||
+          !form.name ||
+          !form.topic ||
+          !form.subtopic ||
+          !form.reading_time ||
+          !form.importance ||
+          isUploading
+        "
       >
         <span v-if="!isUploading">Guardar Manual</span>
-        <span v-else>
-          <b-spinner small></b-spinner> Subiendo...
-        </span>
+        <span v-else> <b-spinner small></b-spinner> Subiendo... </span>
       </b-button>
     </template>
   </b-modal>
@@ -91,23 +119,27 @@
 
 <script>
 const formDefault = {
-  name: "",
+  name: '',
   topic: null,
   subtopic: null,
+  reading_time: null,
+  importance: null,
   file: null,
 };
 
 export default {
-  name: "ManualCreateModal",
+  name: 'ManualCreateModal',
   data() {
     return {
       loaded: false,
       isUploading: false,
       topics: [],
       form: {
-        name: "",
+        name: '',
         topic: null,
         subtopic: null,
+        reading_time: null,
+        importance: null,
         file: null,
       },
     };
@@ -115,7 +147,7 @@ export default {
   computed: {
     topicOptions() {
       const initial = [
-        { text: "-- Tema del manual", value: null, disabled: true },
+        { text: '-- Tema del manual', value: null, disabled: true },
       ];
       return initial.concat(
         this.topics.map((topic) => {
@@ -125,7 +157,7 @@ export default {
     },
     subtopicOptions() {
       const initial = [
-        { text: "-- Subtema del manual", value: null, disabled: true },
+        { text: '-- Subtema del manual', value: null, disabled: true },
       ];
       if (this.form.topic === null) {
         return initial;
@@ -136,10 +168,18 @@ export default {
         })
       );
     },
+    importanceOptions() {
+      return [
+        { text: '-- Importancia del manual', value: null, disabled: true },
+        { text: 'Alta', value: 1 },
+        { text: 'Media', value: 2 },
+        { text: 'Baja', value: 3 },
+      ];
+    },
   },
   async created() {
     if (process.browser) {
-      this.topics = JSON.parse(localStorage.getItem("topics")) || [];
+      this.topics = JSON.parse(localStorage.getItem('topics')) || [];
     }
   },
   mounted() {
@@ -151,13 +191,13 @@ export default {
       if (file) {
         // Validar que sea .docx
         if (
-          !file.name.endsWith(".docx") &&
+          !file.name.endsWith('.docx') &&
           file.type !==
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ) {
-          this.$bvToast.toast("Solo se permiten archivos .docx", {
-            title: "Error",
-            variant: "danger",
+          this.$bvToast.toast('Solo se permiten archivos .docx', {
+            title: 'Error',
+            variant: 'danger',
             solid: true,
           });
           this.form.file = null;
@@ -171,9 +211,9 @@ export default {
     async createManual(event) {
       event.preventDefault();
       if (!this.form.file) {
-        this.$bvToast.toast("Debes seleccionar un archivo .docx", {
-          title: "Error",
-          variant: "danger",
+        this.$bvToast.toast('Debes seleccionar un archivo .docx', {
+          title: 'Error',
+          variant: 'danger',
           solid: true,
         });
         return;
@@ -181,41 +221,53 @@ export default {
 
       this.isUploading = true;
       try {
-        const data = await this.$store.dispatch("manuals/createManual", {
+        const data = await this.$store.dispatch('manuals/createManual', {
           name: this.form.name,
           topic_id: this.form.topic._id,
           subtopic_id: this.form.subtopic._id,
+          reading_time: this.form.reading_time,
+          importance: this.form.importance,
           file: this.form.file,
         });
 
         if (data && !data.response) {
           // Éxito
+          const manualId = data.id || data._id;
+
+          // Iniciar tracking de conversión si hay un manualId
+          if (manualId) {
+            this.$store.dispatch('manuals/startConversionTracking', manualId);
+          }
+
           this.form = Object.assign({}, formDefault);
-          this.$emit("onCreate");
-          this.$refs["manual-create-modal"].hide();
-          this.$bvToast.toast("Manual creado exitosamente", {
-            title: "Éxito",
-            variant: "success",
-            solid: true,
-          });
+          this.$emit('onCreate');
+          this.$refs['manual-create-modal'].hide();
+          this.$bvToast.toast(
+            'Manual creado exitosamente. La conversión está en proceso.',
+            {
+              title: 'Éxito',
+              variant: 'success',
+              solid: true,
+            }
+          );
           // Recargar listado
-          await this.$store.dispatch("manuals/fetchManuals");
+          await this.$store.dispatch('manuals/fetchManuals');
         } else {
           // Error
           this.$bvToast.toast(
-            data.response?.data?.message || "Error al crear el manual",
+            data.response?.data?.message || 'Error al crear el manual',
             {
-              title: "Error",
-              variant: "danger",
+              title: 'Error',
+              variant: 'danger',
               solid: true,
             }
           );
         }
       } catch (error) {
-        console.error("Error creating manual:", error);
-        this.$bvToast.toast("Error al crear el manual", {
-          title: "Error",
-          variant: "danger",
+        console.error('Error creating manual:', error);
+        this.$bvToast.toast('Error al crear el manual', {
+          title: 'Error',
+          variant: 'danger',
           solid: true,
         });
       } finally {
@@ -244,4 +296,3 @@ export default {
   }
 }
 </style>
-
