@@ -204,7 +204,6 @@
 <script>
 import Navigation from '@/components/navs/navigation.vue';
 import Loading from '@/components/modals/loading.modal.vue';
-import ActionsModal from '@/components/modals/actions.modal.vue';
 import MakePayment from '@/components/modals/administrators/make-payment.modal.vue';
 import DeleteUserModal from '@/components/modals/delete-user.modal.vue';
 import ActiveUserModal from '@/components/modals/active-user.modal.vue';
@@ -215,7 +214,6 @@ export default {
   components: {
     Navigation,
     Loading,
-    ActionsModal,
     MakePayment,
     DeleteUserModal,
     ActiveUserModal,
@@ -262,7 +260,6 @@ export default {
       ] = `Bearer ${localStorage.getItem('user_token')}`;
     }
 
-    // await this.getSpotlighters();
     this.loading = !this.loading;
     await this.$store.dispatch('spotlighters/getSpotlighters', {
       selected: this.selected,
@@ -275,7 +272,6 @@ export default {
       this.$store.getters['spotlighters/getTotalSpotlighters'];
     this.loading = !this.loading;
     this.before();
-    // console.log(this.spotlighters)
   },
   methods: {
     async getSpotlighters() {
@@ -313,7 +309,6 @@ export default {
       }
     },
     async update(user) {
-      // cambiar a vista para actualizar spotlighter
       this.$router.push({ path: `/spotlighters/${user.admin_id}` });
     },
     confirmModalActive(admin_data) {
@@ -331,7 +326,6 @@ export default {
         let activeResponse = await this.$axios.put('/setActiveUser', {
           user_id: this.userIdToActive,
         });
-        // alert(activeResponse.data.message)
         this.titleToast = activeResponse.data.message;
         this.showSuccessToast = !this.showSuccessToast;
 
@@ -354,7 +348,6 @@ export default {
       }
     },
     confirmModalInactive(admin_data) {
-      console.log(admin_data);
       this.titleModal = 'Eliminar usuario';
       this.bodyModal = '¿Deseas eliminar el siguiente usuario?';
       this.nameUser = '' + admin_data.name + ' ' + admin_data.last_name;
@@ -370,7 +363,6 @@ export default {
           user_id: this.userIdToDelete,
         });
 
-        // alert(inactive_response.data.message);
         this.titleToast = inactive_response.data.message;
         this.showSuccessToast = !this.showSuccessToast;
 
@@ -383,7 +375,7 @@ export default {
         }, 1500);
       } catch (err) {
         this.busy = !this.busy;
-        console.log(err);
+        console.error(err);
         const response = err.response;
         this.titleToast = response.data.message;
         this.showFailToast = !this.showFailToast;
@@ -429,11 +421,7 @@ export default {
         console.log(err);
       }
     },
-    selectedChange() {
-      this.getSpotlighters();
-    },
     rowsChange() {
-      // Cambiar los resultados que se muestran
       this.page = 1;
 
       if (
@@ -450,7 +438,6 @@ export default {
       this.getSpotlighters();
     },
     before() {
-      // Cambiar a página anterior
       if (this.page == 1) {
         this.disbaledBefore = 1;
         if (this.totalSpotlighters == 0) this.disabledAfter = 1;
@@ -468,7 +455,6 @@ export default {
       }
     },
     after() {
-      // Cambiar a página siguiente
       this.page += 1;
       if (this.page * this.pageResults > this.totalSpotlighters) {
         this.disabledAfter = 1;
@@ -565,7 +551,6 @@ export default {
 .filter-drop select {
   height: 32px;
   width: 100%;
-  /* margin: 0px 115px; */
   border: none;
   border-bottom: 1px solid #000;
   background-color: transparent;
@@ -575,6 +560,7 @@ export default {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
@@ -584,13 +570,6 @@ export default {
 .filter-drop select:focus {
   outline: none;
 }
-
-/* .filter-drop select {
-        width: 100%;
-        height: 32px;
-        border: none;
-        border-bottom: 1px solid #000;
-    } */
 
 .pay-button {
   width: 20%;

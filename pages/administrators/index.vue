@@ -169,7 +169,6 @@
 
 <script>
 import Loading from '@/components/modals/loading.modal.vue';
-import SuccessButton from '@/components/buttons/success.button.vue';
 import DeleteUserModal from '@/components/modals/delete-user.modal.vue';
 import ActiveUserModal from '@/components/modals/active-user.modal.vue';
 import SuccessToast from '@/components/toasts/success.toast.vue';
@@ -178,7 +177,6 @@ import FailToast from '@/components/toasts/fail.toast.vue';
 export default {
   components: {
     Loading,
-    SuccessButton,
     DeleteUserModal,
     ActiveUserModal,
     SuccessToast,
@@ -229,38 +227,13 @@ export default {
       this.$store.getters['administrators/getTotalAdministrators'];
     this.loading = !this.loading;
 
-    // this.$store.dispatch('administrators/getAdministrators', this.selected, this.page, this.pageResults, this.search);
-    // await this.getAdministrators();
     this.before();
-
-    // setTimeout(() => {
-    // this.loading = !this.loading;
-    // }, 3000);
   },
-  // computed: {
-  //     administrators() {
-  //         return this.$store.getters['administrators/getAdministrators'];
-  //     },
-  //     totalAdmins() {
-  //         return this.$store.getters['administrators/getTotalAdministrators'];
-  //     }
-  // },
   methods: {
     async getAdministrators() {
       try {
         this.loading = !this.loading;
 
-        // let administrators_response = await this.$axios
-        // .get('/getAllAdminnistrator', {
-        //     params: {
-        //         status: this.selected,
-        //         page: this.page,
-        //         pageResults: this.pageResults,
-        //         name: this.search
-        //     }
-        // })
-
-        // console.log('search new', this.search)
         await this.$store.dispatch('administrators/getAdministrators', {
           selected: this.selected,
           page: this.page,
@@ -273,19 +246,12 @@ export default {
         this.totalAdmins =
           this.$store.getters['administrators/getTotalAdministrators'];
 
-        // this.administrators = administrators_response.data.payload.admins
-        // this.totalAdmins = administrators_response.data.payload.length
-
-        // this.getAdministrators(administrators_response.data.payload.admins);
-
         this.loading = !this.loading;
       } catch (err) {
         console.log(err);
       }
     },
-    async selectedChange(status) {
-      // let filtered = await this.$store.dispatch('administrators/filterAdministratorsByStatus', status);
-      // console.log(filtered);
+    async selectedChange() {
       this.getAdministrators();
     },
     searchAdministrators() {
@@ -314,8 +280,6 @@ export default {
 
         this.titleToast = userActivated.data.message;
         this.showSuccessToast = !this.showSuccessToast;
-        // let activeResponse = await this.$axios.put('/setActiveUser', { user_id: this.userIdToActive })
-        // alert(activeResponse.data.message)
         this.getAdministrators();
 
         setTimeout(() => {
@@ -336,7 +300,6 @@ export default {
       }
     },
     update(admin_data) {
-      // this.$store.dispatch('administrators/getAdministrator', admin_data._id);
       this.$router.push({ path: `/administrators/${admin_data._id}` });
     },
     confirmModalInactive(admin_data) {
@@ -358,9 +321,6 @@ export default {
 
         this.titleToast = userInactivated.data.message;
         this.showSuccessToast = !this.showSuccessToast;
-        // let inactive_response = await this.$axios.put('/setInactiveUser', { user_id: this.userIdToDelete });
-        // alert(inactive_response.data.message);
-
         this.getAdministrators();
 
         setTimeout(() => {
@@ -528,6 +488,7 @@ export default {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
@@ -537,14 +498,6 @@ export default {
 .search-active-container select:focus {
   outline: none;
 }
-/* .options {
-        font-family: Montserrat;
-        width: 15%;
-        height: 32px;
-        margin: 0px 40px;
-        border: none;
-        border-bottom: 1px solid #000;
-    } */
 
 .thead-admin {
   background: #212529;
@@ -634,24 +587,4 @@ td {
   width: 200px;
   padding-left: 8px;
 }
-
-/* .loco {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .drop {
-        margin-right: 5%;
-    }
-
-    .arrows {
-        display: flex;
-        align-items: center;
-        margin-left: 5%;
-    }
-    .arrow {
-        border: none;
-        color: #FE9400;
-    } */
 </style>

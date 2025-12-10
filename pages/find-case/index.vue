@@ -314,7 +314,7 @@ export default {
 
       await this.getCases();
     },
-    async getCasesFilteredBySubtopic(subtopic) {
+    async getCasesFilteredBySubtopic() {
       try {
         await this.getCases();
       } catch (err) {
@@ -383,15 +383,11 @@ export default {
     async addToSimulator() {
       try {
         this.busyAddToSimulator = !this.busyAddToSimulator;
-        console.log('caseToAdd', this.caseToAddASimulator);
-        console.log('simulator', this.simulatorSelected);
 
-        let addResponse = await this.$axios.put('/addCaseToSimulator', {
+        await this.$axios.put('/addCaseToSimulator', {
           case_id: this.caseToAddASimulator,
           simulator_id: this.simulatorSelected,
         });
-
-        // alert(addResponse.data.message)
 
         this.busyAddToSimulator = !this.busyAddToSimulator;
         this.isShowAddToSimulatorModal = !this.isShowAddToSimulatorModal;
@@ -582,6 +578,7 @@ export default {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;

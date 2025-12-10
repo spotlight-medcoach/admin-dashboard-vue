@@ -231,7 +231,6 @@ export default {
     }
 
     await this.getCountries();
-    console.log('contries', this.countries);
   },
   methods: {
     async getCountries() {
@@ -245,7 +244,7 @@ export default {
 
         this.loading = !this.loading;
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     async addSpotlighter() {
@@ -266,7 +265,6 @@ export default {
         };
 
         let add_response = await this.$axios.post('/createUser', data);
-        // alert(add_response.data.message)
         this.titleToast = add_response.data.message;
         this.showSuccessToast = !this.showSuccessToast;
 
@@ -277,7 +275,7 @@ export default {
         }, 1500);
       } catch (err) {
         this.busy = !this.busy;
-        console.log(err);
+        console.error(err);
         const response = err.response;
         this.titleModal = response.data.message;
         this.showFailToast = !this.showFailToast;
@@ -397,6 +395,7 @@ hr {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
@@ -437,6 +436,7 @@ hr {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;

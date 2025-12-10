@@ -187,14 +187,12 @@
 
 <script>
 import Navigation from '@/components/navs/navigation.vue';
-import ActionsModal from '@/components/modals/actions.modal.vue';
 import Loading from '@/components/modals/loading.modal.vue';
 import InfoModal from '@/components/modals/administrators/info.modal.vue';
 
 export default {
   components: {
     Navigation,
-    ActionsModal,
     Loading,
     InfoModal,
   },
@@ -469,6 +467,7 @@ export default {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
@@ -478,15 +477,6 @@ export default {
 .search-container select:focus {
   outline: none;
 }
-
-/* .options {
-        font-family: Montserrat;
-        width: 15%;
-        height: 32px;
-        margin: 0px 40px;
-        border: none;
-        border-bottom: 1px solid #000;
-    } */
 
 .th-case {
   width: 15%;
@@ -538,6 +528,7 @@ td {
   display: -webkit-box;
   text-overflow: ellipsis;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
   margin-bottom: 8px;
   border: none;
 }

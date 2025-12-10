@@ -19,7 +19,7 @@
 
         <div class="inputs">
           <div class="int-cont">
-            <Input
+            <InputComponent
               :dis="disabled"
               type="text"
               placeholder="Ingresa tu(s) nombre(s)"
@@ -29,7 +29,7 @@
             />
           </div>
           <div class="int-cont">
-            <Input
+            <InputComponent
               :dis="disabled"
               type="text"
               placeholder="Ingresa tus apellidos"
@@ -72,18 +72,6 @@
               ></button>
             </div>
           </div>
-
-          <!-- <div class="int-cont">
-                        <div class="password">
-                            <InputIcon
-                                :type="typeConfirm"
-                                placeholder="• • • • • • • •"
-                                v-model="confirm_password"
-                                icon="fas fa-lock"
-                                title="Confirmar contraseña" />
-                            <button :class="classConfirm" @click="changeIconClassConf"></button>
-                        </div>
-                    </div> -->
         </div>
 
         <div class="load-container">
@@ -105,7 +93,7 @@
 
 <script>
 import Loading from '@/components/modals/loading.modal.vue';
-import Input from '@/components/inputs/input.vue';
+import InputComponent from '@/components/inputs/input.vue';
 import InputIcon from '@/components/inputs/input-icon.vue';
 
 // var bcrypt = require('bcryptjs');
@@ -113,7 +101,7 @@ import InputIcon from '@/components/inputs/input-icon.vue';
 export default {
   components: {
     Loading,
-    Input,
+    InputComponent,
     InputIcon,
   },
   data() {
@@ -182,15 +170,13 @@ export default {
       try {
         this.busy = !this.busy;
 
-        let updateResponse = await this.$axios.put('/updateUser', {
+        await this.$axios.put('/updateUser', {
           user_id: this.userInfo._id,
           name: this.name,
           last_name: this.last_name,
           email: this.email,
           password: this.password,
         });
-        console.log(updateResponse);
-        alert(updateResponse.data.message);
 
         this.busy = !this.busy;
 
