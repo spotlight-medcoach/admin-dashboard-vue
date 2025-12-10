@@ -43,9 +43,9 @@
 </template>
 
 <script>
-import SpotlighterNavigation from '../../../components/navs/SpotlighterNavigation';
-import Loading from '../../../components/modals/Loading';
-import FeedbackCard from '../../../components/cards/FeedbackCard';
+import SpotlighterNavigation from '@/components/navs/spotlighter.nav.vue';
+import Loading from '@/components/modals/loading.modal.vue';
+import FeedbackCard from '@/components/cards/feedback.card.vue';
 
 export default {
     components: {

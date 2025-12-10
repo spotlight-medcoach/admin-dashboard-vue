@@ -81,7 +81,7 @@ dashboard-admin/
 ├── layouts/         # Layouts de la aplicación
 ├── middleware/      # Middleware de Nuxt
 ├── pages/           # Páginas de la aplicación
-│   ├── administratorsPages/  # Páginas de administradores
+│   ├──   # Páginas de administradores
 │   └── spotlightersPages/    # Páginas de spotlighters
 ├── plugins/         # Plugins de Nuxt
 ├── store/           # Store de Vuex

@@ -89,13 +89,13 @@
 </template>
 
 <script>
-import SpotlighterNavigation from '../../../components/navs/SpotlighterNavigation';
-import Loading from '../../../components/modals/Loading';
-import RequestQuestionCard from '../../../components/cards/RequestQuestionCard';
-import AcceptModal from '../../../components/modals/AcceptModal';
-import RejectModal from '../../../components/modals/RejectModal';
-import SuccessToast from '../../../components/toasts/SuccessToast';
-import FailToast from '../../../components/toasts/FailToast';
+import SpotlighterNavigation from '@/components/navs/spotlighter.nav.vue';
+import Loading from '@/components/modals/loading.modal.vue';
+import RequestQuestionCard from '@/components/cards/request-question.card.vue';
+import AcceptModal from '@/components/modals/accept.modal.vue';
+import RejectModal from '@/components/modals/reject.modal.vue';
+import SuccessToast from '@/components/toasts/success.toast.vue';
+import FailToast from '@/components/toasts/fail.toast.vue';
 
 export default {
     components: {

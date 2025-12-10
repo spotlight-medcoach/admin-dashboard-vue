@@ -49,9 +49,9 @@
 </template>
 
 <script>
-import InputIcon from '../components/inputs/InputIcon';
-import SuccessToast from '../components/toasts/SuccessToast';
-import FailToast from '../components/toasts/FailToast';
+import InputIcon from '@/components/inputs/input-icon.vue';
+import SuccessToast from '@/components/toasts/success.toast.vue';
+import FailToast from '@/components/toasts/fail.toast.vue';
 
 export default {
   components: {
@@ -85,7 +85,7 @@ export default {
         let userInfo = JSON.parse(localStorage.getItem('user'));
 
         if (userInfo.role == 'Administrador')
-          this.$router.push({ path: '/administratorsPages/statistics' });
+          this.$router.push({ path: '/statistics' });
         else
           this.$router.push({ path: '/spotlightersPages/requestedQuestions' });
       } else {
@@ -129,7 +129,7 @@ export default {
 
         setTimeout(() => {
           if (this.userData.role == 'Administrador') {
-            this.$router.push({ path: '/administratorsPages/statistics' });
+            this.$router.push({ path: '/statistics' });
             this.showSuccessToast = !this.showSuccessToast;
           } else {
             this.$router.push({
@@ -151,7 +151,7 @@ export default {
       }
     },
     forgotPassword() {
-      this.$router.push({ path: '/forgotPassword' });
+      this.$router.push({ path: '/forgot-password' });
     },
     closeModal() {
       this.isShowModal = !this.isShowModal;

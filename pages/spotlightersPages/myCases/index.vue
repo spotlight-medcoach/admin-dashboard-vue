@@ -113,9 +113,9 @@
 </template>
 
 <script>
-import SpotlighterNavigation from '../../../components/navs/SpotlighterNavigation';
-import Loading from '../../../components/modals/Loading';
-import RequestPayment from '../../../components/modals/spotlighters/RequestPayment';
+import SpotlighterNavigation from '@/components/navs/spotlighter.nav.vue';
+import Loading from '@/components/modals/loading.modal.vue';
+import RequestPayment from '@/components/modals/spotlighters/request-payment.modal.vue';
 
 export default {
     components: {

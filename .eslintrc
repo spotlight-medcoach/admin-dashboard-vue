@@ -1,8 +1,0 @@
-{
-  "extends": "plugin:vue/essential",
-  "rules": {
-    "vue/no-deprecated-dollar-scopedslots-api": "off",
-    "vue/no-deprecated-slot-attribute": "off",
-    "vue/no-deprecated-slot-scope-attribute": "off"
-  }
-}

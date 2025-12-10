@@ -83,11 +83,15 @@ export const actions = {
       .get('/manuals', { params })
       .then((response) => {
         const data = response.data;
-        const manuals = data.payload || data.data || [];
-        const total = data.length || 0;
+        const manualsInfo = data.payload ||
+          data.data || {
+            manuals: [],
+            total: 0,
+          };
+        const { manuals, total } = manualsInfo;
         commit('setManuals', manuals);
         commit('setTotalManuals', total);
-        return { manuals, total };
+        return manualsInfo;
       })
       .catch((error) => {
         console.error('Error fetching manuals:', error);
@@ -131,7 +135,8 @@ export const actions = {
         }
       );
 
-      const { uploadUrl, fileUrl } = presignedResponse.data.data || presignedResponse.data;
+      const { uploadUrl, fileUrl } =
+        presignedResponse.data.data || presignedResponse.data;
 
       // Step 2: Subir archivo directamente a S3 usando la presigned URL
       const uploadResponse = await fetch(uploadUrl, {
@@ -186,7 +191,8 @@ export const actions = {
       const response = await this.$axios.get(
         `/manuals/${manualId}/conversion-status`
       );
-      const status = response.data.payload || response.data.data || response.data;
+      const status =
+        response.data.payload || response.data.data || response.data;
 
       commit('updateConversionStatus', {
         manualId,
@@ -213,7 +219,10 @@ export const actions = {
     // Iniciar polling para este manual
     const intervalId = setInterval(async () => {
       const status = await dispatch('checkConversionStatus', manualId);
-      if (status && (status.status === 'completed' || status.status === 'failed')) {
+      if (
+        status &&
+        (status.status === 'completed' || status.status === 'failed')
+      ) {
         clearInterval(intervalId);
       }
     }, 3000); // Verificar cada 3 segundos
