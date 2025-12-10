@@ -439,7 +439,6 @@ export default {
 }
 
 .topic-container {
-  /* display: flex; */
   margin: 10px 0px;
   width: 30%;
 }
@@ -481,7 +480,6 @@ export default {
 }
 
 .subtopic-container {
-  /* display: flex; */
   margin: 10px 0px;
   width: 30%;
 }
@@ -538,7 +536,6 @@ export default {
 .id {
   display: flex;
   flex-direction: column;
-  /* margin: 10px 0px; */
   width: 30%;
 }
 
@@ -629,7 +626,6 @@ export default {
   width: 100%;
 }
 
-/* estilos para el loading predeterminado */
 .load-container {
   display: flex;
   justify-content: center;
@@ -647,7 +643,6 @@ export default {
   display: block;
   width: 44px;
   height: 44px;
-  /* margin: 8px; */
   border-radius: 50%;
   border: 6px solid #fe9400;
   border-color: #fe9400 transparent #fe9400 transparent;

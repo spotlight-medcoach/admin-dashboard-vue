@@ -96,8 +96,6 @@ import Loading from '@/components/modals/loading.modal.vue';
 import InputComponent from '@/components/inputs/input.vue';
 import InputIcon from '@/components/inputs/input-icon.vue';
 
-// var bcrypt = require('bcryptjs');
-
 export default {
   components: {
     Loading,
@@ -140,7 +138,6 @@ export default {
 
         let userResponse = await this.$axios.get('/getMyInfo');
         this.userInfo = userResponse.data.payload;
-        console.log(this.userInfo);
 
         this.name = this.userInfo.name;
         this.last_name = this.userInfo.last_name;
@@ -148,7 +145,7 @@ export default {
 
         this.loading = !this.loading;
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     changeIconClassPass() {
@@ -182,7 +179,7 @@ export default {
 
         this.$router.push({ path: '/administrators' });
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
   },
@@ -326,16 +323,6 @@ hr {
   margin: 45px 40px;
 }
 
-/* .button-container button {
-        padding: 12px 20px;
-        background: #20B000;
-        color: #FFF;
-        box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
-        border-radius: 10px;
-        margin: 45px 40px;
-    } */
-
-/* estilos para el loading predeterminado */
 .load-container {
   display: flex;
   justify-content: center;
@@ -352,7 +339,6 @@ hr {
   display: block;
   width: 44px;
   height: 44px;
-  /* margin: 8px; */
   border-radius: 50%;
   border: 6px solid #fe9400;
   border-color: #fe9400 transparent #fe9400 transparent;

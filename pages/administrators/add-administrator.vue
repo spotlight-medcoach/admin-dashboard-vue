@@ -16,7 +16,7 @@
 
         <div class="inputs">
           <div class="int-cont">
-            <Input
+            <InputComponent
               type="text"
               placeholder="Ingresa tu(s) nombre(s)"
               v-model="name"
@@ -24,7 +24,7 @@
             />
           </div>
           <div class="int-cont">
-            <Input
+            <InputComponent
               type="text"
               placeholder="Ingresa tus apellidos"
               v-model="last_name"
@@ -104,8 +104,7 @@
 <script>
 import Navigation from '@/components/navs/navigation.vue';
 import SuccessButton from '@/components/buttons/success.button.vue';
-import InputTitle from '@/components/inputs/input-title.vue';
-import Input from '@/components/inputs/input.vue';
+import InputComponent from '@/components/inputs/input.vue';
 import Loading from '@/components/modals/loading.modal.vue';
 import InputIcon from '@/components/inputs/input-icon.vue';
 import SuccessToast from '@/components/toasts/success.toast.vue';
@@ -115,8 +114,7 @@ export default {
   components: {
     Navigation,
     SuccessButton,
-    InputTitle,
-    Input,
+    InputComponent,
     Loading,
     InputIcon,
     SuccessToast,
@@ -185,7 +183,7 @@ export default {
         }
       } catch (err) {
         this.busy = !this.busy;
-        console.log(err);
+        console.error(err);
         const response = err.response;
         this.titleToast = response.data.message;
         this.showFailToast = !this.showFailToast;
@@ -304,7 +302,6 @@ hr {
   justify-content: center;
 }
 
-/* estilos para el loading predeterminado */
 .lds-dual-ring {
   display: inline-block;
   width: 50px;
@@ -316,7 +313,6 @@ hr {
   display: block;
   width: 44px;
   height: 44px;
-  /* margin: 8px; */
   border-radius: 50%;
   border: 6px solid #fe9400;
   border-color: #fe9400 transparent #fe9400 transparent;
