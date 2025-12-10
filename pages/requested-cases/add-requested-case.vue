@@ -20,7 +20,7 @@
 
         <div class="inputs-container">
           <div class="name">
-            <Input
+            <InputComponent
               type="text"
               placeholder="Nombre del caso"
               v-model="case_name"
@@ -149,8 +149,7 @@
 
 <script>
 import Navigation from '@/components/navs/navigation.vue';
-import Input from '@/components/inputs/input.vue';
-import InputTitle from '@/components/inputs/input-title.vue';
+import InputComponent from '@/components/inputs/input.vue';
 import SuccessButton from '@/components/buttons/success.button.vue';
 import Loading from '@/components/modals/loading.modal.vue';
 import RejectModal from '@/components/modals/reject.modal.vue';
@@ -160,8 +159,7 @@ import FailToast from '@/components/toasts/fail.toast.vue';
 export default {
   components: {
     Navigation,
-    Input,
-    InputTitle,
+    InputComponent,
     SuccessButton,
     Loading,
     RejectModal,
@@ -220,10 +218,9 @@ export default {
     await this.getSpotlighters();
     this.getAdminData();
     this.loading = !this.loading;
-    console.log('topics: ', this.topics);
   },
   methods: {
-    onEditorChange({ quill, html, text }) {
+    onEditorChange({ quill }) {
       this.contentDescription = quill.getContents();
       this.contentHtml = quill.root.innerHTML;
     },
@@ -233,9 +230,8 @@ export default {
           '/getAllSpotlighters?status=true'
         );
         this.spotlighters = spotlighters_response.data.payload.spotlighters;
-        console.log(spotlighters_response.data);
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     getAdminData() {
@@ -250,13 +246,11 @@ export default {
         let spotlighterData = this.spotlighters.filter(
           (spot) => spot.spotlighter_id == spotlighter
         )[0];
-        console.log(spotlighterData);
         this.nameSpotlighter =
           spotlighterData.name + ' ' + spotlighterData.last_name;
       }
     },
     filterSubtopics(topic) {
-      console.log('topic', this.topics);
       this.topicFolio = this.topics.filter(
         (top) => top.bubble_id == topic
       )[0].topic_folio;
@@ -276,12 +270,10 @@ export default {
         this.subtopicFolio +
         '-' +
         (parseInt(this.$route.query.length) + 1);
-      console.log('length', this.$route.query.length);
     },
     async addPendingCase() {
       try {
         this.busy = !this.busy;
-        console.log('spot: ', this.spotlighterSelected);
 
         if (
           this.case_name.trim() == '' ||
@@ -337,7 +329,6 @@ export default {
           });
 
           this.busy = !this.busy;
-          // alert(case_response.data.message)
           this.titleModal = case_response.data.message;
           this.showSuccessToast = !this.showSuccessToast;
 
@@ -348,7 +339,7 @@ export default {
         }
       } catch (err) {
         this.busy = false;
-        console.log(err);
+        console.error(err);
 
         const response = err.response;
         this.titleModal = response.data.message;
@@ -478,6 +469,7 @@ export default {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
@@ -529,6 +521,7 @@ export default {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;

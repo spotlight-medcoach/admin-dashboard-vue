@@ -20,7 +20,7 @@
         <div class="inputs-container">
           <div class="inputs">
             <div class="inp-cont">
-              <Input
+              <InputComponent
                 type="text"
                 placeholder="Nombre"
                 v-model="new_name"
@@ -29,7 +29,7 @@
               />
             </div>
             <div class="inp-cont">
-              <Input
+              <InputComponent
                 type="text"
                 placeholder="Apellidos"
                 v-model="new_last_name"
@@ -179,7 +179,7 @@
 <script>
 import Navigation from '@/components/navs/navigation.vue';
 import InputIcon from '@/components/inputs/input-icon.vue';
-import Input from '@/components/inputs/input.vue';
+import InputComponent from '@/components/inputs/input.vue';
 import Loading from '@/components/modals/loading.modal.vue';
 import SuccessButton from '@/components/buttons/success.button.vue';
 import DeleteUserModal from '@/components/modals/delete-user.modal.vue';
@@ -190,7 +190,7 @@ export default {
   components: {
     Navigation,
     InputIcon,
-    Input,
+    InputComponent,
     Loading,
     SuccessButton,
     DeleteUserModal,
@@ -245,7 +245,6 @@ export default {
       this.$route.params.id
     );
     this.user_data = this.$store.getters['spotlighters/getSpotlighter'];
-    console.log('user_data', this.user_data);
     this.setValueInputs();
     await this.getCountries();
 
@@ -265,7 +264,7 @@ export default {
 
         this.loading = !this.loading;
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     async getCountries() {
@@ -288,15 +287,12 @@ export default {
       }
     },
     async changeCountry() {
-      console.log('newCountry', this.new_country);
       let statesResponse = await this.$axios.get(
         `https://vsbs6hgmxf.execute-api.us-west-2.amazonaws.com/refinery/api/countries/cities?country_code=${this.new_country}`
       );
       this.states = statesResponse.data;
     },
-    changeState() {
-      console.log('newState', this.new_state);
-    },
+    changeState() {},
     setValueInputs() {
       this.new_name = this.user_data.name;
       this.new_last_name = this.user_data.last_name;
@@ -305,11 +301,6 @@ export default {
       this.new_email = this.user_data.email;
       this.new_phone = this.user_data.phone;
       this.new_account_number = this.user_data.account_number;
-      console.log(
-        this.universities.filter(
-          (uni) => uni._id == this.user_data.university_id
-        )
-      );
       let myUniversity = this.universities.filter(
         (uni) => uni._id == this.user_data.university_id
       )[0];
@@ -341,7 +332,6 @@ export default {
           password: this.new_password,
         });
 
-        // alert(updated_response.data.message);
         this.titleToast = updated_response.data.message;
         this.showSuccessToast = !this.showSuccessToast;
 
@@ -525,6 +515,7 @@ hr {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
@@ -535,7 +526,6 @@ hr {
   outline: none;
 }
 
-/* estilos para el loading predeterminado */
 .lds-dual-ring {
   display: inline-block;
   width: 50px;

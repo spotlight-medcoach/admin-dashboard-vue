@@ -264,8 +264,6 @@ export default {
       ] = `Bearer ${localStorage.getItem('user_token')}`;
       this.loading = !this.loading;
 
-      let promises = [];
-
       if (
         !localStorage.getItem('universities') ||
         !localStorage.getItem('types') ||
@@ -429,7 +427,6 @@ export default {
     },
     changeSubtopics(topic) {
       this.renderCount += 1;
-      // Cambiar datos del tema y subtema al seleccionarlo, tambien cambiar los datos de las graficas (tipo y dificultad)
       this.subtopics = topic.subtopics;
       this.topicTotalQuestions = topic.total_questions;
       this.topicSelected = topic.topic_name;
@@ -442,7 +439,6 @@ export default {
         { value: 3, label: 'Alta' },
       ];
 
-      // Preguntas por tipo y datos para la grafica
       let totalQuestionsByType = [];
       this.types.forEach((type) => {
         let totalByType = 0;
@@ -484,7 +480,6 @@ export default {
         ],
       };
 
-      // Preguntas por dificultad y datos para la grafica
       let totalQuestionsByDificulty = [];
       importances.forEach((imp) => {
         let totalByDificulty = 0;
@@ -518,10 +513,9 @@ export default {
         ],
       };
     },
-    subtopicSelected(subtopic) {},
+    subtopicSelected() {},
     createBarData() {
       this.renderCount += 1;
-      // console.log('byYear', this.casesByYear)
       let ordered = this.casesByYear.sort((a, b) => {
         return a._id.month - b._id.month;
       });

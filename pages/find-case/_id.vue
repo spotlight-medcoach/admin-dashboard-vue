@@ -207,13 +207,11 @@ export default {
   },
   methods: {
     onEditorReady(quill) {
-      // Poner datos en el quill
       quill.setContents(
         JSON.parse(JSON.stringify(this.caseDetails.content.quill.ops))
       );
     },
-    onEditorChange({ quill, html, text }) {
-      //  Obtener datos del quill
+    onEditorChange({ quill }) {
       this.contentDescription = quill.getContents();
       this.contentHtml = quill.root.innerHTML;
     },
@@ -227,7 +225,6 @@ export default {
         this.caseDetails = caseDetailsResponse.data.payload;
         this.questions = caseDetailsResponse.data.payload.questions;
 
-        // console.log(this.caseDetails.content.quill.ops)
         this.caseDetails.name_topic = this.filterTopicName(
           this.caseDetails.topic
         );
@@ -242,13 +239,11 @@ export default {
       }
     },
     filterTopicName(topic_bubble) {
-      // Obtener el nombre del tema
       let topic = this.topics.filter((top) => top.bubble_id == topic_bubble)[0]
         .name;
       return topic;
     },
     filterSubtopicName(topic_bubble, subtopic_bubble) {
-      // Obtener el nombre del subtema
       let topic = this.topics.filter((top) => top.bubble_id == topic_bubble)[0];
       let subtopic = topic.subtopics.filter(
         (sub) => sub.subtopic == subtopic_bubble
@@ -286,7 +281,6 @@ export default {
         const response = err.response;
         this.titleToast = response.data.message;
         this.showFailToast = !this.showFailToast;
-        console.log(response.data.message);
 
         setTimeout(() => {
           this.showFailToast = !this.showFailToast;
@@ -319,7 +313,6 @@ export default {
         const response = err.response;
         this.titleToast = response.data.message;
         this.showFailToast = !this.showFailToast;
-        console.log(response.data.message);
 
         setTimeout(() => {
           this.showFailToast = !this.showFailToast;
@@ -350,7 +343,6 @@ export default {
           },
         });
 
-        // alert(addQuestionResponse.data.message);
         this.titleToast = addQuestionResponse.data.message;
         this.showSuccessToast = !this.showSuccessToast;
 

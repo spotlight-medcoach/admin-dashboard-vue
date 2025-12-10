@@ -522,12 +522,6 @@ export default {
     }
 
     await this.getSimulator();
-    // this.calculeSimulatorBlocks()
-
-    // await this.getQuestionsByType();
-    // await this.getQuestionsByDificulty();
-
-    // this.createDataForType();
   },
   computed: {
     blocksSimulatorTotals() {
@@ -549,9 +543,8 @@ export default {
         JSON.parse(JSON.stringify(this.caseToView.question.content.ops))
       );
     },
-    onEditorChange({ quill, html, text }) {
+    onEditorChange({ quill, html }) {
       this.contentDescription = quill.getContents();
-      // this.contentHtml = quill.root.innerHTML;
       this.contentHtml = html;
     },
     async getSimulator() {
@@ -572,12 +565,9 @@ export default {
           (block) => block.type === 'block'
         ).length;
         this.simulatorsBlocks = this.simulatorData.blocks;
-        console.log('Blocks:', this.simulatorData.blocks);
 
         this.createDataForType();
         this.createDataForDificulty();
-
-        // console.log('simulator', this.simulatorData);
 
         this.loading = !this.loading;
       } catch (err) {
@@ -628,7 +618,6 @@ export default {
         labels: dificultyName,
         datasets: [
           {
-            // borderWidth: 1,
             backgroundColor: ['#20B000', '#FABE23', '#DB1212'],
             data: totalDificulty,
           },
@@ -650,13 +639,11 @@ export default {
 
         this.subtopicIdSelected = subtopic.subtopic_id;
         this.subtopicName = subtopic.subtopic_name;
-        // console.log('cases!', this.topics)
 
         let topic = this.topicsInfo.filter(
           (top) => top._id == this.topicIdSelected
         );
         let topic_bubble = topic[0].bubble_id;
-        // console.log('subtopics', topic.subtopics)
 
         let sub = topic[0].subtopics.filter(
           (s) => s._id == subtopic.subtopic_id
@@ -664,8 +651,6 @@ export default {
         let subtopic_bubble = sub[0].subtopic;
         this.topicBubble = topic_bubble;
         this.subtopicBubble = subtopic_bubble;
-        // console.log('bubbleT', topic_bubble)
-        // console.log('bubbleS', subtopic_bubble)
 
         let casesResponse = await this.$axios.get('/getCasesFromSimulator', {
           params: {
@@ -675,24 +660,13 @@ export default {
           },
         });
 
-        // console.log('response: ', casesResponse);
         this.casesFiltered = casesResponse.data.payload.cases;
         this.questionsSubtopicType = casesResponse.data.payload.byType;
         this.questionsSubtopicDificulty =
           casesResponse.data.payload.byDificulty;
-        // console.log('cases', this.casesFiltered)
         this.createDataSubtopicType();
         this.createDataSubtopicDificulty();
         this.setTotalQuestionsBySubtopic();
-
-        // this.casesFiltered.forEach(theCase => {
-        //     let theTopic = this.topicsInfo.filter(top => top.bubble_id == theCase.topic)
-        //     theCase.topicName = theTopic[0].name;
-
-        //     let theSubtopics = theTopic[0].subtopics;
-        //     let theSub = theSubtopics.filter(sub => sub.subtopic == theCase.subtopic)
-        //     theCase.subtopicName = theSub[0].name
-        // })
 
         this.loading = !this.loading;
       } catch (err) {
@@ -713,7 +687,6 @@ export default {
         labels: typesNames,
         datasets: [
           {
-            // borderWidth: 1,
             backgroundColor: [
               '#1CA4FC',
               '#F48FC2',
@@ -1216,10 +1189,12 @@ h4 {
   /* display: none; <- Crashes Chrome on hover */
   -webkit-appearance: none;
   margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+  appearance: none;
 }
 
 .block input[type='number'] {
   -moz-appearance: textfield; /* Firefox */
+  appearance: none;
 }
 
 .content-container {

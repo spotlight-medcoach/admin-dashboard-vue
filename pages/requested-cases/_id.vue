@@ -225,7 +225,6 @@ export default {
       name: '',
       pending_case_id: '',
       language: '',
-      // status: '',
       request_description: '',
       feedback: '',
       name_topic: '',
@@ -251,22 +250,18 @@ export default {
 
     await this.getCaseDetails();
     await this.getSimulators();
-    console.log('case', this.caseDetails);
   },
   methods: {
     onEditorReady(quill) {
-      // Poner datos en el quill
       quill.setContents(
         JSON.parse(JSON.stringify(this.caseDetails.description.content.ops))
       );
     },
-    onEditorChange({ quill, html, text }) {
-      //  Obtener datos del quill
+    onEditorChange({ quill }) {
       this.contentDescription = quill.getContents();
       this.contentHtml = quill.root.innerHTML;
     },
     async getCaseDetails() {
-      // Obtener datos del caso
       try {
         this.loading = !this.loading;
 
@@ -274,7 +269,6 @@ export default {
           params: { case_id: this.$route.params.id },
         });
 
-        // console.log('status: ', caseDetailsResponse.data.payload)
         this.caseDetails = {
           ...caseDetailsResponse.data.payload,
           case_status: caseDetailsResponse.data.payload.status,
@@ -289,11 +283,10 @@ export default {
           this.caseDetails.topic_bubble,
           this.caseDetails.subtopic_bubble
         );
-        // alert(caseDetailsResponse.data.message);
 
         this.loading = !this.loading;
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     async getSimulators() {
@@ -302,17 +295,15 @@ export default {
 
         this.simulators = simulatorsResponse.data.payload;
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     filterTopicName(topic_bubble) {
-      // Obtener el nombre del tema
       let topic = this.topics.filter((top) => top.bubble_id == topic_bubble)[0]
         .name;
       return topic;
     },
     filterSubtopicName(topic_bubble, subtopic_bubble) {
-      // Obtener el nombre del subtema
       let topic = this.topics.filter((top) => top.bubble_id == topic_bubble)[0];
       let subtopic = topic.subtopics.filter(
         (sub) => sub.subtopic == subtopic_bubble
@@ -321,9 +312,7 @@ export default {
       return subtopic[0].name;
     },
     discardCaseConfirm() {
-      // Modal para eliminar el caso
       if (this.caseDetails.case_status == 'Pending') {
-        console.log('here');
         this.titleModal = 'Eliminar caso';
         this.bodyModal =
           '¿Deseas eliminar este caso definitivamente? Esta acción no puede deshacerse.';
@@ -333,26 +322,22 @@ export default {
       this.isShowModalDiscardCase = !this.isShowModalDiscardCase;
     },
     async discardCase() {
-      // Eliminar el caso
       try {
         this.busyDiscardCase = !this.busyDiscardCase;
 
-        let deleteResponse = await this.$axios.delete('deletePendingCase', {
+        await this.$axios.delete('deletePendingCase', {
           params: { case_id: this.$route.params.id },
         });
-
-        console.log(deleteResponse);
 
         this.busyDiscardCase = !this.busyDiscardCase;
         this.isShowModalDiscardCase = !this.isShowModalDiscardCase;
         this.$router.push({ path: `/requested-cases` });
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
 
     retroAlert() {
-      // Modal de retroalimentación para el caso
       this.titleModal = 'Retroalimentación para el caso';
       this.bodyModal = 'Escribe aquí los comentarios sobre el caso';
       this.button = 'Enviar retroalimentación';
@@ -363,12 +348,10 @@ export default {
       this.isShowViewRetroModal = !this.isShowViewRetroModal;
     },
     updateFeedback() {
-      // Actualizar el feedback sin API
       this.caseDetails.feedback = this.theFeedback;
     },
 
     viewQuestion(question) {
-      // Ver detalles de preguntas
       this.questionSelected = question;
       this.questionSelected.typeDisplay = this.types.filter(
         (typ) => typ.bubble_id == question.type
@@ -377,7 +360,6 @@ export default {
     },
 
     bankConfirm() {
-      // Modal para agregar al banco
       this.titleModal = 'Autorizar y agregar al banco';
       this.bodyModal =
         'Este caso se enviará al banco de preguntas. ¿Deseas autorizarlo?';
@@ -389,23 +371,18 @@ export default {
       try {
         this.busyBank = !this.busyBank;
 
-        let bankResponse = await this.$axios.post('/addPendingToBank', {
+        await this.$axios.post('/addPendingToBank', {
           pending_case_id: this.$route.params.id,
         });
-
-        console.log(bankResponse);
-        alert(bankResponse.data.message);
-
         this.busyBank = !this.busyBank;
         this.isShowAddToBankModal = !this.isShowAddToBankModal;
         this.$router.push({ path: `/requested-cases` });
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
 
     simulatorConfirm() {
-      // Modal para agregar a simulador
       this.titleModal = 'Agregar caso al simulador';
       this.bodyModal =
         ' Selecciona el simulador al que deseas enviar este caso.';
@@ -417,19 +394,16 @@ export default {
       try {
         this.busySimulator = !this.busySimulator;
 
-        let addToSimulatorResponse = await this.$axios.post('/addToSimulator', {
+        await this.$axios.post('/addToSimulator', {
           pending_case_id: this.$route.params.id,
           simulator_id: this.simulatorSelected,
         });
-
-        alert(addToSimulatorResponse.data.message);
-        console.log(addToSimulatorResponse.data.payload);
 
         this.busySimulator = !this.busySimulator;
         this.isShowAddToSimulatorModal = !this.isShowAddToSimulatorModal;
         this.$router.push({ path: `/requested-cases` });
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     closeRejectDiscardCaseModal() {
@@ -576,7 +550,6 @@ export default {
   color: #fff;
 }
 
-/* estilos para el loading predeterminado */
 .load-container {
   display: flex;
   justify-content: center;
@@ -594,7 +567,6 @@ export default {
   display: block;
   width: 44px;
   height: 44px;
-  /* margin: 8px; */
   border-radius: 50%;
   border: 6px solid #fe9400;
   border-color: #fe9400 transparent #fe9400 transparent;

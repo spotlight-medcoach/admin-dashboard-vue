@@ -19,7 +19,7 @@
 
       <div class="inputs-container">
         <div class="case-name">
-          <Input
+          <InputComponent
             type="text"
             placeholder="Nombre del caso"
             v-model="name"
@@ -165,8 +165,7 @@
 
 <script>
 import Navigation from '@/components/navs/navigation.vue';
-import Loading from '@/components/modals/loading.modal.vue';
-import Input from '@/components/inputs/input.vue';
+import InputComponent from '@/components/inputs/input.vue';
 import AddCaseQuestion from '@/components/modals/administrators/add-case-question.modal.vue';
 import QuestionCardAdministrator from '@/components/cards/administrators/question-administrator.card.vue';
 import CaseQuestionDetailsModal from '@/components/modals/administrators/case-question-details.modal.vue';
@@ -177,8 +176,7 @@ import FailToast from '@/components/toasts/fail.toast.vue';
 export default {
   components: {
     Navigation,
-    Loading,
-    Input,
+    InputComponent,
     AddCaseQuestion,
     QuestionCardAdministrator,
     CaseQuestionDetailsModal,
@@ -264,7 +262,7 @@ export default {
     }
   },
   methods: {
-    onEditorChangeDescription({ quill, html, text }) {
+    onEditorChangeDescription({ quill, html }) {
       this.contentDescription = quill.getContents();
       this.contentHtml = html;
     },
@@ -340,7 +338,6 @@ export default {
         const response = err.response;
         this.titleToast = response.data.message;
         this.showFailToast = !this.showFailToast;
-        console.log(response.data.message);
 
         setTimeout(() => {
           this.showFailToast = !this.showFailToast;
@@ -400,7 +397,6 @@ export default {
         const response = err.response;
         this.titleToast = response.data.message;
         this.showFailToast = !this.showFailToast;
-        console.log(response.data.message);
 
         setTimeout(() => {
           this.showFailToast = !this.showFailToast;
@@ -474,7 +470,6 @@ export default {
         const response = err.response;
         this.titleToast = response.data.message;
         this.showFailToast = !this.showFailToast;
-        console.log(response.data.message);
 
         setTimeout(() => {
           this.showFailToast = !this.showFailToast;
@@ -484,7 +479,7 @@ export default {
     discardConfirm() {
       this.titleModal = 'Descartar caso';
       this.bodyModal =
-        'Al descartar este caso, se eliminará toda la información relacionada con él. Esta \ acción no se puede deshacerse. ¿Deseas descartarlo?';
+        'Al descartar este caso, se eliminará toda la información relacionada con él. Esta acción no se puede deshacerse. ¿Deseas descartarlo?';
       this.button = 'Descartar caso';
 
       this.isShowModalReject = !this.isShowModalReject;
@@ -629,6 +624,7 @@ export default {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
@@ -665,6 +661,7 @@ export default {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
@@ -701,6 +698,7 @@ export default {
   background-position: calc(100% - 10px) center;
   background-repeat: no-repeat;
   -webkit-appearance: none;
+  appearance: none;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
