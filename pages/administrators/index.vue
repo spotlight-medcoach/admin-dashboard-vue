@@ -248,7 +248,7 @@ export default {
 
         this.loading = !this.loading;
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     async selectedChange() {
@@ -258,7 +258,7 @@ export default {
       try {
         this.getAdministrators();
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
     confirmModalActive(admin_data) {
@@ -289,7 +289,7 @@ export default {
         }, 1500);
       } catch (err) {
         this.busy = !this.busy;
-        console.log(err);
+        console.error(err);
         const response = err.response;
         this.titleToast = response.data.message;
         this.showFailToast = !this.showFailToast;
@@ -330,7 +330,7 @@ export default {
         }, 1500);
       } catch (err) {
         this.busy = !this.busy;
-        console.log(err);
+        console.error(err);
         const response = err.response;
         this.titleToast = response.data.message;
         this.showFailToast = !this.showFailToast;
