@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "~/*": ["./*"]
+    },
+    "target": "ES6",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "components/**/*.vue",
+    "pages/**/*.vue",
+    "layouts/**/*.vue",
+    "plugins/**/*.js",
+    "store/**/*.js",
+    "mixins/**/*.js"
+  ],
+  "exclude": ["node_modules", ".nuxt", "dist"]
+}

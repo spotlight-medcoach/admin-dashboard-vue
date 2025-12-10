@@ -153,12 +153,12 @@
 </template>
 
 <script>
-import SpotlighterNavigation from '../../../components/navs/SpotlighterNavigation'
-import Loading from '../../../components/modals/Loading';
-import Input from '../../../components/inputs/Input';
-import InputIcon from '../../../components/inputs/InputIcon';
-import SuccessToast from '../../../components/toasts/SuccessToast';
-import FailToast from '../../../components/toasts/FailToast';
+import SpotlighterNavigation from '@/components/navs/spotlighter.nav.vue'
+import Loading from '@/components/modals/loading.modal.vue';
+import Input from '@/components/inputs/input.vue';
+import InputIcon from '@/components/inputs/input-icon.vue';
+import SuccessToast from '@/components/toasts/success.toast.vue';
+import FailToast from '@/components/toasts/fail.toast.vue';
 
 // var bcrypt = require('bcryptjs');
 

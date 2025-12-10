@@ -1,0 +1,41 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  "parser": "vue-eslint-parser",
+  "parserOptions": {
+    "parser": "@babel/eslint-parser",
+    "requireConfigFile": false,
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
+  "plugins": ["import"],
+  "extends": [
+    "plugin:vue/essential",
+    "eslint:recommended",
+    "plugin:import/recommended"
+  ],
+  "settings": {
+    "import/resolver": {
+      "alias": {
+        "map": [
+          ["@", "."],
+          ["~", "."]
+        ],
+        "extensions": [".js", ".vue", ".json"]
+      }
+    }
+  },
+  "rules": {
+    "vue/no-deprecated-dollar-scopedslots-api": "off",
+    "vue/no-deprecated-slot-attribute": "off",
+    "vue/no-deprecated-slot-scope-attribute": "off",
+    "vue/multi-word-component-names": "off",
+    "no-unused-vars": "warn",
+    "import/no-unresolved": "error",
+    "import/named": "error"
+  }
+}

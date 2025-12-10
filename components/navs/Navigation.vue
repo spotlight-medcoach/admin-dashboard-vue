@@ -63,15 +63,11 @@
 </template>
 
 <script>
-import LinkNavigation from '../LinkNavigation';
-import NavigationGroup from './NavigationGroup';
-import OptionsModal from '../modals/OptionsModal';
+import NavigationGroup from '@/components/navs/navigation-group.vue';
 
 export default {
   components: {
-    LinkNavigation,
     NavigationGroup,
-    OptionsModal,
   },
   data() {
     return {
@@ -88,17 +84,17 @@ export default {
           icon: 'fas fa-folder-open',
           items: [
             {
-              to: '/administratorsPages/findCase',
+              to: '/find-case',
               icon: 'fas fa-search',
               title: 'Búsqueda de casos',
             },
             {
-              to: '/administratorsPages/reviewNewQuestions',
+              to: '/review-new-questions',
               icon: 'fas fa-folder',
               title: 'Revisión de casos',
             },
             {
-              to: '/administratorsPages/requestedCases',
+              to: '/requested-cases',
               icon: 'fas fa-list-alt',
               title: 'Solicitud de casos',
             },
@@ -109,12 +105,12 @@ export default {
           icon: 'fas fa-chart-line',
           items: [
             {
-              to: '/administratorsPages/statistics',
+              to: '/statistics',
               icon: 'fas fa-chart-bar',
               title: 'Análisis de banco',
             },
             {
-              to: '/administratorsPages/reports',
+              to: '/reports',
               icon: 'fas fa-exclamation-circle',
               title: 'Reportes',
             },
@@ -125,17 +121,17 @@ export default {
           icon: 'fas fa-file-alt',
           items: [
             {
-              to: '/administratorsPages/simulators',
+              to: '/simulators',
               icon: 'fas fa-book-open',
               title: 'Simuladores',
             },
             {
-              to: '/administratorsPages/infographics',
+              to: '/infographics',
               icon: 'fas fa-file-image',
               title: 'Infográficos',
             },
             {
-              to: '/administratorsPages/manuals',
+              to: '/manuals',
               icon: 'fas fa-book',
               title: 'Manuales',
             },
@@ -146,12 +142,12 @@ export default {
           icon: 'fas fa-users',
           items: [
             {
-              to: '/administratorsPages/spotlighters',
+              to: '/spotlighters',
               icon: 'fas fa-user-friends',
               title: 'Spotlighters',
             },
             {
-              to: '/administratorsPages/administrators',
+              to: '/administrators',
               icon: 'fas fa-user-shield',
               title: 'Administradores',
             },
@@ -277,10 +273,7 @@ export default {
       this.menuItems.forEach((group) => {
         const hasActive = group.items.some((item) => {
           if (item.to === currentPath) return true;
-          return (
-            currentPath.startsWith(item.to) &&
-            item.to !== '/administratorsPages'
-          );
+          return currentPath.startsWith(item.to) && item.to !== '/';
         });
 
         if (hasActive && !this.expandedGroups.includes(group.group)) {
@@ -330,9 +323,9 @@ export default {
         this.userData = JSON.parse(localStorage.getItem('user'));
       }
       if (this.userData.role == 'Administrador') {
-        this.$router.push({ path: '/administratorsPages/profile' });
+        this.$router.push({ path: '/profile' });
       } else {
-        this.$router.push({ path: '/spotlightersPages/profile' });
+        this.$router.push({ path: '/profile' });
       }
     },
     logout() {

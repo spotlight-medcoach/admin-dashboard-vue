@@ -3,6 +3,7 @@ export const state = () => ({
   loadingState: true,
   currentManual: undefined,
   totalManuals: 0,
+  convertingManuals: {}, // Map of manualId -> conversion status
 });
 
 export const getters = {
@@ -10,6 +11,10 @@ export const getters = {
   loadingState: (state) => state.loadingState,
   currentManual: (state) => state.currentManual,
   totalManuals: (state) => state.totalManuals,
+  convertingManuals: (state) => state.convertingManuals,
+  getConversionStatus: (state) => (manualId) => {
+    return state.convertingManuals[manualId] || null;
+  },
 };
 
 export const mutations = {
@@ -47,6 +52,28 @@ export const mutations = {
   setCurrentManual(state, manual) {
     state.currentManual = manual;
   },
+  setConversionStatus(state, { manualId, status }) {
+    state.convertingManuals = {
+      ...state.convertingManuals,
+      [manualId]: status,
+    };
+  },
+  removeConversionStatus(state, manualId) {
+    const newConvertingManuals = { ...state.convertingManuals };
+    delete newConvertingManuals[manualId];
+    state.convertingManuals = newConvertingManuals;
+  },
+  updateConversionStatus(state, { manualId, status, progress, error }) {
+    state.convertingManuals = {
+      ...state.convertingManuals,
+      [manualId]: {
+        ...state.convertingManuals[manualId],
+        status,
+        progress,
+        error,
+      },
+    };
+  },
 };
 
 export const actions = {
@@ -56,11 +83,15 @@ export const actions = {
       .get('/manuals', { params })
       .then((response) => {
         const data = response.data;
-        const manuals = data.payload || data.data || [];
-        const total = data.length || 0;
+        const manualsInfo = data.payload ||
+          data.data || {
+            manuals: [],
+            total: 0,
+          };
+        const { manuals, total } = manualsInfo;
         commit('setManuals', manuals);
         commit('setTotalManuals', total);
-        return { manuals, total };
+        return manualsInfo;
       })
       .catch((error) => {
         console.error('Error fetching manuals:', error);
@@ -91,26 +122,28 @@ export const actions = {
   async createManual({ commit }, manualData) {
     commit('setLoadingState', true);
     try {
-      // Obtener presigned URL para subir el documento
+      // Step 1: Obtener presigned URL para subir el documento
+      const fileName = manualData.file.name;
+      const contentType =
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
       const presignedResponse = await this.$axios.post(
-        '/manuals/upload-document',
+        '/manuals/presigned-url',
         {
-          name: manualData.name,
-          topic_id: manualData.topic_id,
-          subtopic_id: manualData.subtopic_id,
-          fileExtension: 'docx',
+          fileName,
+          contentType,
         }
       );
 
-      const { fileName, uploadUrl } = presignedResponse.data;
+      const { uploadUrl, fileUrl } =
+        presignedResponse.data.data || presignedResponse.data;
 
-      // Subir archivo directamente a S3 usando la presigned URL
+      // Step 2: Subir archivo directamente a S3 usando la presigned URL
       const uploadResponse = await fetch(uploadUrl, {
         method: 'PUT',
         body: manualData.file,
         headers: {
-          'Content-Type':
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'Content-Type': contentType,
         },
       });
 
@@ -118,16 +151,32 @@ export const actions = {
         throw new Error('Failed to upload document to S3');
       }
 
-      // Crear el manual con el nombre del archivo
+      // Step 3: Crear el manual con file_url y nuevos campos
       const response = await this.$axios.post('/manuals', {
         name: manualData.name,
-        topic_id: manualData.topic_id,
-        subtopic_id: manualData.subtopic_id,
-        file_name: fileName,
+        topic: manualData.topic_id,
+        subtopic: manualData.subtopic_id,
+        reading_time: manualData.reading_time,
+        importance: manualData.importance,
+        file_url: fileUrl,
       });
 
       const data = response.data;
-      const newManual = data.payload || data.data;
+      const newManual = data.payload || data.data || data;
+      const manualId = newManual.id || newManual._id;
+
+      // Step 4: Iniciar tracking de conversión si hay file_url
+      if (fileUrl && manualId) {
+        commit('setConversionStatus', {
+          manualId,
+          status: {
+            status: 'pending',
+            progress: 0,
+            started_at: new Date().toISOString(),
+          },
+        });
+      }
+
       commit('addManual', newManual);
       return newManual;
     } catch (error) {
@@ -136,6 +185,64 @@ export const actions = {
     } finally {
       commit('setLoadingState', false);
     }
+  },
+  async checkConversionStatus({ commit }, manualId) {
+    try {
+      const response = await this.$axios.get(
+        `/manuals/${manualId}/conversion-status`
+      );
+      const status =
+        response.data.payload || response.data.data || response.data;
+
+      commit('updateConversionStatus', {
+        manualId,
+        status: status.status,
+        progress: status.progress,
+        error: status.error,
+      });
+
+      // Si la conversión está completa o falló, remover del tracking después de un tiempo
+      if (status.status === 'completed' || status.status === 'failed') {
+        // Mantener en el tracking por un tiempo para mostrar el estado final
+        setTimeout(() => {
+          commit('removeConversionStatus', manualId);
+        }, 5000); // Remover después de 5 segundos
+      }
+
+      return status;
+    } catch (error) {
+      console.error('Error checking conversion status:', error);
+      return null;
+    }
+  },
+  startConversionTracking({ commit, dispatch }, manualId) {
+    // Iniciar polling para este manual
+    const intervalId = setInterval(async () => {
+      const status = await dispatch('checkConversionStatus', manualId);
+      if (
+        status &&
+        (status.status === 'completed' || status.status === 'failed')
+      ) {
+        clearInterval(intervalId);
+      }
+    }, 3000); // Verificar cada 3 segundos
+
+    // Guardar el intervalId en el estado para poder limpiarlo después
+    commit('setConversionStatus', {
+      manualId,
+      status: {
+        status: 'pending',
+        progress: 0,
+        intervalId,
+      },
+    });
+  },
+  stopConversionTracking({ commit, state }, manualId) {
+    const conversionStatus = state.convertingManuals[manualId];
+    if (conversionStatus && conversionStatus.intervalId) {
+      clearInterval(conversionStatus.intervalId);
+    }
+    commit('removeConversionStatus', manualId);
   },
   updateManual({ commit }, { manualId, manualData }) {
     commit('setLoadingState', true);

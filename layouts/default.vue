@@ -44,7 +44,7 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import Navigation from '../components/navs/Navigation';
+import Navigation from '@/components/navs/navigation.vue';
 
 export default {
   components: {

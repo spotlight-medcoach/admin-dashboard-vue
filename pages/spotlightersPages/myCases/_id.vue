@@ -163,18 +163,18 @@
 </template>
 
 <script>
-import SpotlighterNavigation from '../../../components/navs/SpotlighterNavigation';
-import QuestionCardSpotlighter from '../../../components/cards/spotlighters/QuestionCardSpotlighter';
-import QuestionCardViewSpotlighter from '../../../components/cards/spotlighters/QuestionCardViewSpotlighter';
-import CaseDetailsCardSpotlighter from '../../../components/cards/spotlighters/CaseDetailsCardSpotlighter';
-import Loading from '../../../components/modals/Loading';
-import AddQuestionSpotlighter from '../../../components/modals/spotlighters/AddQuestionSpotlighter';
-import CaseQuestionDetailsModalSpotlighter from '../../../components/modals/spotlighters/CaseQuestionDetailsModalSpotlighter';
-import QuestionDetailsReviewModalSpotlighter from '../../../components/modals/spotlighters/QuestionDetailsReviewModalSpotlighter'
-import AcceptModal from '../../../components/modals/AcceptModal';
-import RejectModal from '../../../components/modals/RejectModal';
-import SuccessToast from '../../../components/toasts/SuccessToast';
-import FailToast from '../../../components/toasts/FailToast';
+import SpotlighterNavigation from '@/components/navs/spotlighter.nav.vue';
+import QuestionCardSpotlighter from '@/components/cards/spotlighters/question-spotlighter.card.vue';
+import QuestionCardViewSpotlighter from '@/components/cards/spotlighters/question-view-spotlighter.card.vue';
+import CaseDetailsCardSpotlighter from '@/components/cards/spotlighters/case-details-spotlighter.card.vue';
+import Loading from '@/components/modals/loading.modal.vue';
+import AddQuestionSpotlighter from '@/components/modals/spotlighters/add-question-spotlighter.modal.vue';
+import CaseQuestionDetailsModalSpotlighter from '@/components/modals/spotlighters/case-question-details-spotlighter.modal.vue';
+import QuestionDetailsReviewModalSpotlighter from '@/components/modals/spotlighters/question-details-review-spotlighter.modal.vue'
+import AcceptModal from '@/components/modals/accept.modal.vue';
+import RejectModal from '@/components/modals/reject.modal.vue';
+import SuccessToast from '@/components/toasts/success.toast.vue';
+import FailToast from '@/components/toasts/fail.toast.vue';
 
 export default {
     components: {

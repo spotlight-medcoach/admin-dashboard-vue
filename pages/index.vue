@@ -6,8 +6,8 @@
 </template>
 
 <script>
-import LoginNav from '../components/navs/LoginNav';
-import Login from '../components/Login';
+import LoginNav from '../components/navs/login.nav.vue';
+import Login from '../components/login.vue';
 
 export default {
 	components: {

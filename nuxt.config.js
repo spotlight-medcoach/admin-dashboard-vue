@@ -117,6 +117,7 @@ export default {
   plugins: [
     { src: '~/plugins/axios' },
     { src: '~/plugins/nuxt-quill-plugin', ssr: false },
+    { src: '~/plugins/vuex-persist', ssr: false },
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

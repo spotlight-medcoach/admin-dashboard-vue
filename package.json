@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS=--openssl-legacy-provider nuxt",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider nuxt build",
-    "start": "nuxt start",
-    "generate": "NODE_OPTIONS=--openssl-legacy-provider nuxt generate"
+    "dev": "set NODE_OPTIONS=--openssl-legacy-provider && nuxt",
+    "build": "set NODE_OPTIONS=--openssl-legacy-provider && nuxt build",
+    "start": "set NODE_OPTIONS=--openssl-legacy-provider && nuxt start",
+    "generate": "set NODE_OPTIONS=--openssl-legacy-provider && nuxt generate",
+    "lint": "eslint --ext .js,.vue .",
+    "lint:fix": "eslint --ext .js,.vue . --fix"
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.13.3",
@@ -24,13 +26,18 @@
     "vue-picture-input": "^2.1.6",
     "vue-quill-editor": "^3.0.6",
     "vue-server-renderer": "2.6.14",
-    "vuex": "^3.6.2"
+    "vuex": "^3.6.2",
+    "vuex-persistedstate": "^4.1.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/eslint-parser": "^7.28.5",
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
-    "eslint": "^9.39.1",
+    "eslint": "8.57.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-vue": "^9.28.0",
     "sass": "^1.32.13",
