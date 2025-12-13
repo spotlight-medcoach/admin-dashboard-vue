@@ -1,6 +1,7 @@
 export const state = () => ({
   manuals: undefined,
   loadingState: true,
+  savingState: false,
   currentManual: undefined,
   totalManuals: 0,
   convertingManuals: {}, // Map of manualId -> conversion status
@@ -9,6 +10,7 @@ export const state = () => ({
 export const getters = {
   allManuals: (state) => state.manuals,
   loadingState: (state) => state.loadingState,
+  savingState: (state) => state.savingState,
   currentManual: (state) => state.currentManual,
   totalManuals: (state) => state.totalManuals,
   convertingManuals: (state) => state.convertingManuals,
@@ -20,6 +22,9 @@ export const getters = {
 export const mutations = {
   setLoadingState(state, loadingState) {
     state.loadingState = loadingState;
+  },
+  setSavingState(state, savingState) {
+    state.savingState = savingState;
   },
   setManuals(state, manuals) {
     state.manuals = manuals;
@@ -120,7 +125,7 @@ export const actions = {
       });
   },
   async createManual({ commit }, manualData) {
-    commit('setLoadingState', true);
+    commit('setSavingState', true);
     try {
       // Step 1: Obtener presigned URL para subir el documento
       const fileName = manualData.file.name;
@@ -183,7 +188,7 @@ export const actions = {
       console.error('Error creating manual:', error);
       return error;
     } finally {
-      commit('setLoadingState', false);
+      commit('setSavingState', false);
     }
   },
   async checkConversionStatus({ commit }, manualId) {
@@ -245,7 +250,7 @@ export const actions = {
     commit('removeConversionStatus', manualId);
   },
   updateManual({ commit }, { manualId, manualData }) {
-    commit('setLoadingState', true);
+    commit('setSavingState', true);
     return this.$axios
       .put(`/manuals/${manualId}`, manualData)
       .then((response) => {
@@ -260,7 +265,7 @@ export const actions = {
         return error;
       })
       .finally(() => {
-        commit('setLoadingState', false);
+        commit('setSavingState', false);
       });
   },
   deleteManual({ commit }, manualId) {

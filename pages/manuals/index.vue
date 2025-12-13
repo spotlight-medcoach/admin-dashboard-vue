@@ -145,6 +145,20 @@ export default {
           width: 15,
         },
         {
+          key: 'updated_at',
+          label: 'Última actualización',
+          scope: 'col',
+          width: 20,
+          value: (row) =>
+            new Date(row.updated_at).toLocaleDateString('es-ES', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+        },
+        {
           key: 'actions',
           label: 'Acciones',
           scope: 'col',

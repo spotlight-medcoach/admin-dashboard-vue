@@ -50,7 +50,11 @@
             </b-form-group>
 
             <div class="form-actions">
-              <b-button type="submit" variant="primary" :disabled="isSaving">
+              <b-button
+                type="submit"
+                variant="primary"
+                :disabled="isSaving || savingState"
+              >
                 <span v-if="!isSaving">Guardar Cambios</span>
                 <span v-else> <b-spinner small></b-spinner> Guardando... </span>
               </b-button>
@@ -152,6 +156,7 @@ export default {
   computed: {
     ...mapGetters({
       loadingState: 'manuals/loadingState',
+      savingState: 'manuals/savingState',
       currentManual: 'manuals/currentManual',
       topics: 'topics/allTopics',
     }),
@@ -330,15 +335,18 @@ export default {
         });
 
         if (updated && !updated.response) {
-          this.$bvToast.toast('Manual actualizado exitosamente', {
-            title: 'Éxito',
-            variant: 'success',
-            solid: true,
+          // Usar nextTick para asegurar que el toast se muestre después de los cambios
+          this.$nextTick(() => {
+            this.$bvToast.toast('Manual actualizado exitosamente', {
+              title: '', // Sin título para diseño más limpio
+              variant: 'success',
+              solid: true,
+              toaster: 'b-toaster-top-right',
+              autoHideDelay: 10000, // 10 segundos en milisegundos
+              noAutoHide: false,
+              appendToast: true,
+            });
           });
-          // Opcional: redirigir después de un momento
-          setTimeout(() => {
-            this.$router.push({ path: '/manuals' });
-          }, 1500);
         } else {
           this.$bvToast.toast(
             updated.response?.data?.message || 'Error al actualizar el manual',

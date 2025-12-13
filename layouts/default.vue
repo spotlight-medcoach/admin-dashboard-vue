@@ -39,6 +39,8 @@
         </div>
       </template>
     </div>
+    <!-- Contenedor de toasts de BootstrapVue -->
+    <b-toaster name="b-toaster-top-right" />
   </div>
 </template>
 
@@ -391,5 +393,231 @@ html {
   background: #1a9000;
   transform: translateY(-1px);
   box-shadow: 2px 4px 6px rgba(49, 51, 100, 0.3);
+}
+
+/* Estilos mejorados para toasts de BootstrapVue */
+.b-toaster {
+  z-index: 1055;
+}
+
+.toast {
+  min-width: 300px;
+  max-width: 400px;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif;
+}
+
+/* Ocultar o mejorar el header del toast */
+.toast-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: none;
+  background: transparent;
+  font-weight: 600;
+  font-size: 14px;
+  color: #212529;
+}
+
+/* Estilos para el título del toast */
+.toast-header strong {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+}
+
+/* Botón de cerrar mejorado */
+.toast-header .close {
+  margin-left: auto;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.5);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.toast-header .close:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.toast-header .close:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Cuerpo del toast mejorado */
+.toast-body {
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #212529;
+}
+
+/* Variantes de color mejoradas */
+.toast.bg-success {
+  background: linear-gradient(135deg, #20b000 0%, #1a9000 100%) !important;
+  color: #ffffff;
+}
+
+.toast.bg-success .toast-header {
+  background: linear-gradient(135deg, #20b000 0%, #1a9000 100%) !important;
+  color: #ffffff;
+}
+
+.toast.bg-success .toast-body {
+  background: linear-gradient(135deg, #20b000 0%, #1a9000 100%) !important;
+  color: #ffffff;
+}
+
+.toast.bg-success .toast-header strong {
+  color: #ffffff;
+}
+
+.toast.bg-success .toast-header .close {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.toast.bg-success .toast-header .close:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.toast.bg-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+  color: #ffffff;
+}
+
+.toast.bg-danger .toast-header {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+  color: #ffffff;
+}
+
+.toast.bg-danger .toast-body {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+  color: #ffffff;
+}
+
+.toast.bg-danger .toast-header strong {
+  color: #ffffff;
+}
+
+.toast.bg-danger .toast-header .close {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.toast.bg-danger .toast-header .close:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.toast.bg-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+  color: #212529;
+}
+
+.toast.bg-warning .toast-header {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+  color: #212529;
+}
+
+.toast.bg-warning .toast-body {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+  color: #212529;
+}
+
+.toast.bg-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+  color: #ffffff;
+}
+
+.toast.bg-info .toast-header {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+  color: #ffffff;
+}
+
+.toast.bg-info .toast-body {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+  color: #ffffff;
+}
+
+.toast.bg-info .toast-header strong {
+  color: #ffffff;
+}
+
+/* Toast sólido (solid) - header mejorado */
+.toast.solid .toast-header {
+  padding: 12px 16px 8px 16px;
+  min-height: auto;
+  border: none;
+}
+
+/* Ocultar header si está vacío o si el strong está vacío */
+.toast.solid .toast-header:empty {
+  display: none;
+}
+
+.toast.solid .toast-header strong:empty {
+  display: none;
+}
+
+/* Si el header solo tiene el botón de cerrar (sin título), ocultarlo */
+.toast.solid .toast-header:only-child {
+  display: none;
+}
+
+.toast.solid .toast-body {
+  padding: 16px 20px;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Si el header está oculto (sin título), aumentar padding del body */
+.toast.solid .toast-header:empty ~ .toast-body {
+  padding: 18px 20px;
+}
+
+/* Workaround para toasts con Bootstrap 5 - forzar que se muestren */
+.toast:not(.show) {
+  display: block !important;
+  opacity: 1 !important;
+}
+
+.toast.showing {
+  opacity: 1 !important;
+}
+
+/* Animación de entrada suave */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast.show {
+  animation: slideInRight 0.3s ease-out;
 }
 </style>
