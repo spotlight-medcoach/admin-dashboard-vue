@@ -21,7 +21,8 @@
     />
 
     <!-- Tabla de datos -->
-    <data-table
+    <component
+      :is="advanced ? 'advanced-data-table' : 'data-table'"
       :data="data"
       :columns="columns"
       :loading="loading"
@@ -37,8 +38,13 @@
       :thead-class="theadClass"
       :tbody-class="tbodyClass"
       :row-key="rowKey"
+      :sortable="sortable"
+      :default-sort="defaultSort"
+      :fixed-columns="fixedColumns"
+      :column-widths="columnWidths"
       @page-change="handlePageChange"
       @page-results-change="handlePageResultsChange"
+      @sort-change="handleSortChange"
     >
       <!-- Pasar todos los slots scoped al DataTable -->
       <template
@@ -48,7 +54,7 @@
       >
         <slot :name="slot" v-bind="scope" />
       </template>
-    </data-table>
+    </component>
   </div>
 </template>
 
@@ -56,6 +62,7 @@
 import FilterToolbar from './filter-toolbar.vue';
 import FilterToolbarSkeleton from './filter-toolbar-skeleton.vue';
 import DataTable from './data-table.vue';
+import AdvancedDataTable from './advanced-data-table.vue';
 
 export default {
   name: 'DataTableContainer',
@@ -63,6 +70,7 @@ export default {
     FilterToolbar,
     FilterToolbarSkeleton,
     DataTable,
+    AdvancedDataTable,
   },
   props: {
     // Datos de la tabla
@@ -154,6 +162,27 @@ export default {
       type: [String, Function],
       default: '_id',
     },
+    // Modo avanzado
+    advanced: {
+      type: Boolean,
+      default: false,
+    },
+    sortable: {
+      type: Array,
+      default: () => [],
+    },
+    defaultSort: {
+      type: Object,
+      default: () => ({ key: 'created_at', order: 'desc' }),
+    },
+    fixedColumns: {
+      type: Array,
+      default: () => [],
+    },
+    columnWidths: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   emits: [
     'update:search',
@@ -164,6 +193,7 @@ export default {
     'filter-change',
     'page-change',
     'page-results-change',
+    'sort-change',
   ],
   methods: {
     handleSearchUpdate(value) {
@@ -185,6 +215,9 @@ export default {
     handlePageResultsChange(pageResults) {
       this.$emit('update:pageResults', pageResults);
       this.$emit('page-results-change', pageResults);
+    },
+    handleSortChange(sortInfo) {
+      this.$emit('sort-change', sortInfo);
     },
   },
 };

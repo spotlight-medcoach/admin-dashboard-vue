@@ -84,6 +84,16 @@ export default {
           icon: 'fas fa-folder-open',
           items: [
             {
+              to: '/diagnostic-questions',
+              icon: 'fas fa-question-circle',
+              title: 'Casos de Diagnóstico',
+            },
+            {
+              to: '/custom-questions',
+              icon: 'fas fa-clipboard-question',
+              title: 'Casos Personalizados',
+            },
+            {
               to: '/find-case',
               icon: 'fas fa-search',
               title: 'Búsqueda de casos',

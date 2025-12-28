@@ -16,8 +16,33 @@
           <i :class="buttonConfig.icon || 'fas fa-chevron-left'"></i>
         </component>
         <h1 class="page-title">{{ title }}</h1>
+        <!-- Dropdown button -->
+        <b-dropdown
+          v-if="
+            buttonConfig &&
+            !buttonConfig.isBack &&
+            buttonConfig.type === 'dropdown'
+          "
+          :text="buttonConfig.text"
+          variant="success"
+          class="page-header-dropdown"
+        >
+          <template #button-content>
+            <i v-if="buttonConfig.icon" :class="buttonConfig.icon"></i>
+            {{ buttonConfig.text }}
+          </template>
+          <b-dropdown-item
+            v-for="(item, index) in buttonConfig.items"
+            :key="index"
+            @click="handleDropdownItemClick(item.action)"
+          >
+            <i v-if="item.icon" :class="item.icon"></i>
+            {{ item.text }}
+          </b-dropdown-item>
+        </b-dropdown>
+        <!-- Regular button or link -->
         <component
-          v-if="buttonConfig && !buttonConfig.isBack"
+          v-else-if="buttonConfig && !buttonConfig.isBack"
           :is="buttonConfig.type === 'link' ? 'nuxt-link' : 'button'"
           :to="buttonConfig.type === 'link' ? buttonConfig.to : undefined"
           :class="[
@@ -137,6 +162,10 @@ export default {
         // Emitir evento para que la página lo maneje
         this.$nuxt.$emit('page-header-button-click', this.buttonConfig.action);
       }
+    },
+    handleDropdownItemClick(action) {
+      // Emitir evento para que la página lo maneje
+      this.$nuxt.$emit('page-header-button-click', action);
     },
   },
   watch: {
@@ -260,7 +289,7 @@ html {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
   transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -393,6 +422,72 @@ html {
   background: #1a9000;
   transform: translateY(-1px);
   box-shadow: 2px 4px 6px rgba(49, 51, 100, 0.3);
+}
+
+/* Dropdown button styles */
+.page-header-dropdown {
+  display: flex;
+  align-items: center;
+}
+
+.page-header-dropdown .btn {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 20px;
+  background: #20b000;
+  box-shadow: 2px 3px 4px rgba(49, 51, 100, 0.2);
+  border-radius: 10px;
+  border: none;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0.4px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-header-dropdown .btn:hover {
+  background: #1a9000;
+  transform: translateY(-1px);
+  box-shadow: 2px 4px 6px rgba(49, 51, 100, 0.3);
+}
+
+.page-header-dropdown .btn i {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+.page-header-dropdown .dropdown-menu {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: none;
+  margin-top: 8px;
+  padding: 4px 0;
+}
+
+.page-header-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  font-size: 15px;
+  color: #212529;
+  transition: all 0.2s ease;
+}
+
+.page-header-dropdown .dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #20b000;
+}
+
+.page-header-dropdown .dropdown-item i {
+  margin-right: 10px;
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
 }
 
 /* Estilos mejorados para toasts de BootstrapVue */
