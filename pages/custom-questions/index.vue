@@ -137,6 +137,7 @@ export default {
       search: '',
       topicSelected: '',
       subtopicSelected: '',
+      categorySelected: '',
       isInitialLoad: true,
       selectedCases: [],
       showDeleteModal: false,
@@ -150,11 +151,13 @@ export default {
       questions: 'customQuestions/allQuestions',
       totalQuestions: 'customQuestions/totalQuestions',
       topics: 'topics/allTopics',
+      categories: 'categories/allCategories',
     }),
     filterValues() {
       return {
         topic: this.topicSelected,
         subtopic: this.subtopicSelected,
+        category: this.categorySelected,
       };
     },
     tableFilters() {
@@ -174,6 +177,13 @@ export default {
           defaultValue: '',
           dependsOn: 'topic',
           options: this.filteredSubtopics,
+        },
+        {
+          key: 'category',
+          label: 'Categoría',
+          placeholder: 'Todas las categorías',
+          defaultValue: '',
+          options: this.uniqueCategories,
         },
       ];
     },
@@ -210,6 +220,16 @@ export default {
           scope: 'col',
           width: 20,
           value: (row) => row.subtopic_name || row.subtopic,
+        },
+        {
+          key: 'category',
+          label: 'Categoría',
+          scope: 'col',
+          width: 15,
+          value: (row) =>
+            typeof row.category === 'object'
+              ? row.category?.name
+              : row.category_name || row.category || '',
         },
         {
           key: 'questions_count',
@@ -279,6 +299,22 @@ export default {
         .map((subtopic) => ({
           id: subtopic.subtopic || subtopic._id,
           name: subtopic.name || subtopic.subtopic || subtopic._id,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    },
+    uniqueCategories() {
+      if (
+        !this.categories ||
+        !Array.isArray(this.categories) ||
+        this.categories.length === 0
+      ) {
+        return [];
+      }
+
+      return this.categories
+        .map((category) => ({
+          id: category.name,
+          name: category.name,
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
     },
@@ -383,6 +419,10 @@ export default {
           params.subtopic = this.subtopicSelected.trim();
         }
 
+        if (this.categorySelected && this.categorySelected.trim() !== '') {
+          params.category = this.categorySelected.trim();
+        }
+
         // Agregar parámetros de ordenamiento
         if (this.sortBy) {
           params.sortBy = this.sortBy;
@@ -419,6 +459,10 @@ export default {
         this.subtopicSelected = value;
         this.page = 1;
         this.getQuestions();
+      } else if (key === 'category') {
+        this.categorySelected = value;
+        this.page = 1;
+        this.getQuestions();
       }
     },
     handlePageChange(newPage) {
@@ -441,6 +485,7 @@ export default {
   async created() {
     if (process.browser) {
       await this.$store.dispatch('topics/fetchTopics');
+      await this.$store.dispatch('categories/fetchCategories');
     }
   },
   async mounted() {

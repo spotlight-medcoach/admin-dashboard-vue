@@ -11,16 +11,17 @@
           @submit.prevent="updateQuestion"
           class="question-form"
         >
-          <b-form-group label="Spotlight ID" label-for="spotlight_id">
-            <b-form-input
-              id="spotlight_id"
-              v-model="form.spotlight_id"
-              placeholder="Ej: 1.0001"
-              required
-            />
-          </b-form-group>
-
           <div class="row">
+            <div class="col-6">
+              <b-form-group label="Spotlight ID" label-for="spotlight_id">
+                <b-form-input
+                  id="spotlight_id"
+                  v-model="form.spotlight_id"
+                  placeholder="Ej: 1.0001"
+                  required
+                />
+              </b-form-group>
+            </div>
             <div class="col-6">
               <b-form-group label="Examen" label-for="test_number">
                 <b-form-select
@@ -31,6 +32,9 @@
                 />
               </b-form-group>
             </div>
+          </div>
+
+          <div class="row">
             <div class="col-6">
               <b-form-group label="Dificultad" label-for="difficulty">
                 <b-form-select
@@ -41,11 +45,8 @@
                 />
               </b-form-group>
             </div>
-          </div>
-
-          <div class="row">
             <div class="col-6">
-              <b-form-group label="Tema" label-for="topic">
+              <b-form-group label="Bloque" label-for="topic">
                 <b-form-select
                   id="topic"
                   v-model="form.topic"
@@ -54,6 +55,9 @@
                 />
               </b-form-group>
             </div>
+          </div>
+
+          <div class="row">
             <div class="col-6">
               <b-form-group label="Subtema" label-for="subtopic">
                 <b-form-select
@@ -65,22 +69,44 @@
                 />
               </b-form-group>
             </div>
+            <div class="col-6">
+              <b-form-group label="Categoría" label-for="category">
+                <b-form-select
+                  id="category"
+                  v-model="form.category"
+                  :options="categoryOptions"
+                />
+              </b-form-group>
+            </div>
           </div>
 
-          <b-form-group label="Manual" label-for="manual">
+          <div class="row">
+            <div class="col-6">
+              <b-form-group label="Tipo de pregunta" label-for="type">
+                <b-form-input
+                  id="type"
+                  v-model="form.type"
+                  placeholder="Ej: Diagnóstico"
+                />
+              </b-form-group>
+            </div>
+            <div class="col-6">
+              <b-form-group label="Idioma" label-for="language">
+                <b-form-select
+                  id="language"
+                  v-model="form.language"
+                  :options="languageOptions"
+                  required
+                />
+              </b-form-group>
+            </div>
+          </div>
+
+          <b-form-group label="Nombre" label-for="manual">
             <b-form-input
               id="manual"
               v-model="form.manual"
               placeholder="Nombre del manual"
-              required
-            />
-          </b-form-group>
-
-          <b-form-group label="Idioma" label-for="language">
-            <b-form-input
-              id="language"
-              v-model="form.language"
-              placeholder="Español"
               required
             />
           </b-form-group>
@@ -182,6 +208,8 @@ export default {
         test_number: 1,
         topic: null,
         subtopic: null,
+        category: '',
+        type: '',
         manual: '',
         difficulty: 'Baja',
         language: 'Español',
@@ -229,6 +257,10 @@ export default {
         { text: 'Media', value: 'Media' },
         { text: 'Alta', value: 'Alta' },
       ],
+      languageOptions: [
+        { text: 'Español', value: 'Español' },
+        { text: 'Inglés', value: 'Inglés' },
+      ],
     };
   },
   computed: {
@@ -237,7 +269,26 @@ export default {
       savingState: 'diagnosticQuestions/savingState',
       currentQuestion: 'diagnosticQuestions/currentQuestion',
       topics: 'topics/allTopics',
+      categories: 'categories/allCategories',
     }),
+    categoryOptions() {
+      const initial = [
+        { text: '-- Selecciona una categoría', value: '', disabled: true },
+      ];
+      if (
+        !this.categories ||
+        !Array.isArray(this.categories) ||
+        this.categories.length === 0
+      ) {
+        return initial;
+      }
+      return initial.concat(
+        this.categories.map((category) => ({
+          text: category.name,
+          value: category.name,
+        }))
+      );
+    },
     tinymceApiKey() {
       return process.env.TINYMCE_API_KEY || '';
     },
@@ -255,7 +306,7 @@ export default {
       return initial.concat(
         this.topics.map((topic) => ({
           text: topic.name,
-          value: topic.bubble_id,
+          value: topic._id,
         }))
       );
     },
@@ -267,7 +318,7 @@ export default {
         return initial;
       }
       const selectedTopic = this.topics.find(
-        (topic) => topic.bubble_id === this.form.topic
+        (topic) => topic._id === this.form.topic
       );
       if (!selectedTopic || !selectedTopic.subtopics) {
         return initial;
@@ -275,7 +326,7 @@ export default {
       return initial.concat(
         selectedTopic.subtopics.map((subtopic) => ({
           text: subtopic.name,
-          value: subtopic.subtopic || subtopic._id,
+          value: subtopic._id,
         }))
       );
     },
@@ -283,6 +334,7 @@ export default {
   async created() {
     if (process.browser) {
       await this.$store.dispatch('topics/fetchTopics');
+      await this.$store.dispatch('categories/fetchCategories');
     }
   },
   async mounted() {
@@ -329,8 +381,21 @@ export default {
       if (this.currentQuestion && this.topics && this.topics.length > 0) {
         this.form.spotlight_id = this.currentQuestion.spotlight_id || '';
         this.form.test_number = this.currentQuestion.test_number || 1;
-        this.form.topic = this.currentQuestion.topic || null;
-        this.form.subtopic = this.currentQuestion.subtopic || null;
+        // Handle both object format {_id, name} and string format for backwards compatibility
+        this.form.topic =
+          typeof this.currentQuestion.topic === 'object'
+            ? this.currentQuestion.topic?._id
+            : this.currentQuestion.topic || null;
+        this.form.subtopic =
+          typeof this.currentQuestion.subtopic === 'object'
+            ? this.currentQuestion.subtopic?._id
+            : this.currentQuestion.subtopic || null;
+        // Category uses name as value in the selector
+        this.form.category =
+          typeof this.currentQuestion.category === 'object'
+            ? this.currentQuestion.category?.name
+            : this.currentQuestion.category || '';
+        this.form.type = this.currentQuestion.type || '';
         this.form.manual = this.currentQuestion.manual || '';
         this.form.difficulty = this.currentQuestion.difficulty || 'Baja';
         this.form.language = this.currentQuestion.language || 'Español';
@@ -391,6 +456,8 @@ export default {
           test_number: this.form.test_number,
           topic: this.form.topic,
           subtopic: this.form.subtopic,
+          category: this.form.category || undefined,
+          type: this.form.type || undefined,
           manual: this.form.manual,
           difficulty: this.form.difficulty,
           language: this.form.language,

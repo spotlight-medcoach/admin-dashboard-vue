@@ -53,7 +53,29 @@
             </div>
           </div>
 
-          <b-form-group label="Manual" label-for="manual">
+          <div class="row">
+            <div class="col-6">
+              <b-form-group label="Categoría" label-for="category">
+                <b-form-select
+                  id="category"
+                  v-model="form.category"
+                  :options="categoryOptions"
+                />
+              </b-form-group>
+            </div>
+            <div class="col-6">
+              <b-form-group label="Manual" label-for="manual">
+                <b-form-input
+                  id="manual"
+                  v-model="form.manual"
+                  placeholder="Nombre del manual"
+                  required
+                />
+              </b-form-group>
+            </div>
+          </div>
+
+          <b-form-group label="Idioma" label-for="language">
             <b-form-input
               id="manual"
               v-model="form.manual"
@@ -225,6 +247,7 @@ export default {
         name: '',
         topic: null,
         subtopic: null,
+        category: '',
         manual: '',
         language: 'Español',
         case_content: '',
@@ -279,7 +302,26 @@ export default {
       currentQuestion: 'customQuestions/currentQuestion',
       currentCase: 'customQuestions/currentCase',
       topics: 'topics/allTopics',
+      categories: 'categories/allCategories',
     }),
+    categoryOptions() {
+      const initial = [
+        { text: '-- Selecciona una categoría', value: '', disabled: true },
+      ];
+      if (
+        !this.categories ||
+        !Array.isArray(this.categories) ||
+        this.categories.length === 0
+      ) {
+        return initial;
+      }
+      return initial.concat(
+        this.categories.map((category) => ({
+          text: category.name,
+          value: category.name,
+        }))
+      );
+    },
     tinymceApiKey() {
       return process.env.TINYMCE_API_KEY || '';
     },
@@ -325,6 +367,7 @@ export default {
   async created() {
     if (process.browser) {
       await this.$store.dispatch('topics/fetchTopics');
+      await this.$store.dispatch('categories/fetchCategories');
     }
   },
   async mounted() {
@@ -372,8 +415,20 @@ export default {
       if (caseDoc && this.topics && this.topics.length > 0) {
         this.form.spotlight_id = caseDoc.spotlight_id || '';
         this.form.name = caseDoc.name || '';
-        this.form.topic = caseDoc.topic || null;
-        this.form.subtopic = caseDoc.subtopic || null;
+        // Handle both object format {_id, name} and string format for backwards compatibility
+        this.form.topic =
+          typeof caseDoc.topic === 'object'
+            ? caseDoc.topic?._id
+            : caseDoc.topic || null;
+        this.form.subtopic =
+          typeof caseDoc.subtopic === 'object'
+            ? caseDoc.subtopic?._id
+            : caseDoc.subtopic || null;
+        // Category uses name as value in the selector
+        this.form.category =
+          typeof caseDoc.category === 'object'
+            ? caseDoc.category?.name
+            : caseDoc.category || '';
         this.form.manual = caseDoc.manual || '';
         this.form.language = caseDoc.language || 'Español';
         this.form.case_content = caseDoc.content?.html || '';
@@ -472,6 +527,7 @@ export default {
           },
           topic: this.form.topic,
           subtopic: this.form.subtopic,
+          category: this.form.category || undefined,
           manual: this.form.manual,
           language: this.form.language,
           questions: this.form.questions.map((q) => {

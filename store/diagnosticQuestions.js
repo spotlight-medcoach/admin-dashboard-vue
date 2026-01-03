@@ -63,6 +63,13 @@ export const actions = {
       .get('/diagnostic-questions', { params })
       .then((response) => {
         const data = response.data;
+        // Handle paginated response: { success: true, data: [...], pagination: {...} }
+        if (data.pagination && Array.isArray(data.data)) {
+          commit('setQuestions', data.data);
+          commit('setTotalQuestions', data.pagination.total);
+          return { questions: data.data, total: data.pagination.total };
+        }
+        // Fallback to old format: { payload: { questions, total } } or { data: { questions, total } }
         const questionsInfo = data.payload ||
           data.data || {
             questions: [],

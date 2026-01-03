@@ -135,19 +135,35 @@ export default {
           key: 'topic',
           label: 'Tema',
           scope: 'col',
-          width: 20,
+          width: 15,
+          value: (row) =>
+            typeof row.topic === 'object' ? row.topic?.name : row.topic || '',
         },
         {
           key: 'subtopic',
           label: 'Subtema',
           scope: 'col',
-          width: 20,
+          width: 15,
+          value: (row) =>
+            typeof row.subtopic === 'object'
+              ? row.subtopic?.name
+              : row.subtopic || '',
+        },
+        {
+          key: 'category',
+          label: 'Categoría',
+          scope: 'col',
+          width: 15,
+          value: (row) =>
+            typeof row.category === 'object'
+              ? row.category?.name
+              : row.category || '',
         },
         {
           key: 'difficulty',
           label: 'Dificultad',
           scope: 'col',
-          width: 15,
+          width: 10,
         },
         {
           key: 'actions',
@@ -168,8 +184,8 @@ export default {
 
       return this.topics
         .map((topic) => ({
-          id: topic.bubble_id,
-          name: topic.name || topic.bubble_id,
+          id: topic._id,
+          name: topic.name || topic._id,
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
     },
@@ -179,7 +195,7 @@ export default {
       }
 
       const selectedTopic = this.topics.find(
-        (topic) => topic.bubble_id === this.topicSelected
+        (topic) => topic._id === this.topicSelected
       );
 
       if (
@@ -192,8 +208,8 @@ export default {
 
       return selectedTopic.subtopics
         .map((subtopic) => ({
-          id: subtopic.subtopic || subtopic._id,
-          name: subtopic.name || subtopic.subtopic || subtopic._id,
+          id: subtopic._id,
+          name: subtopic.name || subtopic._id,
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
     },

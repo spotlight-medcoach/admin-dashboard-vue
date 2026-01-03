@@ -37,7 +37,7 @@
 
           <div class="row">
             <div class="col-6">
-              <b-form-group label="Tema" label-for="topic">
+              <b-form-group label="Bloque" label-for="topic">
                 <b-form-select
                   id="topic"
                   v-model="form.topic"
@@ -59,7 +59,28 @@
             </div>
           </div>
 
-          <b-form-group label="Manual" label-for="manual">
+          <div class="row">
+            <div class="col-6">
+              <b-form-group label="Categoría" label-for="category">
+                <b-form-select
+                  id="category"
+                  v-model="form.category"
+                  :options="categoryOptions"
+                />
+              </b-form-group>
+            </div>
+            <div class="col-6">
+              <b-form-group label="Tipo de pregunta" label-for="type">
+                <b-form-input
+                  id="type"
+                  v-model="form.type"
+                  placeholder="Ej: Diagnóstico"
+                />
+              </b-form-group>
+            </div>
+          </div>
+
+          <b-form-group label="Nombre" label-for="manual">
             <b-form-input
               id="manual"
               v-model="form.manual"
@@ -69,10 +90,10 @@
           </b-form-group>
 
           <b-form-group label="Idioma" label-for="language">
-            <b-form-input
+            <b-form-select
               id="language"
               v-model="form.language"
-              placeholder="Español"
+              :options="languageOptions"
               required
             />
           </b-form-group>
@@ -172,6 +193,8 @@ export default {
         test_number: 1,
         topic: null,
         subtopic: null,
+        category: '',
+        type: '',
         manual: '',
         difficulty: 'Baja',
         language: 'Español',
@@ -222,13 +245,36 @@ export default {
         { text: 'Media', value: 'Media' },
         { text: 'Alta', value: 'Alta' },
       ],
+      languageOptions: [
+        { text: 'Español', value: 'Español' },
+        { text: 'Inglés', value: 'Inglés' },
+      ],
     };
   },
   computed: {
     ...mapGetters({
       savingState: 'diagnosticQuestions/savingState',
       topics: 'topics/allTopics',
+      categories: 'categories/allCategories',
     }),
+    categoryOptions() {
+      const initial = [
+        { text: '-- Selecciona una categoría', value: '', disabled: true },
+      ];
+      if (
+        !this.categories ||
+        !Array.isArray(this.categories) ||
+        this.categories.length === 0
+      ) {
+        return initial;
+      }
+      return initial.concat(
+        this.categories.map((category) => ({
+          text: category.name,
+          value: category.name,
+        }))
+      );
+    },
     tinymceApiKey() {
       return process.env.TINYMCE_API_KEY || '';
     },
@@ -246,7 +292,7 @@ export default {
       return initial.concat(
         this.topics.map((topic) => ({
           text: topic.name,
-          value: topic.bubble_id,
+          value: topic._id,
         }))
       );
     },
@@ -258,7 +304,7 @@ export default {
         return initial;
       }
       const selectedTopic = this.topics.find(
-        (topic) => topic.bubble_id === this.form.topic
+        (topic) => topic._id === this.form.topic
       );
       if (!selectedTopic || !selectedTopic.subtopics) {
         return initial;
@@ -266,7 +312,7 @@ export default {
       return initial.concat(
         selectedTopic.subtopics.map((subtopic) => ({
           text: subtopic.name,
-          value: subtopic.subtopic || subtopic._id,
+          value: subtopic._id,
         }))
       );
     },
@@ -274,6 +320,7 @@ export default {
   async created() {
     if (process.browser) {
       await this.$store.dispatch('topics/fetchTopics');
+      await this.$store.dispatch('categories/fetchCategories');
     }
   },
   mounted() {
@@ -350,6 +397,8 @@ export default {
           test_number: this.form.test_number,
           topic: this.form.topic,
           subtopic: this.form.subtopic,
+          category: this.form.category || undefined,
+          type: this.form.type || undefined,
           manual: this.form.manual,
           difficulty: this.form.difficulty,
           language: this.form.language,
