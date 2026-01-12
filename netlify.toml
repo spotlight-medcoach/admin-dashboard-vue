@@ -1,0 +1,12 @@
+[build]
+  command = "npm run generate"
+  publish = "dist"
+
+# Redirect all routes to 200.html for SPA routing
+# This allows Netlify to serve the app for all routes, including dynamic ones like /manuals/:id
+# Nuxt generates 200.html for SPA mode, which Netlify uses automatically
+[[redirects]]
+  from = "/*"
+  to = "/200.html"
+  status = 200
+

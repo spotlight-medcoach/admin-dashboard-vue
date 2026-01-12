@@ -1,0 +1,5 @@
+# Redirect all routes to 200.html for SPA routing
+# This allows Netlify to serve the app for all routes, including dynamic ones like /manuals/:id
+# Nuxt generates 200.html for SPA mode, which Netlify uses automatically
+/*    /200.html   200
+
