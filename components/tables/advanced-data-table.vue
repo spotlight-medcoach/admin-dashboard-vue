@@ -10,7 +10,11 @@
     <template v-else>
       <div class="table-scroll-container">
         <div class="table-container">
-          <table class="table table-bordered" ref="tableRef">
+          <table
+            class="table table-bordered"
+            ref="tableRef"
+            :style="{ minWidth: totalTableWidth }"
+          >
             <thead :class="theadClass">
               <tr>
                 <th
@@ -36,11 +40,7 @@
                               : 'fas fa-sort-down'
                           "
                         ></i>
-                        <i
-                          v-else
-                          class="fas fa-sort"
-                          style="opacity: 0.3"
-                        ></i>
+                        <i v-else class="fas fa-sort" style="opacity: 0.3"></i>
                       </span>
                     </span>
                     <span v-else>{{ column.label }}</span>
@@ -283,6 +283,26 @@ export default {
     isNextDisabled() {
       return this.currentPage * this.localPageResults >= this.total;
     },
+    totalTableWidth() {
+      let total = 0;
+      this.columns.forEach((column) => {
+        const width = this.getColumnWidth(column);
+        if (width) {
+          if (typeof width === 'number') {
+            // Si es un número, asumimos que son píxeles
+            total += width;
+          } else if (typeof width === 'string') {
+            // Si es string, intentar extraer el número de píxeles
+            const match = width.match(/(\d+)px/);
+            if (match) {
+              total += parseInt(match[1], 10);
+            }
+          }
+        }
+      });
+      // Si hay columnas con ancho, usar el total, sino 100%
+      return total > 0 ? `${total}px` : '100%';
+    },
   },
   watch: {
     pageResults(newVal) {
@@ -336,7 +356,8 @@ export default {
     },
     getFixedCellClass(column) {
       if (this.fixedColumns.includes(column.key)) {
-        const isFirst = this.columns.findIndex((c) => c.key === column.key) === 0;
+        const isFirst =
+          this.columns.findIndex((c) => c.key === column.key) === 0;
         const isLast =
           this.columns.findIndex((c) => c.key === column.key) ===
           this.columns.length - 1;
@@ -367,13 +388,20 @@ export default {
       const styles = {};
       const width = this.getColumnWidth(column);
       if (width) {
-        styles.width = typeof width === 'number' ? `${width}%` : width;
-        styles.minWidth = styles.width;
+        if (typeof width === 'number') {
+          // Si es un número, asumimos que son píxeles
+          styles.width = `${width}px`;
+          styles.minWidth = `${width}px`;
+        } else {
+          // Si es string, puede ser '200px', '20%', etc.
+          styles.width = width;
+          styles.minWidth = width;
+        }
         styles.maxWidth = styles.width;
       }
       if (this.fixedColumns.includes(column.key)) {
         styles.position = 'sticky';
-        styles.zIndex = 10;
+        styles.zIndex = 20;
         if (colIndex === 0) {
           styles.left = 0;
         } else if (colIndex === this.columns.length - 1) {
@@ -386,13 +414,20 @@ export default {
       const styles = {};
       const width = this.getColumnWidth(column);
       if (width) {
-        styles.width = typeof width === 'number' ? `${width}%` : width;
-        styles.minWidth = styles.width;
+        if (typeof width === 'number') {
+          // Si es un número, asumimos que son píxeles
+          styles.width = `${width}px`;
+          styles.minWidth = `${width}px`;
+        } else {
+          // Si es string, puede ser '200px', '20%', etc.
+          styles.width = width;
+          styles.minWidth = width;
+        }
         styles.maxWidth = styles.width;
       }
       if (this.fixedColumns.includes(column.key)) {
         styles.position = 'sticky';
-        styles.zIndex = 5;
+        styles.zIndex = 15;
         if (colIndex === 0) {
           styles.left = 0;
         } else if (colIndex === this.columns.length - 1) {
@@ -523,15 +558,21 @@ export default {
     overflow-y: visible;
     border: 1px solid #dee2e6;
     position: relative;
+    -webkit-overflow-scrolling: touch;
+    // Forzar scroll horizontal cuando el contenido sea más ancho
+    display: block;
+    width: 100%;
   }
 
   .table-container {
     min-width: 100%;
+    width: 100%;
+    display: table;
   }
 
   .table {
     table-layout: fixed;
-    width: 100%;
+    width: auto;
     margin-bottom: 0;
     border-collapse: separate;
     border-spacing: 0;
@@ -569,13 +610,19 @@ export default {
   }
 
   .thead-admin th.fixed-left {
-    z-index: 15;
+    z-index: 25;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   }
 
   .thead-admin th.fixed-right {
-    z-index: 15;
+    z-index: 25;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  }
+
+  // Asegurar que las celdas con dropdowns abiertos tengan z-index alto
+  td:has(.dropdown.show) {
+    z-index: 100 !important;
+    position: relative;
   }
 
   .header-content {
@@ -648,15 +695,21 @@ export default {
   }
 
   td.fixed-left {
-    z-index: 10;
+    z-index: 20;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
     background: #fff;
   }
 
   td.fixed-right {
-    z-index: 10;
+    z-index: 20;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
     background: #fff;
+  }
+
+  // Asegurar que las celdas con dropdowns abiertos tengan z-index alto
+  td:has(.dropdown.show) {
+    z-index: 100 !important;
+    position: relative;
   }
 
   .tbody tr:last-child td:first-child {
@@ -755,4 +808,3 @@ export default {
   }
 }
 </style>
-

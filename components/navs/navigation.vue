@@ -161,6 +161,11 @@ export default {
               icon: 'fas fa-user-shield',
               title: 'Administradores',
             },
+            {
+              to: '/students',
+              icon: 'fas fa-user-graduate',
+              title: 'Estudiantes',
+            },
           ],
         },
       ],
