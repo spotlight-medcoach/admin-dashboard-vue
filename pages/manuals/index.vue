@@ -28,19 +28,36 @@
             <template #cell-conversion_status="{ row }">
               <conversion-status
                 :status="getConversionStatusForManual(row._id)"
+                :image-regeneration-status="
+                  getImageRegenerationStatusForManual(row._id)
+                "
               />
             </template>
             <template #cell-actions="{ row }">
               <div class="td-actions">
-                <button class="btn edit" @click="editManual(row._id)">
-                  <i class="fas fa-pencil-alt"></i> Editar
-                </button>
-                <button
-                  class="btn delete"
-                  @click="deleteManualConfirm(row._id)"
+                <b-dropdown
+                  variant="link"
+                  toggle-class="text-decoration-none"
+                  no-caret
+                  right
                 >
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
+                  <template #button-content>
+                    <i class="fas fa-ellipsis-v"></i>
+                  </template>
+                  <b-dropdown-item @click="editManual(row._id)">
+                    <i class="fas fa-pencil-alt"></i> Editar
+                  </b-dropdown-item>
+                  <b-dropdown-item @click="regenerateImages(row)">
+                    <i class="fas fa-images"></i> Regenerar imágenes
+                  </b-dropdown-item>
+                  <b-dropdown-divider></b-dropdown-divider>
+                  <b-dropdown-item
+                    @click="deleteManualConfirm(row._id)"
+                    class="text-danger"
+                  >
+                    <i class="fas fa-trash"></i> Eliminar
+                  </b-dropdown-item>
+                </b-dropdown>
               </div>
             </template>
           </data-table-container>
@@ -81,6 +98,8 @@ export default {
       topicSelected: '',
       subtopicSelected: '',
       isInitialLoad: true,
+      regeneratingImages: {}, // Map of manualId -> boolean
+      imageRegenerationPollingIntervals: {}, // Map of manualId -> intervalId
     };
   },
   computed: {
@@ -225,6 +244,160 @@ export default {
       this.selectedManualId = manualId;
       this.$bvModal.show('manual-delete-modal');
     },
+    async regenerateImages(manual) {
+      if (!manual.file_url) {
+        this.$bvToast.toast('El manual no tiene un archivo asociado', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+        return;
+      }
+
+      // Verificar si ya está regenerando
+      if (this.regeneratingImages[manual._id]) {
+        this.$bvToast.toast('La regeneración de imágenes ya está en proceso', {
+          title: 'Info',
+          variant: 'info',
+          solid: true,
+        });
+        return;
+      }
+
+      try {
+        this.$set(this.regeneratingImages, manual._id, true);
+
+        // Enviar petición al backend
+        await this.$axios.post(`/manuals/${manual._id}/regenerate-images`);
+
+        // Actualizar el estado en la lista inmediatamente
+        this.updateManualImageRegenerationStatus(manual._id, {
+          status: 'pending',
+        });
+
+        this.$bvToast.toast('Regeneración de imágenes iniciada', {
+          title: 'Éxito',
+          variant: 'success',
+          solid: true,
+        });
+
+        // Iniciar polling para verificar el estado
+        this.startImageRegenerationPolling(manual._id);
+      } catch (error) {
+        console.error('Error regenerating images:', error);
+        this.$bvToast.toast('Error al iniciar la regeneración de imágenes', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+        this.$set(this.regeneratingImages, manual._id, false);
+      }
+    },
+    startImageRegenerationPolling(manualId) {
+      // Si ya hay un polling activo, no crear otro
+      if (this.imageRegenerationPollingIntervals[manualId]) {
+        return;
+      }
+
+      // Polling cada 5 segundos para verificar el estado
+      const intervalId = setInterval(async () => {
+        try {
+          // Verificar el estado de regeneración de imágenes
+          const response = await this.$axios.get(
+            `/manuals/${manualId}/image-regeneration-status`
+          );
+          const status =
+            response.data.payload || response.data.data || response.data;
+
+          // Si el estado es null, significa que no hay regeneración en curso
+          if (!status.status) {
+            this.stopImageRegenerationPolling(manualId);
+            this.$set(this.regeneratingImages, manualId, false);
+            return;
+          }
+
+          // Si la regeneración está completa
+          if (status.status === 'completed') {
+            this.stopImageRegenerationPolling(manualId);
+            this.$set(this.regeneratingImages, manualId, false);
+
+            // Actualizar el estado en la lista de manuales
+            this.updateManualImageRegenerationStatus(manualId, status);
+
+            this.$bvToast.toast('Regeneración de imágenes completada', {
+              title: 'Éxito',
+              variant: 'success',
+              solid: true,
+            });
+
+            // Recargar manuales después de un breve delay
+            setTimeout(() => {
+              this.getManuals();
+            }, 1000);
+          } else if (status.status === 'failed') {
+            this.stopImageRegenerationPolling(manualId);
+            this.$set(this.regeneratingImages, manualId, false);
+
+            // Actualizar el estado en la lista de manuales
+            this.updateManualImageRegenerationStatus(manualId, status);
+
+            this.$bvToast.toast(
+              `Error en la regeneración: ${
+                status.error || 'Error desconocido'
+              }`,
+              {
+                title: 'Error',
+                variant: 'danger',
+                solid: true,
+              }
+            );
+          } else if (
+            status.status === 'processing' ||
+            status.status === 'pending'
+          ) {
+            // Actualizar el estado mientras está procesando
+            this.updateManualImageRegenerationStatus(manualId, status);
+          }
+        } catch (error) {
+          console.error('Error checking image regeneration status:', error);
+          // Continuar polling en caso de error temporal
+        }
+      }, 5000); // Verificar cada 5 segundos
+
+      this.imageRegenerationPollingIntervals[manualId] = intervalId;
+
+      // Limitar el tiempo máximo de polling a 5 minutos
+      setTimeout(() => {
+        if (this.imageRegenerationPollingIntervals[manualId]) {
+          this.stopImageRegenerationPolling(manualId);
+          this.$set(this.regeneratingImages, manualId, false);
+          this.$bvToast.toast(
+            'El tiempo de espera para la regeneración de imágenes ha expirado',
+            {
+              title: 'Advertencia',
+              variant: 'warning',
+              solid: true,
+            }
+          );
+        }
+      }, 300000); // 5 minutos
+    },
+    stopImageRegenerationPolling(manualId) {
+      if (this.imageRegenerationPollingIntervals[manualId]) {
+        clearInterval(this.imageRegenerationPollingIntervals[manualId]);
+        delete this.imageRegenerationPollingIntervals[manualId];
+      }
+    },
+    updateManualImageRegenerationStatus(manualId, status) {
+      // Actualizar el estado de regeneración de imágenes en la lista de manuales
+      const manual = this.manuals?.find((m) => m._id === manualId);
+      if (manual) {
+        this.$set(manual, 'image_regeneration_status', status.status);
+        if (status.error) {
+          this.$set(manual, 'image_regeneration_error', status.error);
+        }
+      }
+    },
     async handleDelete() {
       await this.$store.dispatch('manuals/deleteManual', this.selectedManualId);
       this.selectedManualId = null;
@@ -239,6 +412,17 @@ export default {
     },
     getConversionStatusForManual(manualId) {
       return this.$store.getters['manuals/getConversionStatus'](manualId);
+    },
+    getImageRegenerationStatusForManual(manualId) {
+      // Obtener el estado de regeneración de imágenes desde el manual en la lista
+      const manual = this.manuals?.find((m) => m._id === manualId);
+      if (!manual || !manual.image_regeneration_status) {
+        return null;
+      }
+      return {
+        status: manual.image_regeneration_status,
+        error: manual.image_regeneration_error,
+      };
     },
     async getManuals() {
       try {
@@ -332,6 +516,10 @@ export default {
     this.$store.dispatch('pageHeader/clearHeader');
     // Remover listener
     this.$nuxt.$off('page-header-button-click', this.handleHeaderButtonClick);
+    // Limpiar todos los intervals de polling
+    Object.keys(this.imageRegenerationPollingIntervals).forEach((manualId) => {
+      this.stopImageRegenerationPolling(manualId);
+    });
   },
 };
 </script>
@@ -408,44 +596,81 @@ export default {
 
   .td-actions {
     display: flex;
-    gap: 12px;
     align-items: center;
     justify-content: center;
     white-space: nowrap;
-    border: none !important;
-    box-shadow: none !important;
+    position: relative;
+    z-index: 1;
   }
 
-  .td-actions .btn {
+  .td-actions ::v-deep .btn-link {
+    color: #6c757d;
+    padding: 4px 8px;
     border: none;
     background: transparent;
-    cursor: pointer;
-    padding: 6px 10px;
-    border-radius: 5px;
-    margin: 0;
-    flex-shrink: 0;
-    font-size: 12px;
-    transition: all 0.2s ease;
+    font-size: 16px;
+    position: relative;
+    z-index: 1;
+
+    &:hover {
+      color: #495057;
+    }
+
+    &:focus {
+      box-shadow: none;
+    }
+  }
+
+  .td-actions ::v-deep .dropdown {
+    position: relative;
+    z-index: 100;
+  }
+
+  .td-actions ::v-deep .dropdown-menu {
+    min-width: 220px;
+    padding: 8px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    z-index: 9999 !important;
+    position: absolute !important;
+    margin-top: 0 !important;
+  }
+
+  .td-actions ::v-deep .show > .dropdown-menu {
+    display: block !important;
+    z-index: 9999 !important;
+  }
+
+  .td-actions ::v-deep .dropdown.show {
+    z-index: 100;
+    position: relative;
+  }
+
+  .td-actions ::v-deep .dropdown-item {
+    padding: 8px 16px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #212529;
 
     i {
-      margin-right: 5px;
+      width: 16px;
+      text-align: center;
     }
 
-    &.edit {
-      color: #1ca4fc;
-      background: #e9f6ff;
-
-      &:hover {
-        background: #d4e8f5;
-      }
+    &:hover {
+      background-color: #f8f9fa;
+      color: #212529;
     }
 
-    &.delete {
-      color: #db1212;
-      background: #fee;
+    &.text-danger {
+      color: #dc3545 !important;
 
       &:hover {
-        background: #fdd;
+        background-color: #fff5f5;
+        color: #dc3545 !important;
       }
     }
   }
