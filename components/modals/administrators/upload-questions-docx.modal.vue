@@ -125,7 +125,12 @@
             </div>
             <div
               class="question-preview"
-              v-html="truncateHtml(question.question?.html || '', 150)"
+              v-html="
+                truncateHtml(
+                  (question.question && question.question.html) || '',
+                  150
+                )
+              "
             ></div>
             <div
               v-if="question.answers && question.answers.length > 0"
