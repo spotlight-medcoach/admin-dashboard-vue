@@ -181,6 +181,46 @@ export const actions = {
       commit('setSaving', false);
     }
   },
+
+  async regenerateSyllabus({ commit, dispatch }, id) {
+    try {
+      commit('setSaving', true);
+      await this.$axios.post(`/students/${id}/regenerate-syllabus`);
+      if (this.$toastr) {
+        this.$toastr.success(
+          'Regeneración de plan de estudios iniciada',
+          'Éxito'
+        );
+      }
+      // Actualizar la lista de estudiantes para reflejar el nuevo estado
+      await dispatch('fetchStudents');
+    } catch (err) {
+      console.error('Error regenerating syllabus:', err);
+      const errorMessage =
+        (err.response && err.response.data && err.response.data.error) ||
+        'Error al regenerar plan de estudios';
+      if (this.$toastr) {
+        this.$toastr.error(errorMessage, 'Error');
+      }
+      throw err;
+    } finally {
+      commit('setSaving', false);
+    }
+  },
+
+  async getSyllabusRegenerationStatus({ commit }, id) {
+    try {
+      const response = await this.$axios.get(
+        `/students/${id}/syllabus-regeneration-status`
+      );
+      return (
+        response.data.payload?.status || response.data.data?.status || 'idle'
+      );
+    } catch (err) {
+      console.error('Error getting syllabus regeneration status:', err);
+      return 'idle';
+    }
+  },
 };
 
 export const getters = {

@@ -37,15 +37,27 @@
               {{ (row.university && row.university.name) || '-' }}
             </template>
             <template #cell-status="{ row }">
-              <span
-                :class="
-                  row.profile_completed
-                    ? 'badge badge-success'
-                    : 'badge badge-warning'
-                "
-              >
-                {{ row.profile_completed ? 'Registro completo' : 'Pendiente' }}
-              </span>
+              <div class="status-container">
+                <span
+                  :class="
+                    row.profile_completed
+                      ? 'badge badge-success'
+                      : 'badge badge-warning'
+                  "
+                >
+                  {{
+                    row.profile_completed ? 'Registro completo' : 'Pendiente'
+                  }}
+                </span>
+                <span
+                  :class="
+                    getSyllabusStatusClass(row.syllabus_regeneration_status)
+                  "
+                  class="ml-2"
+                >
+                  {{ getSyllabusStatusText(row.syllabus_regeneration_status) }}
+                </span>
+              </div>
             </template>
             <template #cell-actions="{ row }">
               <div class="td-actions">
@@ -64,6 +76,9 @@
                   <b-dropdown-item @click="generateDiagnosticTest(row._id)">
                     <i class="fas fa-file-medical"></i> Generar examen de
                     diagnóstico
+                  </b-dropdown-item>
+                  <b-dropdown-item @click="regenerateSyllabus(row._id)">
+                    <i class="fas fa-sync-alt"></i> Regenerar plan de estudios
                   </b-dropdown-item>
                   <b-dropdown-item @click="editStudent(row)">
                     <i class="fas fa-pencil-alt"></i> Editar
@@ -276,6 +291,7 @@ export default {
       csvFile: null,
       csvContent: '',
       csvPreview: [],
+      syllabusStatusPolling: {},
     };
   },
   computed: {
@@ -369,7 +385,7 @@ export default {
           key: 'status',
           label: 'Estado',
           scope: 'col',
-          width: 150,
+          width: 250,
         },
         {
           key: 'actions',
@@ -410,6 +426,8 @@ export default {
         }
 
         await this.$store.dispatch('students/fetchStudents', params);
+        // Iniciar polling para estudiantes con estado pending después de cargar
+        this.startPollingForPendingStudents();
       } catch (err) {
         console.error('Error getting students:', err);
       }
@@ -656,6 +674,96 @@ export default {
         });
       }
     },
+    async regenerateSyllabus(studentId) {
+      try {
+        await this.$store.dispatch('students/regenerateSyllabus', studentId);
+        this.$bvToast.toast('Regeneración de plan de estudios iniciada', {
+          title: 'Éxito',
+          variant: 'success',
+          solid: true,
+        });
+        // Recargar estudiantes para actualizar el estado
+        await this.loadStudents();
+        // Iniciar polling del estado si está en pending
+        this.startSyllabusStatusPolling(studentId);
+      } catch (error) {
+        console.error('Error regenerating syllabus:', error);
+        this.$bvToast.toast('Error al regenerar plan de estudios', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      }
+    },
+    getSyllabusStatusText(status) {
+      const statusMap = {
+        idle: 'Sin regenerar',
+        pending: 'Regenerando...',
+        completed: 'Completado',
+        failed: 'Error',
+      };
+      return statusMap[status] || 'Desconocido';
+    },
+    getSyllabusStatusClass(status) {
+      const classMap = {
+        idle: 'badge badge-secondary',
+        pending: 'badge badge-info',
+        completed: 'badge badge-success',
+        failed: 'badge badge-danger',
+      };
+      return classMap[status] || 'badge badge-secondary';
+    },
+    async startSyllabusStatusPolling(studentId) {
+      // Limpiar polling anterior si existe
+      if (this.syllabusStatusPolling[studentId]) {
+        clearInterval(this.syllabusStatusPolling[studentId]);
+      }
+
+      // Polling cada 3 segundos
+      this.syllabusStatusPolling[studentId] = setInterval(async () => {
+        try {
+          const status = await this.$store.dispatch(
+            'students/getSyllabusRegenerationStatus',
+            studentId
+          );
+
+          // Si el estado cambió a completed o failed, detener el polling
+          if (status === 'completed' || status === 'failed') {
+            clearInterval(this.syllabusStatusPolling[studentId]);
+            delete this.syllabusStatusPolling[studentId];
+            // Recargar estudiantes para actualizar la tabla
+            await this.loadStudents();
+
+            if (status === 'completed') {
+              this.$bvToast.toast('Plan de estudios regenerado exitosamente', {
+                title: 'Éxito',
+                variant: 'success',
+                solid: true,
+              });
+            } else if (status === 'failed') {
+              this.$bvToast.toast('Error al regenerar plan de estudios', {
+                title: 'Error',
+                variant: 'danger',
+                solid: true,
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error polling syllabus status:', error);
+          // Detener polling en caso de error
+          clearInterval(this.syllabusStatusPolling[studentId]);
+          delete this.syllabusStatusPolling[studentId];
+        }
+      }, 3000);
+    },
+    startPollingForPendingStudents() {
+      // Buscar estudiantes con estado pending y iniciar polling
+      this.students.forEach((student) => {
+        if (student.syllabus_regeneration_status === 'pending') {
+          this.startSyllabusStatusPolling(student._id);
+        }
+      });
+    },
   },
   async created() {
     if (process.browser) {
@@ -688,8 +796,16 @@ export default {
 
     await this.loadStudents();
     this.isInitialLoad = false;
+    // Iniciar polling para estudiantes con estado pending
+    this.startPollingForPendingStudents();
   },
   beforeDestroy() {
+    // Limpiar todos los intervalos de polling
+    Object.keys(this.syllabusStatusPolling).forEach((studentId) => {
+      clearInterval(this.syllabusStatusPolling[studentId]);
+    });
+    this.syllabusStatusPolling = {};
+
     this.$store.dispatch('pageHeader/clearHeader');
     this.$nuxt.$off('page-header-button-click', this.handleHeaderButtonClick);
   },
@@ -809,6 +925,32 @@ export default {
   .badge-warning {
     background-color: #ffc107;
     color: #000;
+  }
+
+  .badge-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+
+  .badge-info {
+    background-color: #17a2b8;
+    color: white;
+  }
+
+  .badge-danger {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+
+  .status-container .badge {
+    white-space: nowrap;
   }
 }
 </style>
