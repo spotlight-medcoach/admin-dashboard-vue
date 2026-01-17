@@ -80,6 +80,9 @@
                   <b-dropdown-item @click="regenerateSyllabus(row._id)">
                     <i class="fas fa-sync-alt"></i> Regenerar plan de estudios
                   </b-dropdown-item>
+                  <b-dropdown-item @click="initializeStudentProgress(row._id)">
+                    <i class="fas fa-redo"></i> Inicializar progreso
+                  </b-dropdown-item>
                   <b-dropdown-item @click="editStudent(row)">
                     <i class="fas fa-pencil-alt"></i> Editar
                   </b-dropdown-item>
@@ -689,6 +692,29 @@ export default {
       } catch (error) {
         console.error('Error regenerating syllabus:', error);
         this.$bvToast.toast('Error al regenerar plan de estudios', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      }
+    },
+    async initializeStudentProgress(studentId) {
+      try {
+        await this.$store.dispatch(
+          'students/initializeStudentProgress',
+          studentId
+        );
+        this.$bvToast.toast(
+          'Progreso del estudiante inicializado exitosamente',
+          {
+            title: 'Éxito',
+            variant: 'success',
+            solid: true,
+          }
+        );
+      } catch (error) {
+        console.error('Error initializing student progress:', error);
+        this.$bvToast.toast('Error al inicializar progreso del estudiante', {
           title: 'Error',
           variant: 'danger',
           solid: true,

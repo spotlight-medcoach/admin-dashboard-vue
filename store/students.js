@@ -221,6 +221,30 @@ export const actions = {
       return 'idle';
     }
   },
+
+  async initializeStudentProgress({ commit }, id) {
+    try {
+      commit('setSaving', true);
+      await this.$axios.post(`/students/${id}/initialize-progress`);
+      if (this.$toastr) {
+        this.$toastr.success(
+          'Progreso del estudiante inicializado exitosamente',
+          'Éxito'
+        );
+      }
+    } catch (err) {
+      console.error('Error initializing student progress:', err);
+      const errorMessage =
+        (err.response && err.response.data && err.response.data.error) ||
+        'Error al inicializar progreso del estudiante';
+      if (this.$toastr) {
+        this.$toastr.error(errorMessage, 'Error');
+      }
+      throw err;
+    } finally {
+      commit('setSaving', false);
+    }
+  },
 };
 
 export const getters = {
