@@ -121,34 +121,88 @@ export default {
           'wordcount',
         ],
         toolbar:
-          'undo redo | formatselect | ' +
-          'bold italic backcolor | alignleft aligncenter ' +
+          'undo redo | styleselect | ' +
+          'bold italic forecolor backcolor | alignleft aligncenter ' +
           'alignright alignjustify | bullist numlist outdent indent | ' +
           'removeformat | help | image | code',
-        content_style:
-          'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-        images_upload_handler: async (blobInfo, progress) => {
-          // Handler para subir imágenes
-          return new Promise((resolve, reject) => {
-            const formData = new FormData();
-            formData.append('file', blobInfo.blob(), blobInfo.filename());
+        style_formats: [
+          {
+            title: 'Heading 1',
+            block: 'h1',
+            styles: {
+              'font-family': 'Helvetica, Arial, sans-serif',
+              'font-weight': 'bold',
+              'font-size': '12pt',
+              color: '#2f74b5',
+              'line-height': '1.5',
+              'margin-top': '0.3em',
+              'margin-bottom': '0.3em',
+            },
+          },
+          {
+            title: 'Heading 2',
+            block: 'h2',
+            styles: {
+              'font-family': 'Helvetica, Arial, sans-serif',
+              'font-weight': 'bold',
+              'font-size': '10pt',
+              color: '#2f74b5',
+              'line-height': '1.5',
+              'margin-top': '0.3em',
+              'margin-bottom': '0.3em',
+            },
+          },
+          {
+            title: 'Paragraph',
+            block: 'p',
+            styles: {
+              'font-family': 'Helvetica, Arial, sans-serif',
+              'font-size': '10pt',
+              color: '#000000',
+              'line-height': '1.5',
+              'margin-top': '0.3em',
+              'margin-bottom': '0.3em',
+            },
+          },
+        ],
+        content_style: `
+          body { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; }
+          h1 { font-family: Helvetica, Arial, sans-serif; font-weight: bold; font-size: 12pt; color: #2f74b5; line-height: 1.5; margin-top: 0.3em; margin-bottom: 0.3em; }
+          h2 { font-family: Helvetica, Arial, sans-serif; font-weight: bold; font-size: 10pt; color: #2f74b5; line-height: 1.5; margin-top: 0.3em; margin-bottom: 0.3em; }
+          p { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; color: #000000; line-height: 1.5; margin-top: 0.3em; margin-bottom: 0.3em; }
+        `,
+        // TinyMCE 5 usa callbacks: (blobInfo, success, failure, progress)
+        images_upload_handler: (blobInfo, success, failure) => {
+          const manualId = this.$route.params.id;
+          if (!manualId) {
+            failure('No se encontró el ID del manual');
+            return;
+          }
 
-            this.$axios
-              .post('/manual/upload-image', formData, {
-                headers: {
-                  'Content-Type': 'multipart/form-data',
-                },
-                onUploadProgress: (progressEvent) => {
-                  progress((progressEvent.loaded / progressEvent.total) * 100);
-                },
-              })
-              .then((response) => {
-                resolve(response.data.url);
-              })
-              .catch((error) => {
-                reject('Error al subir imagen: ' + error.message);
-              });
-          });
+          const formData = new FormData();
+          formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+          this.$axios
+            .post(`/manuals/${manualId}/upload-image`, formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            })
+            .then((response) => {
+              const imageUrl = response.data.location;
+              if (imageUrl) {
+                success(imageUrl);
+              } else {
+                failure('No se recibió la URL de la imagen');
+              }
+            })
+            .catch((error) => {
+              console.error('Error uploading image:', error);
+              failure(
+                'Error al subir imagen: ' +
+                  (error.response?.data?.error || error.message)
+              );
+            });
         },
       },
     };
