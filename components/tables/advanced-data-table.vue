@@ -570,6 +570,12 @@ export default {
     display: table;
   }
 
+  .table-container {
+    min-width: 100%;
+    width: 100%;
+    display: table;
+  }
+
   .table {
     table-layout: fixed;
     width: auto;

@@ -4,6 +4,7 @@
       <article class="full">
         <template>
           <data-table-container
+            advanced
             :data="manuals"
             :columns="tableColumns"
             :loading="loadingState"
@@ -19,11 +20,21 @@
             total-label="manuales"
             :page-size-options="[5, 10, 15, 20, 25]"
             empty-message="No hay manuales disponibles"
+            :fixed-columns="['name', 'actions']"
+            :sortable="[
+              'name',
+              'topic_name',
+              'subtopic_name',
+              'conversion_status',
+              'updated_at',
+            ]"
+            :default-sort="sort"
             @update:search="handleSearchUpdate"
             @search="searchManuals"
             @filter-change="handleFilterChange"
             @page-change="handlePageChange"
             @page-results-change="handlePageResultsChange"
+            @sort-change="handleSortChange"
           >
             <template #cell-conversion_status="{ row }">
               <conversion-status
@@ -40,6 +51,8 @@
                   toggle-class="text-decoration-none"
                   no-caret
                   right
+                  @shown="onDropdownShown"
+                  @hidden="onDropdownHidden"
                 >
                   <template #button-content>
                     <i class="fas fa-ellipsis-v"></i>
@@ -100,6 +113,7 @@ export default {
       isInitialLoad: true,
       regeneratingImages: {}, // Map of manualId -> boolean
       imageRegenerationPollingIntervals: {}, // Map of manualId -> intervalId
+      sort: { key: 'updated_at', order: 'desc' }, // Estado inicial del sort
     };
   },
   computed: {
@@ -141,33 +155,33 @@ export default {
           key: 'name',
           label: 'Nombre',
           scope: 'col',
-          width: 25,
+          width: 250,
         },
         {
           key: 'topic_name',
           label: 'Tema',
           scope: 'col',
-          width: 20,
+          width: 150,
           value: (row) => row.topic_name || row.topic,
         },
         {
           key: 'subtopic_name',
           label: 'Subtema',
           scope: 'col',
-          width: 20,
+          width: 150,
           value: (row) => row.subtopic_name || row.subtopic,
         },
         {
           key: 'conversion_status',
           label: 'Estado',
           scope: 'col',
-          width: 15,
+          width: 200,
         },
         {
           key: 'updated_at',
           label: 'Última actualización',
           scope: 'col',
-          width: 20,
+          width: 150,
           value: (row) =>
             new Date(row.updated_at).toLocaleDateString('es-ES', {
               day: '2-digit',
@@ -181,7 +195,7 @@ export default {
           key: 'actions',
           label: 'Acciones',
           scope: 'col',
-          width: 20,
+          width: 200,
         },
       ];
     },
@@ -232,6 +246,20 @@ export default {
     },
   },
   methods: {
+    onDropdownShown() {
+      // Cambiar overflow del contenedor de la tabla para que el dropdown sea visible
+      const tableContainer = this.$el.querySelector('.table-container');
+      if (tableContainer) {
+        tableContainer.style.overflow = 'visible';
+      }
+    },
+    onDropdownHidden() {
+      // Restaurar overflow del contenedor de la tabla
+      const tableContainer = this.$el.querySelector('.table-container');
+      if (tableContainer) {
+        tableContainer.style.overflow = '';
+      }
+    },
     createManual() {
       this.$bvModal.show('manual-create-modal');
     },
@@ -429,6 +457,8 @@ export default {
         const params = {
           page: this.page,
           pageResults: this.pageResults,
+          sort: this.sort?.key || 'updated_at',
+          order: this.sort?.order || 'desc',
         };
 
         if (this.search && this.search.trim() !== '') {
@@ -441,6 +471,11 @@ export default {
 
         if (this.subtopicSelected && this.subtopicSelected.trim() !== '') {
           params.subtopic = this.subtopicSelected.trim();
+        }
+
+        if (this.sort && this.sort.key) {
+          params.sort = this.sort.key;
+          params.order = this.sort.order;
         }
 
         await this.$store.dispatch('manuals/fetchManuals', params);
@@ -474,6 +509,11 @@ export default {
     },
     handlePageResultsChange(newPageResults) {
       this.pageResults = newPageResults;
+      this.page = 1;
+      this.getManuals();
+    },
+    handleSortChange(sortInfo) {
+      this.sort = sortInfo;
       this.page = 1;
       this.getManuals();
     },
