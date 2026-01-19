@@ -131,13 +131,11 @@
 </template>
 
 <script>
-import LoadingState from '@/components/loading-state.vue';
 import TableSkeleton from './table-skeleton.vue';
 
 export default {
   name: 'DataTable',
   components: {
-    LoadingState,
     TableSkeleton,
   },
   props: {

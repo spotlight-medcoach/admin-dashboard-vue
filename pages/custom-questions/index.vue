@@ -193,39 +193,39 @@ export default {
           key: 'checkbox',
           label: '',
           scope: 'col',
-          width: 5,
+          width: 30,
         },
         {
           key: 'spotlight_id',
           label: 'ID',
           scope: 'col',
-          width: 12,
+          width: 100,
         },
         {
           key: 'name',
           label: 'Nombre',
           scope: 'col',
-          width: 20,
+          width: 200,
         },
         {
           key: 'topic',
           label: 'Tema',
           scope: 'col',
-          width: 20,
+          width: 150,
           value: (row) => row.topic_name || row.topic,
         },
         {
           key: 'subtopic',
           label: 'Subtema',
           scope: 'col',
-          width: 20,
+          width: 150,
           value: (row) => row.subtopic_name || row.subtopic,
         },
         {
           key: 'category',
           label: 'Categoría',
           scope: 'col',
-          width: 15,
+          width: 150,
           value: (row) =>
             typeof row.category === 'object'
               ? row.category?.name
@@ -235,13 +235,13 @@ export default {
           key: 'questions_count',
           label: 'Preguntas',
           scope: 'col',
-          width: 10,
+          width: 100,
         },
         {
           key: 'created_at',
           label: 'Fecha de creación',
           scope: 'col',
-          width: 15,
+          width: 170,
           value: (row) =>
             row.created_at
               ? new Date(row.created_at).toLocaleDateString('es-ES', {
@@ -257,7 +257,7 @@ export default {
           key: 'actions',
           label: 'Acciones',
           scope: 'col',
-          width: 15,
+          width: 200,
         },
       ];
       return columns;
