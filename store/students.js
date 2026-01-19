@@ -5,6 +5,12 @@ export const state = () => ({
   limit: 20,
   loading: false,
   saving: false,
+  emailQueueStatus: {
+    pending: 0,
+    sent: 0,
+    failed: 0,
+    total: 0,
+  },
 });
 
 export const actions = {
@@ -59,14 +65,15 @@ export const actions = {
     }
   },
 
-  async createStudentsBulk({ commit, dispatch }, csvContent) {
+  async createStudentsBulk({ commit, dispatch }, { csvContent, sendEmails = false }) {
     try {
       commit('setSaving', true);
       const response = await this.$axios.post('/students/bulk', {
         csv_content: csvContent,
+        send_emails: sendEmails,
       });
 
-      const { created, errors } = response.data.payload;
+      const { created, errors } = response.data.data || response.data.payload || response.data;
       if (created > 0 && this.$toastr) {
         this.$toastr.success(
           `${created} estudiante(s) creado(s) exitosamente`,
@@ -208,6 +215,7 @@ export const actions = {
     }
   },
 
+  // eslint-disable-next-line no-unused-vars
   async getSyllabusRegenerationStatus({ commit }, id) {
     try {
       const response = await this.$axios.get(
@@ -245,6 +253,56 @@ export const actions = {
       commit('setSaving', false);
     }
   },
+
+  async sendBulkWelcomeEmails({ commit, dispatch }) {
+    try {
+      commit('setSaving', true);
+      const response = await this.$axios.post('/students/send-bulk-welcome-emails');
+      const { queued, batch_id } = response.data.payload || response.data.data || {};
+      if (this.$toastr) {
+        this.$toastr.success(
+          `${queued} correo(s) encolado(s) exitosamente`,
+          'Éxito'
+        );
+      }
+      // Refresh email queue status
+      await dispatch('getEmailQueueStatus');
+      return { queued, batch_id };
+    } catch (err) {
+      console.error('Error sending bulk welcome emails:', err);
+      const errorMessage =
+        (err.response && err.response.data && err.response.data.error) ||
+        'Error al enviar correos masivos';
+      if (this.$toastr) {
+        this.$toastr.error(errorMessage, 'Error');
+      }
+      throw err;
+    } finally {
+      commit('setSaving', false);
+    }
+  },
+
+  async getEmailQueueStatus({ commit }) {
+    try {
+      const response = await this.$axios.get('/students/email-queue-status');
+      const status = response.data.payload || response.data.data || {
+        pending: 0,
+        sent: 0,
+        failed: 0,
+        total: 0,
+      };
+      commit('setEmailQueueStatus', status);
+      return status;
+    } catch (err) {
+      console.error('Error getting email queue status:', err);
+      return {
+        pending: 0,
+        sent: 0,
+        failed: 0,
+        total: 0,
+      };
+    }
+  },
 };
 
 export const getters = {
@@ -263,6 +321,9 @@ export const getters = {
   isSaving(state) {
     return state.saving;
   },
+  getEmailQueueStatus(state) {
+    return state.emailQueueStatus;
+  },
 };
 
 export const mutations = {
@@ -280,5 +341,8 @@ export const mutations = {
   },
   setSaving(state, saving) {
     state.saving = saving;
+  },
+  setEmailQueueStatus(state, status) {
+    state.emailQueueStatus = status;
   },
 };

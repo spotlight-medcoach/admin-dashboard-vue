@@ -1,5 +1,12 @@
 <template>
   <div id="students">
+    <!-- Email Queue Status Widget -->
+    <email-queue-status
+      v-if="showEmailQueueStatus"
+      :status="emailQueueStatus"
+      @close="showEmailQueueStatus = false"
+    />
+
     <section class="students-container">
       <article class="full">
         <template>
@@ -170,6 +177,17 @@
             placeholder="2024"
           />
         </b-form-group>
+
+        <b-form-group
+          label="ID Estudiante (Universidad)"
+          label-for="university_student_id"
+        >
+          <b-form-input
+            id="university_student_id"
+            v-model="manualForm.university_student_id"
+            placeholder="ID del estudiante en la universidad (opcional)"
+          />
+        </b-form-group>
       </b-form>
 
       <template #modal-footer>
@@ -194,7 +212,7 @@
       <b-form-group
         label="Archivo CSV"
         label-for="csv-file"
-        description="El archivo debe tener las columnas: nombre(s), apellidos, universidad, fecha de examen"
+        description="El archivo debe tener las columnas: nombre(s), apellidos, universidad, fecha de examen. Columna opcional: id estudiante"
       >
         <b-form-file
           id="csv-file"
@@ -213,6 +231,7 @@
               <th>Apellidos</th>
               <th>Universidad</th>
               <th>Fecha de examen</th>
+              <th>ID Estudiante</th>
             </tr>
           </thead>
           <tbody>
@@ -221,10 +240,17 @@
               <td>{{ row.last_name }}</td>
               <td>{{ row.university }}</td>
               <td>{{ row.exam_year }}</td>
+              <td>{{ row.university_student_id || '-' }}</td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <b-form-group>
+        <b-form-checkbox v-model="sendEmails">
+          Enviar correo de bienvenida a todos los estudiantes creados
+        </b-form-checkbox>
+      </b-form-group>
 
       <template #modal-footer>
         <b-button variant="secondary" @click="showCSVModal = false">
@@ -263,10 +289,12 @@
 <script>
 import { mapGetters } from 'vuex';
 import DataTableContainer from '@/components/tables/data-table-container.vue';
+import EmailQueueStatus from '@/components/email-queue-status.vue';
 
 export default {
   components: {
     DataTableContainer,
+    EmailQueueStatus,
   },
   data() {
     return {
@@ -290,11 +318,15 @@ export default {
         phone: '',
         university: '',
         exam_year: new Date().getFullYear(),
+        university_student_id: '',
       },
       csvFile: null,
       csvContent: '',
       csvPreview: [],
+      sendEmails: false,
       syllabusStatusPolling: {},
+      emailQueueStatusPolling: null,
+      showEmailQueueStatus: true,
     };
   },
   computed: {
@@ -303,6 +335,7 @@ export default {
       'getTotalStudents',
       'isLoading',
       'isSaving',
+      'getEmailQueueStatus',
     ]),
     students() {
       return this.getStudents;
@@ -312,6 +345,9 @@ export default {
     },
     loadingState() {
       return this.isLoading;
+    },
+    emailQueueStatus() {
+      return this.getEmailQueueStatus;
     },
     filterValues() {
       return {
@@ -376,6 +412,13 @@ export default {
           label: 'Universidad',
           scope: 'col',
           width: 300,
+        },
+        {
+          key: 'university_student_id',
+          label: 'ID Estudiante',
+          scope: 'col',
+          width: 120,
+          value: (row) => row.university_student_id || '-',
         },
         {
           key: 'exam_year',
@@ -473,6 +516,8 @@ export default {
         this.showManualModal = true;
       } else if (action === 'uploadCSV') {
         this.showCSVModal = true;
+      } else if (action === 'sendBulkEmails') {
+        await this.sendBulkWelcomeEmails();
       }
     },
     async createStudent() {
@@ -506,6 +551,7 @@ export default {
         phone: '',
         university: '',
         exam_year: new Date().getFullYear(),
+        university_student_id: '',
       };
     },
     handleCSVFile(event) {
@@ -528,6 +574,7 @@ export default {
       const lastNameIndex = header.indexOf('apellidos');
       const universityIndex = header.indexOf('universidad');
       const examDateIndex = header.indexOf('fecha de examen');
+      const studentIdIndex = header.indexOf('id estudiante');
 
       this.csvPreview = [];
       for (let i = 1; i < Math.min(lines.length, 6); i++) {
@@ -547,6 +594,8 @@ export default {
           last_name: values[lastNameIndex] || '',
           university: values[universityIndex] || '',
           exam_year,
+          university_student_id:
+            studentIdIndex !== -1 ? values[studentIdIndex] || '' : '',
         });
       }
     },
@@ -557,7 +606,7 @@ export default {
       try {
         const result = await this.$store.dispatch(
           'students/createStudentsBulk',
-          this.csvContent
+          { csvContent: this.csvContent, sendEmails: this.sendEmails }
         );
         this.showCSVModal = false;
         this.resetCSVForm();
@@ -595,6 +644,7 @@ export default {
       this.csvFile = null;
       this.csvContent = '';
       this.csvPreview = [];
+      this.sendEmails = false;
     },
     // eslint-disable-next-line no-unused-vars
     editStudent(student) {
@@ -790,6 +840,46 @@ export default {
         }
       });
     },
+    async sendBulkWelcomeEmails() {
+      try {
+        await this.$store.dispatch('students/sendBulkWelcomeEmails');
+        // Start polling for email queue status
+        this.startEmailQueueStatusPolling();
+      } catch (error) {
+        console.error('Error sending bulk welcome emails:', error);
+      }
+    },
+    async startEmailQueueStatusPolling() {
+      // Clear existing polling
+      if (this.emailQueueStatusPolling) {
+        clearInterval(this.emailQueueStatusPolling);
+      }
+
+      // Poll every 3 seconds
+      this.emailQueueStatusPolling = setInterval(async () => {
+        try {
+          const status = await this.$store.dispatch(
+            'students/getEmailQueueStatus'
+          );
+
+          // Stop polling if all emails are processed (no pending)
+          if (status.pending === 0) {
+            clearInterval(this.emailQueueStatusPolling);
+            this.emailQueueStatusPolling = null;
+            this.$bvToast.toast('Todos los correos han sido procesados', {
+              title: 'Completado',
+              variant: 'success',
+              solid: true,
+            });
+          }
+        } catch (error) {
+          console.error('Error polling email queue status:', error);
+          // Stop polling on error
+          clearInterval(this.emailQueueStatusPolling);
+          this.emailQueueStatusPolling = null;
+        }
+      }, 3000);
+    },
   },
   async created() {
     if (process.browser) {
@@ -814,6 +904,11 @@ export default {
             action: 'uploadCSV',
             icon: 'fas fa-file-csv',
           },
+          {
+            text: 'Enviar correos masivos',
+            action: 'sendBulkEmails',
+            icon: 'fas fa-paper-plane',
+          },
         ],
       },
     });
@@ -824,6 +919,12 @@ export default {
     this.isInitialLoad = false;
     // Iniciar polling para estudiantes con estado pending
     this.startPollingForPendingStudents();
+    // Load initial email queue status
+    await this.$store.dispatch('students/getEmailQueueStatus');
+    // Start polling if there are pending emails
+    if (this.emailQueueStatus.pending > 0) {
+      this.startEmailQueueStatusPolling();
+    }
   },
   beforeDestroy() {
     // Limpiar todos los intervalos de polling
@@ -831,6 +932,12 @@ export default {
       clearInterval(this.syllabusStatusPolling[studentId]);
     });
     this.syllabusStatusPolling = {};
+
+    // Clear email queue status polling
+    if (this.emailQueueStatusPolling) {
+      clearInterval(this.emailQueueStatusPolling);
+      this.emailQueueStatusPolling = null;
+    }
 
     this.$store.dispatch('pageHeader/clearHeader');
     this.$nuxt.$off('page-header-button-click', this.handleHeaderButtonClick);
