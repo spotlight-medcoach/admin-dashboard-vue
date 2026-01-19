@@ -54,10 +54,7 @@
       </div>
       <div class="row">
         <div class="col-6">
-          <b-form-group
-            label="Tiempo de Lectura"
-            label-for="reading_time"
-          >
+          <b-form-group label="Tiempo de Lectura" label-for="reading_time">
             <b-form-input
               id="reading_time"
               v-model.number="form.reading_time"
@@ -102,6 +99,52 @@
           Solo se permiten archivos .docx
         </small>
       </b-form-group>
+
+      <b-form-group label="Quiz (Opcional)" label-for="quiz">
+        <b-tabs v-model="quizTabIndex" content-class="mt-3">
+          <b-tab title="Subir archivo" :disabled="isUploading">
+            <b-form-file
+              id="quiz-file"
+              v-model="form.quizFile"
+              accept=".html"
+              placeholder="Selecciona un archivo .html"
+              drop-placeholder="Arrastra un archivo .html aquí"
+              :disabled="isUploading"
+              @change="onQuizFileChange"
+            />
+            <small v-if="form.quizFile" class="text-muted mt-2 d-block">
+              Archivo seleccionado: {{ form.quizFile.name }}
+            </small>
+            <small v-if="!form.quizFile" class="text-muted mt-2 d-block">
+              Solo se permiten archivos .html
+            </small>
+          </b-tab>
+          <b-tab title="Editor de texto" :disabled="isUploading">
+            <b-form-textarea
+              id="quiz-content"
+              v-model="form.quizContent"
+              placeholder="Escribe o pega el código HTML del quiz aquí..."
+              rows="10"
+              :disabled="isUploading"
+            />
+            <small class="text-muted mt-2 d-block">
+              Puedes escribir el código HTML completo del quiz aquí
+            </small>
+          </b-tab>
+        </b-tabs>
+        <div class="mt-2">
+          <b-button
+            v-if="previewQuizUrl"
+            variant="outline-primary"
+            size="sm"
+            @click="showPreview"
+            :disabled="isUploading"
+          >
+            <b-icon icon="eye"></b-icon> Previsualizar Quiz
+          </b-button>
+        </div>
+      </b-form-group>
+
       <div v-if="isUploading" class="upload-progress mt-3">
         <div class="text-center">
           <b-spinner variant="primary" label="Subiendo..."></b-spinner>
@@ -128,6 +171,7 @@
         <span v-else> <b-spinner small></b-spinner> Subiendo... </span>
       </b-button>
     </template>
+    <quiz-preview-modal ref="quiz-preview-modal" />
   </b-modal>
 </template>
 
@@ -139,15 +183,23 @@ const formDefault = {
   reading_time: null,
   importance: null,
   file: null,
+  quizFile: null,
+  quizContent: '',
 };
 
 export default {
   name: 'ManualCreateModal',
+  components: {
+    QuizPreviewModal: () =>
+      import('@/components/pages/manuals/quiz-preview.modal.vue'),
+  },
   data() {
     return {
       loaded: false,
       isUploading: false,
       topics: [],
+      quizTabIndex: 0,
+      previewQuizUrl: null,
       form: {
         name: '',
         topic: null,
@@ -155,6 +207,8 @@ export default {
         reading_time: null,
         importance: null,
         file: null,
+        quizFile: null,
+        quizContent: '',
       },
     };
   },
@@ -222,6 +276,41 @@ export default {
         this.form.file = null;
       }
     },
+    onQuizFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Validar que sea .html
+        if (!file.name.endsWith('.html') && file.type !== 'text/html') {
+          this.$bvToast.toast('Solo se permiten archivos .html', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+          this.form.quizFile = null;
+          this.previewQuizUrl = null;
+          return;
+        }
+        this.form.quizFile = file;
+        // Crear URL temporal para preview
+        this.previewQuizUrl = URL.createObjectURL(file);
+      } else {
+        this.form.quizFile = null;
+        if (this.previewQuizUrl) {
+          URL.revokeObjectURL(this.previewQuizUrl);
+        }
+        this.previewQuizUrl = null;
+      }
+    },
+    showPreview() {
+      if (this.previewQuizUrl) {
+        this.$refs['quiz-preview-modal'].show(this.previewQuizUrl);
+      } else if (this.form.quizContent) {
+        // Crear blob desde el contenido
+        const blob = new Blob([this.form.quizContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        this.$refs['quiz-preview-modal'].show(url);
+      }
+    },
     async createManual(event) {
       event.preventDefault();
       if (!this.form.file) {
@@ -248,12 +337,39 @@ export default {
           // Éxito
           const manualId = data.id || data._id;
 
+          // Subir quiz si existe
+          if (manualId && (this.form.quizFile || this.form.quizContent)) {
+            try {
+              if (this.form.quizFile) {
+                await this.$store.dispatch('manuals/uploadQuizFile', {
+                  manualId,
+                  file: this.form.quizFile,
+                });
+              } else if (this.form.quizContent) {
+                await this.$store.dispatch('manuals/uploadQuizContent', {
+                  manualId,
+                  content: this.form.quizContent,
+                });
+              }
+            } catch (error) {
+              console.error('Error uploading quiz:', error);
+              // No fallar la creación del manual si el quiz falla
+            }
+          }
+
           // Iniciar tracking de conversión si hay un manualId
           if (manualId) {
             this.$store.dispatch('manuals/startConversionTracking', manualId);
           }
 
+          // Limpiar preview URL si existe
+          if (this.previewQuizUrl) {
+            URL.revokeObjectURL(this.previewQuizUrl);
+          }
+
           this.form = Object.assign({}, formDefault);
+          this.quizTabIndex = 0;
+          this.previewQuizUrl = null;
           this.$emit('onCreate');
           this.$refs['manual-create-modal'].hide();
           this.$bvToast.toast(
@@ -307,6 +423,9 @@ export default {
     padding: 20px;
     background: #f8f9fa;
     border-radius: 8px;
+  }
+  .nav-tabs {
+    border-bottom: 1px solid #dee2e6;
   }
 }
 </style>

@@ -49,6 +49,79 @@
               />
             </b-form-group>
 
+            <b-form-group label="Quiz (Opcional)" label-for="quiz">
+              <div v-if="currentManual && currentManual.quiz_file" class="mb-3">
+                <p class="text-muted mb-2">
+                  <strong>Quiz actual:</strong> Configurado
+                </p>
+                <div class="d-flex gap-2">
+                  <b-button
+                    variant="outline-primary"
+                    size="sm"
+                    @click="showPreview(currentManual.quiz_file)"
+                  >
+                    <b-icon icon="eye"></b-icon> Previsualizar Quiz
+                  </b-button>
+                  <b-button
+                    variant="outline-danger"
+                    size="sm"
+                    @click="deleteQuiz"
+                    :disabled="isSaving || savingState"
+                  >
+                    <b-icon icon="trash"></b-icon> Eliminar Quiz
+                  </b-button>
+                </div>
+              </div>
+              <b-tabs v-model="quizTabIndex" content-class="mt-3">
+                <b-tab
+                  title="Subir archivo"
+                  :disabled="isSaving || savingState"
+                >
+                  <b-form-file
+                    id="quiz-file"
+                    v-model="form.quizFile"
+                    accept=".html"
+                    placeholder="Selecciona un archivo .html"
+                    drop-placeholder="Arrastra un archivo .html aquí"
+                    :disabled="isSaving || savingState"
+                    @change="onQuizFileChange"
+                  />
+                  <small v-if="form.quizFile" class="text-muted mt-2 d-block">
+                    Archivo seleccionado: {{ form.quizFile.name }}
+                  </small>
+                  <small v-if="!form.quizFile" class="text-muted mt-2 d-block">
+                    Solo se permiten archivos .html
+                  </small>
+                </b-tab>
+                <b-tab
+                  title="Editor de texto"
+                  :disabled="isSaving || savingState"
+                >
+                  <b-form-textarea
+                    id="quiz-content"
+                    v-model="form.quizContent"
+                    placeholder="Escribe o pega el código HTML del quiz aquí..."
+                    rows="10"
+                    :disabled="isSaving || savingState"
+                  />
+                  <small class="text-muted mt-2 d-block">
+                    Puedes escribir el código HTML completo del quiz aquí
+                  </small>
+                </b-tab>
+              </b-tabs>
+              <div class="mt-2">
+                <b-button
+                  v-if="previewQuizUrl"
+                  variant="outline-primary"
+                  size="sm"
+                  @click="showPreview(previewQuizUrl)"
+                  :disabled="isSaving || savingState"
+                >
+                  <b-icon icon="eye"></b-icon> Previsualizar Quiz
+                </b-button>
+              </div>
+            </b-form-group>
+
             <div class="form-actions">
               <b-button
                 type="submit"
@@ -70,16 +143,18 @@
         </template>
       </article>
     </section>
+    <quiz-preview-modal ref="quiz-preview-modal" />
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
 import LoadingState from '@/components/loading-state.vue';
+import QuizPreviewModal from '@/components/pages/manuals/quiz-preview.modal.vue';
+import TinyMCEEditor from '@tinymce/tinymce-vue';
 
 let Editor = null;
 if (process.client) {
-  const TinyMCEEditor = require('@tinymce/tinymce-vue');
   Editor = TinyMCEEditor.default || TinyMCEEditor;
 }
 
@@ -87,15 +162,20 @@ export default {
   components: {
     LoadingState,
     Editor,
+    QuizPreviewModal,
   },
   data() {
     return {
       isSaving: false,
+      quizTabIndex: 0,
+      previewQuizUrl: null,
       form: {
         name: '',
         topic: null,
         subtopic: null,
         body: '',
+        quizFile: null,
+        quizContent: '',
       },
       editorInit: {
         height: 500,
@@ -295,6 +375,13 @@ export default {
       if (this.currentManual && this.topics && this.topics.length > 0) {
         this.form.name = this.currentManual.name || '';
         this.form.body = this.currentManual.body || '';
+        this.form.quizFile = null;
+        this.form.quizContent = '';
+        this.quizTabIndex = 0;
+        if (this.previewQuizUrl) {
+          URL.revokeObjectURL(this.previewQuizUrl);
+        }
+        this.previewQuizUrl = null;
 
         // Buscar el tema - el campo 'topic' contiene el bubble_id del tema
         let topic = null;
@@ -383,6 +470,33 @@ export default {
           body: this.form.body,
         };
 
+        // Subir quiz si existe
+        if (this.form.quizFile || this.form.quizContent) {
+          try {
+            if (this.form.quizFile) {
+              await this.$store.dispatch('manuals/uploadQuizFile', {
+                manualId,
+                file: this.form.quizFile,
+              });
+            } else if (this.form.quizContent) {
+              await this.$store.dispatch('manuals/uploadQuizContent', {
+                manualId,
+                content: this.form.quizContent,
+              });
+            }
+            // Limpiar formulario de quiz después de subir
+            this.form.quizFile = null;
+            this.form.quizContent = '';
+            if (this.previewQuizUrl) {
+              URL.revokeObjectURL(this.previewQuizUrl);
+              this.previewQuizUrl = null;
+            }
+          } catch (error) {
+            console.error('Error uploading quiz:', error);
+            // No fallar la actualización del manual si el quiz falla
+          }
+        }
+
         const updated = await this.$store.dispatch('manuals/updateManual', {
           manualId,
           manualData: updateData,
@@ -430,6 +544,86 @@ export default {
         this.goBack();
       }
     },
+    onQuizFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Validar que sea .html
+        if (!file.name.endsWith('.html') && file.type !== 'text/html') {
+          this.$bvToast.toast('Solo se permiten archivos .html', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+          this.form.quizFile = null;
+          if (this.previewQuizUrl) {
+            URL.revokeObjectURL(this.previewQuizUrl);
+          }
+          this.previewQuizUrl = null;
+          return;
+        }
+        this.form.quizFile = file;
+        // Crear URL temporal para preview
+        if (this.previewQuizUrl) {
+          URL.revokeObjectURL(this.previewQuizUrl);
+        }
+        this.previewQuizUrl = URL.createObjectURL(file);
+      } else {
+        this.form.quizFile = null;
+        if (this.previewQuizUrl) {
+          URL.revokeObjectURL(this.previewQuizUrl);
+        }
+        this.previewQuizUrl = null;
+      }
+    },
+    showPreview(url) {
+      if (url) {
+        this.$refs['quiz-preview-modal'].show(url);
+      }
+    },
+    async deleteQuiz() {
+      if (
+        !confirm(
+          '¿Estás seguro de que deseas eliminar el quiz? Esta acción no se puede deshacer.'
+        )
+      ) {
+        return;
+      }
+
+      this.isSaving = true;
+      try {
+        const manualId = this.$route.params.id;
+        const updated = await this.$store.dispatch('manuals/updateManual', {
+          manualId,
+          manualData: { quiz_file: null },
+        });
+
+        if (updated && !updated.response) {
+          this.$bvToast.toast('Quiz eliminado exitosamente', {
+            title: 'Éxito',
+            variant: 'success',
+            solid: true,
+          });
+          // Recargar el manual para actualizar la vista
+          await this.$store.dispatch('manuals/fetchManualById', manualId);
+          this.loadManualData();
+        } else {
+          this.$bvToast.toast('Error al eliminar el quiz', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+        }
+      } catch (error) {
+        console.error('Error deleting quiz:', error);
+        this.$bvToast.toast('Error al eliminar el quiz', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
+      } finally {
+        this.isSaving = false;
+      }
+    },
   },
 };
 </script>
@@ -454,6 +648,12 @@ export default {
   .text-center {
     text-align: center;
     padding: 40px;
+  }
+  .nav-tabs {
+    border-bottom: 1px solid #dee2e6;
+  }
+  .gap-2 {
+    gap: 0.5rem;
   }
 }
 </style>

@@ -284,4 +284,88 @@ export const actions = {
         commit('setLoadingState', false);
       });
   },
+  async uploadQuizFile({ commit }, { manualId, file }) {
+    try {
+      // Step 1: Obtener presigned URL para subir el quiz
+      const presignedResponse = await this.$axios.post(
+        `/manuals/${manualId}/quiz-presigned-url`
+      );
+
+      const { uploadUrl, fileUrl } =
+        presignedResponse.data.data || presignedResponse.data;
+
+      // Step 2: Subir archivo directamente a S3 usando la presigned URL
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': 'text/html',
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload quiz file to S3');
+      }
+
+      // Step 3: Actualizar el manual con quiz_file
+      const updateResponse = await this.$axios.put(`/manuals/${manualId}`, {
+        quiz_file: fileUrl,
+      });
+
+      const updatedManual =
+        updateResponse.data.payload ||
+        updateResponse.data.data ||
+        updateResponse.data;
+
+      commit('updateManualInList', updatedManual);
+      commit('setCurrentManual', updatedManual);
+
+      return { success: true, fileUrl, manual: updatedManual };
+    } catch (error) {
+      console.error('Error uploading quiz file:', error);
+      return { success: false, error };
+    }
+  },
+  async uploadQuizContent({ commit }, { manualId, content }) {
+    try {
+      // Step 1: Obtener presigned URL para subir el quiz
+      const presignedResponse = await this.$axios.post(
+        `/manuals/${manualId}/quiz-presigned-url`
+      );
+
+      const { uploadUrl, fileUrl } =
+        presignedResponse.data.data || presignedResponse.data;
+
+      // Step 2: Subir contenido HTML directamente a S3 usando la presigned URL
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: content,
+        headers: {
+          'Content-Type': 'text/html',
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload quiz content to S3');
+      }
+
+      // Step 3: Actualizar el manual con quiz_file
+      const updateResponse = await this.$axios.put(`/manuals/${manualId}`, {
+        quiz_file: fileUrl,
+      });
+
+      const updatedManual =
+        updateResponse.data.payload ||
+        updateResponse.data.data ||
+        updateResponse.data;
+
+      commit('updateManualInList', updatedManual);
+      commit('setCurrentManual', updatedManual);
+
+      return { success: true, fileUrl, manual: updatedManual };
+    } catch (error) {
+      console.error('Error uploading quiz content:', error);
+      return { success: false, error };
+    }
+  },
 };
