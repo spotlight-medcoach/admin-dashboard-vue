@@ -326,7 +326,7 @@ export default {
       sendEmails: false,
       syllabusStatusPolling: {},
       emailQueueStatusPolling: null,
-      showEmailQueueStatus: true,
+      showEmailQueueStatus: false,
     };
   },
   computed: {
@@ -843,7 +843,8 @@ export default {
     async sendBulkWelcomeEmails() {
       try {
         await this.$store.dispatch('students/sendBulkWelcomeEmails');
-        // Start polling for email queue status
+        // Show the component and start polling for email queue status
+        this.showEmailQueueStatus = true;
         this.startEmailQueueStatusPolling();
       } catch (error) {
         console.error('Error sending bulk welcome emails:', error);
@@ -921,8 +922,9 @@ export default {
     this.startPollingForPendingStudents();
     // Load initial email queue status
     await this.$store.dispatch('students/getEmailQueueStatus');
-    // Start polling if there are pending emails
+    // Only show component and start polling if there are pending emails
     if (this.emailQueueStatus.pending > 0) {
+      this.showEmailQueueStatus = true;
       this.startEmailQueueStatusPolling();
     }
   },
