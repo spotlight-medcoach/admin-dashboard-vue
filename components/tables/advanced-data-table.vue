@@ -13,7 +13,7 @@
           <table
             class="table table-bordered"
             ref="tableRef"
-            :style="{ minWidth: totalTableWidth }"
+            style="width: 100%;"
           >
             <thead :class="theadClass">
               <tr>
@@ -389,15 +389,16 @@ export default {
       const width = this.getColumnWidth(column);
       if (width) {
         if (typeof width === 'number') {
-          // Si es un número, asumimos que son píxeles
-          styles.width = `${width}px`;
+          // Si es un número, usamos como min-width para mantener proporción pero permitir expansión
           styles.minWidth = `${width}px`;
         } else {
           // Si es string, puede ser '200px', '20%', etc.
-          styles.width = width;
-          styles.minWidth = width;
+          if (width.includes('%')) {
+            styles.width = width;
+          } else {
+            styles.minWidth = width;
+          }
         }
-        styles.maxWidth = styles.width;
       }
       if (this.fixedColumns.includes(column.key)) {
         styles.position = 'sticky';
@@ -415,15 +416,16 @@ export default {
       const width = this.getColumnWidth(column);
       if (width) {
         if (typeof width === 'number') {
-          // Si es un número, asumimos que son píxeles
-          styles.width = `${width}px`;
+          // Si es un número, usamos como min-width para mantener proporción pero permitir expansión
           styles.minWidth = `${width}px`;
         } else {
           // Si es string, puede ser '200px', '20%', etc.
-          styles.width = width;
-          styles.minWidth = width;
+          if (width.includes('%')) {
+            styles.width = width;
+          } else {
+            styles.minWidth = width;
+          }
         }
-        styles.maxWidth = styles.width;
       }
       if (this.fixedColumns.includes(column.key)) {
         styles.position = 'sticky';
@@ -577,8 +579,8 @@ export default {
   }
 
   .table {
-    table-layout: fixed;
-    width: auto;
+    table-layout: auto;
+    width: 100%;
     margin-bottom: 0;
     border-collapse: separate;
     border-spacing: 0;
