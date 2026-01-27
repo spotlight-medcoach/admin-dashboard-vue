@@ -11,19 +11,40 @@ export const state = () => ({
     failed: 0,
     total: 0,
   },
+  studentStats: {
+    total: 0,
+    completed: 0,
+    pending: 0,
+  },
 });
 
 export const actions = {
   async fetchStudents({ commit }, params = {}) {
     try {
       commit('setLoading', true);
+      const requestParams = {
+        page: params.page || 1,
+        limit: params.limit || 20,
+        university: params.university,
+        search: params.search,
+      };
+
+      // Add new filter parameters
+      if (params.exam_year !== undefined) {
+        requestParams.exam_year = params.exam_year;
+      }
+      if (params.profile_completed !== undefined) {
+        requestParams.profile_completed = params.profile_completed;
+      }
+      if (params.search_phone) {
+        requestParams.search_phone = params.search_phone;
+      }
+      if (params.search_student_id) {
+        requestParams.search_student_id = params.search_student_id;
+      }
+
       const response = await this.$axios.get('/students', {
-        params: {
-          page: params.page || 1,
-          limit: params.limit || 20,
-          university: params.university,
-          search: params.search,
-        },
+        params: requestParams,
       });
 
       // El backend devuelve { success: true, data: [...], pagination: {...} }
@@ -65,7 +86,10 @@ export const actions = {
     }
   },
 
-  async createStudentsBulk({ commit, dispatch }, { csvContent, sendEmails = false }) {
+  async createStudentsBulk(
+    { commit, dispatch },
+    { csvContent, sendEmails = false }
+  ) {
     try {
       commit('setSaving', true);
       const response = await this.$axios.post('/students/bulk', {
@@ -73,7 +97,8 @@ export const actions = {
         send_emails: sendEmails,
       });
 
-      const { created, errors } = response.data.data || response.data.payload || response.data;
+      const { created, errors } =
+        response.data.data || response.data.payload || response.data;
       if (created > 0 && this.$toastr) {
         this.$toastr.success(
           `${created} estudiante(s) creado(s) exitosamente`,
@@ -254,11 +279,15 @@ export const actions = {
     }
   },
 
-  async sendBulkWelcomeEmails({ commit, dispatch }) {
+  async sendBulkWelcomeEmails({ commit, dispatch }, filters = undefined) {
     try {
       commit('setSaving', true);
-      const response = await this.$axios.post('/students/send-bulk-welcome-emails');
-      const { queued, batch_id } = response.data.payload || response.data.data || {};
+      const response = await this.$axios.post(
+        '/students/send-bulk-welcome-emails',
+        filters || {}
+      );
+      const { queued, batch_id } =
+        response.data.payload || response.data.data || {};
       if (this.$toastr) {
         this.$toastr.success(
           `${queued} correo(s) encolado(s) exitosamente`,
@@ -285,12 +314,13 @@ export const actions = {
   async getEmailQueueStatus({ commit }) {
     try {
       const response = await this.$axios.get('/students/email-queue-status');
-      const status = response.data.payload || response.data.data || {
-        pending: 0,
-        sent: 0,
-        failed: 0,
-        total: 0,
-      };
+      const status = response.data.payload ||
+        response.data.data || {
+          pending: 0,
+          sent: 0,
+          failed: 0,
+          total: 0,
+        };
       commit('setEmailQueueStatus', status);
       return status;
     } catch (err) {
@@ -301,6 +331,30 @@ export const actions = {
         failed: 0,
         total: 0,
       };
+    }
+  },
+
+  async fetchStudentStats({ commit }) {
+    try {
+      const response = await this.$axios.get('/students/stats');
+      const stats = response.data.payload ||
+        response.data.data ||
+        response.data || {
+          total: 0,
+          completed: 0,
+          pending: 0,
+        };
+      commit('setStudentStats', stats);
+      return stats;
+    } catch (err) {
+      console.error('Error fetching student stats:', err);
+      const defaultStats = {
+        total: 0,
+        completed: 0,
+        pending: 0,
+      };
+      commit('setStudentStats', defaultStats);
+      return defaultStats;
     }
   },
 };
@@ -324,6 +378,9 @@ export const getters = {
   getEmailQueueStatus(state) {
     return state.emailQueueStatus;
   },
+  getStudentStats(state) {
+    return state.studentStats;
+  },
 };
 
 export const mutations = {
@@ -344,5 +401,8 @@ export const mutations = {
   },
   setEmailQueueStatus(state, status) {
     state.emailQueueStatus = status;
+  },
+  setStudentStats(state, stats) {
+    state.studentStats = stats;
   },
 };

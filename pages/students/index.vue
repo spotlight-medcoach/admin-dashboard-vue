@@ -7,6 +7,14 @@
       @close="showEmailQueueStatus = false"
     />
 
+    <!-- Student Statistics Cards -->
+    <section class="stats-section">
+      <student-stats-cards
+        :stats="studentStats"
+        :email-stats="emailQueueStatus"
+      />
+    </section>
+
     <section class="students-container">
       <article class="full">
         <template>
@@ -17,7 +25,7 @@
             :show-full-loader="isInitialLoad"
             loading-message="Estamos obteniendo los estudiantes"
             :search="search"
-            search-placeholder="Buscar por nombre o email"
+            search-placeholder="Buscar por nombre, email, ID o teléfono"
             :filters="tableFilters"
             :filter-values="filterValues"
             :current-page="page"
@@ -63,6 +71,13 @@
                   class="ml-2"
                 >
                   {{ getSyllabusStatusText(row.syllabus_regeneration_status) }}
+                </span>
+                <span
+                  v-if="row.last_welcome_email_status"
+                  :class="getEmailStatusClass(row.last_welcome_email_status)"
+                  class="ml-2"
+                >
+                  {{ getEmailStatusText(row.last_welcome_email_status) }}
                 </span>
               </div>
             </template>
@@ -267,6 +282,14 @@
       </template>
     </b-modal>
 
+    <!-- Bulk Email Modal -->
+    <bulk-email-modal
+      :show="showBulkEmailModal"
+      :universities="universities"
+      @close="showBulkEmailModal = false"
+      @send="handleBulkEmailSent"
+    />
+
     <!-- Delete Confirmation Modal -->
     <b-modal
       id="delete-student-modal"
@@ -290,11 +313,15 @@
 import { mapGetters } from 'vuex';
 import DataTableContainer from '@/components/tables/data-table-container.vue';
 import EmailQueueStatus from '@/components/email-queue-status.vue';
+import StudentStatsCards from '@/components/students/student-stats-cards.vue';
+import BulkEmailModal from '@/components/students/bulk-email-modal.vue';
 
 export default {
   components: {
     DataTableContainer,
     EmailQueueStatus,
+    StudentStatsCards,
+    BulkEmailModal,
   },
   data() {
     return {
@@ -327,6 +354,9 @@ export default {
       syllabusStatusPolling: {},
       emailQueueStatusPolling: null,
       showEmailQueueStatus: false,
+      selectedExamYear: '',
+      selectedProfileStatus: '',
+      showBulkEmailModal: false,
     };
   },
   computed: {
@@ -336,6 +366,7 @@ export default {
       'isLoading',
       'isSaving',
       'getEmailQueueStatus',
+      'getStudentStats',
     ]),
     students() {
       return this.getStudents;
@@ -349,9 +380,14 @@ export default {
     emailQueueStatus() {
       return this.getEmailQueueStatus;
     },
+    studentStats() {
+      return this.getStudentStats;
+    },
     filterValues() {
       return {
         university: this.selectedUniversity,
+        exam_year: this.selectedExamYear,
+        profile_completed: this.selectedProfileStatus,
       };
     },
     tableFilters() {
@@ -363,7 +399,33 @@ export default {
           defaultValue: '',
           options: this.universityFilterOptions,
         },
+        {
+          key: 'exam_year',
+          label: 'Año de examen',
+          placeholder: 'Todos los años',
+          defaultValue: '',
+          options: this.examYearOptions,
+        },
+        {
+          key: 'profile_completed',
+          label: 'Estado de registro',
+          placeholder: 'Todos',
+          defaultValue: '',
+          options: [
+            { id: 'true', name: 'Registro completo' },
+            { id: 'false', name: 'Pendiente' },
+          ],
+        },
       ];
+    },
+    examYearOptions() {
+      const currentYear = new Date().getFullYear();
+      const years = [];
+      // Generar años desde 2020 hasta 5 años en el futuro
+      for (let year = 2020; year <= currentYear + 5; year++) {
+        years.push({ id: year.toString(), name: year.toString() });
+      }
+      return years.reverse(); // Más recientes primero
     },
     universityOptions() {
       const options = [
@@ -471,6 +533,18 @@ export default {
           params.university = this.selectedUniversity.trim();
         }
 
+        if (this.selectedExamYear && this.selectedExamYear.trim() !== '') {
+          params.exam_year = parseInt(this.selectedExamYear);
+        }
+
+        if (
+          this.selectedProfileStatus &&
+          this.selectedProfileStatus.trim() !== ''
+        ) {
+          params.profile_completed =
+            this.selectedProfileStatus === 'true';
+        }
+
         await this.$store.dispatch('students/fetchStudents', params);
         // Iniciar polling para estudiantes con estado pending después de cargar
         this.startPollingForPendingStudents();
@@ -494,9 +568,13 @@ export default {
     handleFilterChange({ key, value }) {
       if (key === 'university') {
         this.selectedUniversity = value;
-        this.page = 1;
-        this.loadStudents();
+      } else if (key === 'exam_year') {
+        this.selectedExamYear = value;
+      } else if (key === 'profile_completed') {
+        this.selectedProfileStatus = value;
       }
+      this.page = 1;
+      this.loadStudents();
     },
     handlePageChange(newPage) {
       this.page = newPage;
@@ -517,7 +595,7 @@ export default {
       } else if (action === 'uploadCSV') {
         this.showCSVModal = true;
       } else if (action === 'sendBulkEmails') {
-        await this.sendBulkWelcomeEmails();
+        this.showBulkEmailModal = true;
       }
     },
     async createStudent() {
@@ -789,6 +867,25 @@ export default {
       };
       return classMap[status] || 'badge badge-secondary';
     },
+    getEmailStatusText(status) {
+      const statusMap = {
+        pending: 'Correo pendiente',
+        sent: 'Correo enviado',
+        failed: 'Correo fallido',
+      };
+      return statusMap[status] || '';
+    },
+    getEmailStatusClass(status) {
+      const classMap = {
+        pending: 'badge badge-info',
+        sent: 'badge badge-success',
+        failed: 'badge badge-danger',
+      };
+      return classMap[status] || 'badge badge-secondary';
+    },
+    async loadStudentStats() {
+      await this.$store.dispatch('students/fetchStudentStats');
+    },
     async startSyllabusStatusPolling(studentId) {
       // Limpiar polling anterior si existe
       if (this.syllabusStatusPolling[studentId]) {
@@ -840,15 +937,13 @@ export default {
         }
       });
     },
-    async sendBulkWelcomeEmails() {
-      try {
-        await this.$store.dispatch('students/sendBulkWelcomeEmails');
-        // Show the component and start polling for email queue status
-        this.showEmailQueueStatus = true;
-        this.startEmailQueueStatusPolling();
-      } catch (error) {
-        console.error('Error sending bulk welcome emails:', error);
-      }
+    async handleBulkEmailSent() {
+      // Show the component and start polling for email queue status
+      this.showEmailQueueStatus = true;
+      this.startEmailQueueStatusPolling();
+      // Reload students and stats
+      await this.loadStudents();
+      await this.loadStudentStats();
     },
     async startEmailQueueStatusPolling() {
       // Clear existing polling
@@ -917,6 +1012,7 @@ export default {
     this.$nuxt.$on('page-header-button-click', this.handleHeaderButtonClick);
 
     await this.loadStudents();
+    await this.loadStudentStats();
     this.isInitialLoad = false;
     // Iniciar polling para estudiantes con estado pending
     this.startPollingForPendingStudents();
@@ -949,6 +1045,10 @@ export default {
 
 <style lang="scss" scoped>
 #students {
+  .stats-section {
+    margin-bottom: 30px;
+  }
+
   .td-actions {
     display: flex;
     align-items: center;
