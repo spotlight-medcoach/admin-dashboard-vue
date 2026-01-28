@@ -306,6 +306,30 @@
       </p>
       <p class="text-danger">Esta acción no se puede deshacer.</p>
     </b-modal>
+
+    <!-- Resend Email Confirmation Modal -->
+    <b-modal
+      id="resend-email-modal"
+      v-model="showResendEmailModal"
+      title="Reenviar correo de bienvenida"
+      @ok="confirmResendWelcomeEmail"
+    >
+      <p>
+        Ya se ha enviado un correo de bienvenida a
+        <strong
+          >{{ studentToResendEmail && studentToResendEmail.name }}
+          {{ studentToResendEmail && studentToResendEmail.last_name }}</strong
+        >
+        el día
+        <strong>{{
+          formatDate(
+            studentToResendEmail && studentToResendEmail.last_welcome_email_sent_at
+          )
+        }}</strong
+        >.
+      </p>
+      <p>¿Deseas enviar otro correo de bienvenida?</p>
+    </b-modal>
   </div>
 </template>
 
@@ -334,6 +358,8 @@ export default {
       showCSVModal: false,
       showDeleteModal: false,
       studentToDelete: null,
+      showResendEmailModal: false,
+      studentToResendEmail: null,
       saving: false,
       universities: [],
       sortBy: 'name',
@@ -765,7 +791,21 @@ export default {
         });
       }
     },
-    async resendWelcomeEmail(studentId) {
+    resendWelcomeEmail(studentId) {
+      // Find the student to check if email was already sent
+      const student = this.students.find((s) => s._id === studentId);
+      if (!student) return;
+
+      // If the student already has a welcome email sent, show confirmation modal
+      if (student.last_welcome_email_sent_at) {
+        this.studentToResendEmail = student;
+        this.showResendEmailModal = true;
+      } else {
+        // No previous email sent, send directly
+        this.sendWelcomeEmailToStudent(studentId);
+      }
+    },
+    async sendWelcomeEmailToStudent(studentId) {
       try {
         await this.$store.dispatch('students/resendWelcomeEmail', studentId);
         this.$bvToast.toast('Correo de bienvenida reenviado exitosamente', {
@@ -773,6 +813,8 @@ export default {
           variant: 'success',
           solid: true,
         });
+        // Reload students to update the email status
+        await this.loadStudents();
       } catch (error) {
         console.error('Error resending welcome email:', error);
         this.$bvToast.toast('Error al reenviar correo de bienvenida', {
@@ -781,6 +823,24 @@ export default {
           solid: true,
         });
       }
+    },
+    async confirmResendWelcomeEmail() {
+      if (!this.studentToResendEmail) return;
+
+      await this.sendWelcomeEmailToStudent(this.studentToResendEmail._id);
+      this.studentToResendEmail = null;
+      this.showResendEmailModal = false;
+    },
+    formatDate(date) {
+      if (!date) return '';
+      const d = new Date(date);
+      return d.toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
     },
     async generateDiagnosticTest(studentId) {
       try {

@@ -169,13 +169,18 @@ export const actions = {
   async resendWelcomeEmail({ commit }, id) {
     try {
       commit('setSaving', true);
-      await this.$axios.post(`/students/${id}/resend-welcome-email`);
+      const response = await this.$axios.post(
+        `/students/${id}/resend-welcome-email`
+      );
+      const result = response.data.payload || response.data.data || {};
       if (this.$toastr) {
-        this.$toastr.success(
-          'Correo de bienvenida reenviado exitosamente',
-          'Éxito'
-        );
+        let message = 'Correo de bienvenida reenviado exitosamente';
+        if (result.pending_job_completed) {
+          message += ' (job pendiente completado)';
+        }
+        this.$toastr.success(message, 'Éxito');
       }
+      return result;
     } catch (err) {
       console.error('Error resending welcome email:', err);
       const errorMessage =
