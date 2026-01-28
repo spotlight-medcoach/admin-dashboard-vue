@@ -3,230 +3,63 @@
     <Loading v-if="loading" />
 
     <div v-else class="accordion" id="accordion">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="chart-analysis">
-          <button
-            @click="createDataToCharts"
-            class="accordion-button"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#collapse-chart-analysis"
-            aria-expanded="true"
-            aria-controls="collapse-chart-analysis"
-          >
-            <i class="fas fa-chart-bar"></i> Análisis del banco de casos
-          </button>
-        </h2>
-        <div
-          v-if="!loading"
-          id="collapse-chart-analysis"
-          class="accordion-collapse collapse show"
-          aria-labelledby="chart-analysis"
-          data-bs-parent="#accordion"
-        >
-          <div class="accordion-body">
-            <div class="graphic">
-              <span>Casos por tema</span>
-              <!-- :width="420" -->
-              <Chart
-                :height="220"
-                :render="renderCount"
-                :chartData="chartDataTopic"
-                :pos="'bottom'"
-              />
-            </div>
+      <!-- Estudiantes -->
+      <StudentsStatsCard
+        :student-stats="studentStats"
+        :email-stats="emailStats"
+        :render-count="renderCount"
+      />
 
-            <div class="graphic">
-              <span>Preguntas por dificultad</span>
-              <!-- :width="420" -->
-              <Chart
-                :height="200"
-                :render="renderCount"
-                :chartData="chartDataDificulty"
-                :pos="'bottom'"
-              />
-            </div>
+      <!-- Análisis del banco de casos -->
+      <CasesAnalysisCard
+        :chart-data-topic="chartDataTopic"
+        :chart-data-dificulty="chartDataDificulty"
+        :chart-data-type="chartDataType"
+        :render-count="renderCount"
+        @load-charts="createDataToCharts"
+      />
 
-            <div class="graphic">
-              <span>Preguntas por tipo</span>
-              <!-- :width="420" -->
-              <Chart
-                :height="240"
-                :render="renderCount"
-                :chartData="chartDataType"
-                :pos="'bottom'"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="cases-analysis">
-          <button
-            class="accordion-button collapsed"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#collapse-cases-analysis"
-            aria-expanded="false"
-            aria-controls="collapse-cases-analysis"
-          >
-            <i class="fas fa-list-alt"></i> Total de casos:
-            <p>{{ totalCases }}</p>
-          </button>
-        </h2>
+      <!-- Total de casos -->
+      <TotalCasesCard
+        :total-cases="totalCases"
+        :questions-by-topic="questionsByTopic"
+        :subtopics="subtopics"
+        :topic-selected="topicSelected"
+        :selected-topic="topic"
+        :chart-data-dificulty-topics="chartDataDificultyTopics"
+        :chart-data-type-topics="chartDataTypeTopics"
+        :render-count="renderCount"
+        @topic-change="changeSubtopics"
+        @subtopic-selected="subtopicSelected"
+      />
 
-        <div
-          id="collapse-cases-analysis"
-          class="accordion-collapse collapse"
-          aria-labelledby="cases-analysis"
-          data-bs-parent="#accordion"
-        >
-          <div class="accordion-body">
-            <div class="topics-container">
-              <div class="topics">
-                <button
-                  class="btn"
-                  v-for="topic in questionsByTopic"
-                  :key="topic.topic_id"
-                  @click="changeSubtopics(topic)"
-                >
-                  {{
-                    topic.topic_name == 'Gine&Obstetricia'
-                      ? 'Ginecología y obstetricia'
-                      : topic.topic_name
-                  }}
-                  <br />
-                  <span>{{ topic.total_questions }}/450</span>
-                </button>
-              </div>
-
-              <div class="subtopics">
-                <h3>{{ topicSelected }}</h3>
-
-                <button
-                  class="btn ml-4"
-                  v-for="subtopic in subtopics"
-                  :key="subtopic.subtopic_id"
-                  @click="subtopicSelected(subtopic)"
-                >
-                  <i class="fas fa-circle"></i>
-                  <span>{{ subtopic.subtopic_name }}</span>
-                </button>
-              </div>
-
-              <div class="no-cases">
-                <button class="btn no-cases-button">
-                  No. casos <i class="fas fa-arrow-down"></i>
-                </button>
-
-                <button
-                  class="btn buttons"
-                  v-for="sub in topic.subtopics"
-                  :key="sub.subtopic_bubble"
-                >
-                  {{ sub.cases.length }}
-                </button>
-              </div>
-
-              <div class="porcent">
-                <button class="btn porcent-button">
-                  Porcentaje<i class="fas fa-arrow-down"></i>
-                </button>
-
-                <button
-                  class="btn buttons"
-                  v-for="sub in topic.subtopics"
-                  :key="sub.subtopic_bubble"
-                >
-                  {{
-                    Math.round((sub.cases.length * 100) / topic.cases.length)
-                  }}%
-                </button>
-              </div>
-
-              <div class="cases-graphics">
-                <div>
-                  <h3>Preguntas por tipo</h3>
-                  <Chart
-                    :height="180"
-                    :width="420"
-                    :render="renderCount"
-                    :chartData="chartDataDificultyTopics"
-                    :pos="'bottom'"
-                  />
-                </div>
-
-                <div class="by-dificult">
-                  <h3>Preguntas por dificultad</h3>
-                  <Chart
-                    :height="210"
-                    :width="420"
-                    :render="renderCount"
-                    :chartData="chartDataTypeTopics"
-                    :pos="'bottom'"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="annual-analysis">
-          <button
-            @click="createBarData"
-            class="accordion-button collapsed"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#collapse-annual-analysis"
-            aria-expanded="false"
-            aria-controls="collapse-annual-analysis"
-          >
-            <i class="fas fa-calendar-alt"></i> Análisis anual
-          </button>
-        </h2>
-        <div
-          id="collapse-annual-analysis"
-          class="accordion-collapse collapse"
-          aria-labelledby="annual-analysis"
-          data-bs-parent="#accordion"
-        >
-          <div class="accordion-body">
-            <div class="bar-container">
-              <div class="year-container">
-                <div class="year">
-                  <h3>Filtrar por año</h3>
-                  <select
-                    v-model="yearSelected"
-                    class="options"
-                    @change="createBarData"
-                  >
-                    <option v-for="year in years" :key="year">
-                      {{ year }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <ChartBar :chartData="barData" :render="renderCount" />
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Análisis anual -->
+      <AnnualAnalysisCard
+        :bar-data="barData"
+        :year-selected="yearSelected"
+        :years="years"
+        :render-count="renderCount"
+        @load-bar-data="createBarData"
+        @year-change="handleYearChange"
+      />
     </div>
   </div>
 </template>
 
 <script>
 import Loading from '@/components/modals/loading.modal.vue';
-import Chart from '@/components/chart/chart.vue';
-import ChartBar from '@/components/chart/chart-bar.vue';
+import StudentsStatsCard from '@/components/statistics/students-stats-card.vue';
+import CasesAnalysisCard from '@/components/statistics/cases-analysis-card.vue';
+import TotalCasesCard from '@/components/statistics/total-cases-card.vue';
+import AnnualAnalysisCard from '@/components/statistics/annual-analysis-card.vue';
 
 export default {
   components: {
     Loading,
-    Chart,
-    ChartBar,
+    StudentsStatsCard,
+    CasesAnalysisCard,
+    TotalCasesCard,
+    AnnualAnalysisCard,
   },
   data() {
     return {
@@ -255,6 +88,17 @@ export default {
       subtopics: [],
       topicSelected: '',
       topic: {},
+      // Student statistics
+      studentStats: {
+        total: 0,
+        completed: 0,
+        pending: 0,
+      },
+      emailStats: {
+        sent: 0,
+        pending: 0,
+        failed: 0,
+      },
     };
   },
   async created() {
@@ -274,7 +118,7 @@ export default {
       this.topics = JSON.parse(localStorage.getItem('topics'));
       this.types = JSON.parse(localStorage.getItem('types'));
 
-      await this.getStatistics();
+      await Promise.all([this.getStatistics(), this.getStudentStats()]);
 
       this.loading = !this.loading;
     }
@@ -334,6 +178,34 @@ export default {
         this.createDataToCharts();
       } catch (err) {
         console.log(err);
+      }
+    },
+    async getStudentStats() {
+      try {
+        const [statsResponse, emailResponse] = await Promise.all([
+          this.$axios.get('/students/stats'),
+          this.$axios.get('/students/email-queue-status'),
+        ]);
+
+        const stats = statsResponse.data.payload ||
+          statsResponse.data.data ||
+          statsResponse.data || {
+            total: 0,
+            completed: 0,
+            pending: 0,
+          };
+        this.studentStats = stats;
+
+        const emailStatus = emailResponse.data.payload ||
+          emailResponse.data.data || {
+            pending: 0,
+            sent: 0,
+            failed: 0,
+          };
+        this.emailStats = emailStatus;
+        this.renderCount += 1;
+      } catch (err) {
+        console.error('Error fetching student stats:', err);
       }
     },
     loadTopicChart() {
@@ -514,6 +386,10 @@ export default {
       };
     },
     subtopicSelected() {},
+    handleYearChange(year) {
+      this.yearSelected = parseInt(year);
+      this.createBarData();
+    },
     createBarData() {
       this.renderCount += 1;
       let ordered = this.casesByYear.sort((a, b) => {
@@ -599,7 +475,7 @@ export default {
   margin-left: 12px;
 }
 
-.accordion-item {
+.accordion >>> .accordion-item {
   align-items: center;
   overflow: hidden;
   background: #ffffff;
@@ -608,7 +484,7 @@ export default {
   margin: 20px 0px;
 }
 
-.accordion-button {
+.accordion >>> .accordion-button {
   font-style: normal;
   font-weight: bold;
   font-size: 28px;
@@ -616,234 +492,19 @@ export default {
   color: #000000;
 }
 
-.accordion-item i {
+.accordion >>> .accordion-item i {
   margin-right: 24px;
   color: #fe9400;
 }
 
-.accordion-button:not(.collapsed) i {
+.accordion >>> .accordion-button:not(.collapsed) i {
   color: #1ca4fc;
 }
 
-.accordion-body {
+.accordion >>> .accordion-body {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 24px;
-}
-
-.graphic {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.graphic span {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 23px;
-  color: #000000;
-  margin-bottom: 4px;
-}
-
-.topics-container {
-  display: flex;
-  flex-direction: row;
-}
-
-.topics {
-  display: flex;
-  flex-direction: column;
-  margin: 40px 0px;
-  border-right: 2px solid #000000;
-}
-
-.topics button {
-  text-align: right;
-  border-bottom: 1px solid #c6e8fe;
-  font-style: normal;
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 20px;
-  color: #212529;
-  padding: 20px 40px 20px 20px;
-  margin: 0px 20px;
-}
-
-.topics button:focus {
-  background: #e9f6ff;
-}
-
-.topics span {
-  font-weight: bold;
-}
-
-.subtopics {
-  display: flex;
-  flex-direction: column;
-  margin: 40px 0px;
-  border-left: 2px solid #000000;
-}
-
-.subtopics h3 {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 20px;
-  color: #fe9400;
-  margin: 15px 20px;
-}
-
-.subtopics span {
-  margin: 0px 4px;
-  font-style: normal;
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 20px;
-  color: #1ca4fc;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.subtopics button {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  text-align: left;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 15px;
-  line-height: 21px;
-  color: #212529;
-}
-
-.subtopics button:focus {
-  background: #e9f6ff;
-}
-
-.subtopics i {
-  font-size: 8px;
-  margin-right: 4px;
-}
-
-.no-cases {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0px 20px;
-  margin: 40px 0px;
-  border-right: 2px solid #ebebeb;
-  border-left: 2px solid #ebebeb;
-}
-
-.no-cases-button {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 0px;
-  margin: 15px 0px;
-  font-style: normal;
-  font-weight: bold;
-  line-height: 20px;
-  font-size: 16px;
-  color: #1ca4fc;
-}
-
-.no-cases i {
-  color: #1ca4fc;
-  font-size: 16px;
-  margin: 0px;
-  margin-left: 12px;
-}
-
-.buttons {
-  font-style: normal;
-  font-weight: normal;
-  font-size: 15px;
-  line-height: 21px;
-  color: #212529;
-}
-
-.buttons button:focus {
-  outline: none;
-  border: none;
-}
-
-.porcent {
-  display: flex;
-  flex-direction: column;
-  margin: 40px 0px;
-  padding: 0px 25px;
-  border-right: 2px solid #ebebeb;
-}
-
-.porcent-button {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin: 15px 0px;
-  padding: 0px;
-  font-style: normal;
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 20px;
-  color: #1ca4fc;
-}
-
-.porcent i {
-  font-size: 16px;
-  color: #1ca4fc;
-  margin: 0px;
-  margin-left: 12px;
-}
-
-.cases-graphics {
-  display: flex;
-  flex-direction: column;
-  margin: 40px 40px;
-}
-
-.cases-graphics h3 {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 23px;
-  color: #000000;
-}
-
-.by-dificult {
-  margin-top: 40px;
-}
-
-.year-container {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.year {
-  width: 30%;
-  margin-bottom: 15px;
-}
-
-.year h3 {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 20px;
-  color: #1ca4fc;
-}
-
-.options {
-  font-family: Montserrat;
-  width: 100%;
-  height: 32px;
-  border: none;
-  border-bottom: 1px solid #000;
-}
-
-.bar-container {
-  width: 100%;
 }
 </style>

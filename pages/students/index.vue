@@ -7,14 +7,6 @@
       @close="showEmailQueueStatus = false"
     />
 
-    <!-- Student Statistics Cards -->
-    <section class="stats-section">
-      <student-stats-cards
-        :stats="studentStats"
-        :email-stats="emailQueueStatus"
-      />
-    </section>
-
     <section class="students-container">
       <article class="full">
         <template>
@@ -323,7 +315,8 @@
         el día
         <strong>{{
           formatDate(
-            studentToResendEmail && studentToResendEmail.last_welcome_email_sent_at
+            studentToResendEmail &&
+              studentToResendEmail.last_welcome_email_sent_at
           )
         }}</strong
         >.
@@ -337,14 +330,12 @@
 import { mapGetters } from 'vuex';
 import DataTableContainer from '@/components/tables/data-table-container.vue';
 import EmailQueueStatus from '@/components/email-queue-status.vue';
-import StudentStatsCards from '@/components/students/student-stats-cards.vue';
 import BulkEmailModal from '@/components/students/bulk-email-modal.vue';
 
 export default {
   components: {
     DataTableContainer,
     EmailQueueStatus,
-    StudentStatsCards,
     BulkEmailModal,
   },
   data() {
@@ -392,7 +383,6 @@ export default {
       'isLoading',
       'isSaving',
       'getEmailQueueStatus',
-      'getStudentStats',
     ]),
     students() {
       return this.getStudents;
@@ -405,9 +395,6 @@ export default {
     },
     emailQueueStatus() {
       return this.getEmailQueueStatus;
-    },
-    studentStats() {
-      return this.getStudentStats;
     },
     filterValues() {
       return {
@@ -567,8 +554,7 @@ export default {
           this.selectedProfileStatus &&
           this.selectedProfileStatus.trim() !== ''
         ) {
-          params.profile_completed =
-            this.selectedProfileStatus === 'true';
+          params.profile_completed = this.selectedProfileStatus === 'true';
         }
 
         await this.$store.dispatch('students/fetchStudents', params);
@@ -943,9 +929,6 @@ export default {
       };
       return classMap[status] || 'badge badge-secondary';
     },
-    async loadStudentStats() {
-      await this.$store.dispatch('students/fetchStudentStats');
-    },
     async startSyllabusStatusPolling(studentId) {
       // Limpiar polling anterior si existe
       if (this.syllabusStatusPolling[studentId]) {
@@ -1001,9 +984,8 @@ export default {
       // Show the component and start polling for email queue status
       this.showEmailQueueStatus = true;
       this.startEmailQueueStatusPolling();
-      // Reload students and stats
+      // Reload students
       await this.loadStudents();
-      await this.loadStudentStats();
     },
     async startEmailQueueStatusPolling() {
       // Clear existing polling
@@ -1072,7 +1054,6 @@ export default {
     this.$nuxt.$on('page-header-button-click', this.handleHeaderButtonClick);
 
     await this.loadStudents();
-    await this.loadStudentStats();
     this.isInitialLoad = false;
     // Iniciar polling para estudiantes con estado pending
     this.startPollingForPendingStudents();
@@ -1105,10 +1086,6 @@ export default {
 
 <style lang="scss" scoped>
 #students {
-  .stats-section {
-    margin-bottom: 30px;
-  }
-
   .td-actions {
     display: flex;
     align-items: center;
