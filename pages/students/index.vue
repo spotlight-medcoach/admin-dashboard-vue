@@ -97,6 +97,9 @@
                   <b-dropdown-item @click="initializeStudentProgress(row._id)">
                     <i class="fas fa-redo"></i> Inicializar progreso
                   </b-dropdown-item>
+                  <b-dropdown-item @click="openTestDateModal(row)">
+                    <i class="fas fa-calendar-alt"></i> Modificar fecha de examen
+                  </b-dropdown-item>
                   <b-dropdown-item @click="editStudent(row)">
                     <i class="fas fa-pencil-alt"></i> Editar
                   </b-dropdown-item>
@@ -323,6 +326,51 @@
       </p>
       <p>¿Deseas enviar otro correo de bienvenida?</p>
     </b-modal>
+
+    <!-- Modify Test Date Modal -->
+    <b-modal
+      id="test-date-modal"
+      v-model="showTestDateModal"
+      title="Modificar fecha de examen"
+      @hidden="resetTestDateForm"
+    >
+      <p v-if="studentToUpdateTestDate">
+        Estudiante:
+        <strong
+          >{{ studentToUpdateTestDate.name }}
+          {{ studentToUpdateTestDate.last_name }}</strong
+        >
+      </p>
+      <b-form-group
+        label="Nueva fecha de examen"
+        label-for="test-date-input"
+      >
+        <b-form-input
+          id="test-date-input"
+          v-model="testDateForm"
+          type="date"
+          required
+          :min="minTestDate"
+        />
+        <small class="form-text text-muted">
+          La fecha debe ser futura. Se recalcularán las horas de estudio
+          restando las horas de los manuales ya leídos.
+        </small>
+      </b-form-group>
+      <template #modal-footer>
+        <b-button variant="secondary" @click="showTestDateModal = false">
+          Cancelar
+        </b-button>
+        <b-button
+          variant="primary"
+          :disabled="!testDateForm || saving"
+          @click="saveTestDate"
+        >
+          <span v-if="saving">Guardando...</span>
+          <span v-else>Guardar</span>
+        </b-button>
+      </template>
+    </b-modal>
   </div>
 </template>
 
@@ -351,6 +399,9 @@ export default {
       studentToDelete: null,
       showResendEmailModal: false,
       studentToResendEmail: null,
+      showTestDateModal: false,
+      studentToUpdateTestDate: null,
+      testDateForm: '',
       saving: false,
       universities: [],
       sortBy: 'name',
@@ -460,6 +511,11 @@ export default {
         id: u._id,
         name: u.name,
       }));
+    },
+    minTestDate() {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow.toISOString().slice(0, 10);
     },
     tableColumns() {
       return [
@@ -735,6 +791,47 @@ export default {
       this.csvContent = '';
       this.csvPreview = [];
       this.sendEmails = false;
+    },
+    openTestDateModal(student) {
+      this.studentToUpdateTestDate = student;
+      this.testDateForm = student.test_date
+        ? new Date(student.test_date).toISOString().slice(0, 10)
+        : '';
+      this.showTestDateModal = true;
+    },
+    resetTestDateForm() {
+      this.studentToUpdateTestDate = null;
+      this.testDateForm = '';
+    },
+    async saveTestDate() {
+      if (!this.studentToUpdateTestDate || !this.testDateForm) return;
+      try {
+        await this.$store.dispatch('students/updateTestDate', {
+          studentId: this.studentToUpdateTestDate._id,
+          testDate: this.testDateForm,
+        });
+        this.showTestDateModal = false;
+        this.resetTestDateForm();
+        await this.loadStudents();
+        this.$bvToast.toast(
+          'Fecha de examen y año actualizados. Horas de estudio recalculadas.',
+          {
+            title: 'Éxito',
+            variant: 'success',
+            solid: true,
+          }
+        );
+      } catch (error) {
+        console.error('Error updating test date:', error);
+        this.$bvToast.toast(
+          error.response?.data?.error || 'Error al actualizar fecha de examen',
+          {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          }
+        );
+      }
     },
     // eslint-disable-next-line no-unused-vars
     editStudent(student) {

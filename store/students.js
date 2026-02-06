@@ -284,6 +284,30 @@ export const actions = {
     }
   },
 
+  async updateTestDate({ commit, dispatch }, { studentId, testDate }) {
+    try {
+      commit('setSaving', true);
+      const response = await this.$axios.patch(
+        `/students/${studentId}/test-date`,
+        { test_date: testDate }
+      );
+      const student = response.data.payload || response.data.data;
+      await dispatch('fetchStudents');
+      return student;
+    } catch (err) {
+      console.error('Error updating test date:', err);
+      const errorMessage =
+        (err.response && err.response.data && err.response.data.error) ||
+        'Error al actualizar fecha de examen';
+      if (this.$toastr) {
+        this.$toastr.error(errorMessage, 'Error');
+      }
+      throw err;
+    } finally {
+      commit('setSaving', false);
+    }
+  },
+
   async sendBulkWelcomeEmails({ commit, dispatch }, filters = undefined) {
     try {
       commit('setSaving', true);
