@@ -26,118 +26,33 @@
       </div>
 
       <!-- Profile Header -->
-      <div class="profile-header fade-in-up delay-1">
-        <div class="profile-left">
-          <MedScoreRing
-            :score="detail.med_score"
-            :photo-url="student.photo_url"
-            :alt="studentFullName"
-            :size="180"
-            :stroke-width="10"
-          />
-        </div>
+      <StudentProfileHeader
+        :student="student"
+        :med-score="detail.med_score"
+        class="fade-in-up delay-1"
+      />
 
-        <div class="profile-center">
-          <h1 class="student-name">{{ studentFullName }}</h1>
-          <div class="student-meta">
-            <div class="meta-item">
-              <i class="fas fa-envelope"></i>
-              <span>{{ student.email }}</span>
-            </div>
-            <div v-if="student.university_student_id" class="meta-item">
-              <i class="fas fa-id-card"></i>
-              <span>{{ student.university_student_id }}</span>
-            </div>
-            <div v-if="universityName" class="meta-item">
-              <i class="fas fa-university"></i>
-              <span>{{ universityName }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="profile-right">
-          <div class="info-badges">
-            <div class="info-badge" v-if="student.test_date">
-              <span class="badge-label">Fecha de examen</span>
-              <span class="badge-value">{{
-                formatDateShort(student.test_date)
-              }}</span>
-            </div>
-            <div class="info-badge">
-              <span class="badge-label">Ultimo acceso</span>
-              <span class="badge-value">{{
-                student.last_login
-                  ? formatDateRelative(student.last_login)
-                  : 'Sin registro'
-              }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <!-- Debug Actions (solo visible con ?debug=true) -->
+      <StudentDebugActions
+        v-if="isDebugMode"
+        :student-id="$route.params.id"
+        :current-test-date="student.test_date"
+        class="fade-in-up delay-3"
+        @action-completed="refreshDetail"
+      />
+      
       <!-- Stats Row -->
-      <div class="stats-row fade-in-up delay-2">
-        <div class="stat-card">
-          <div class="stat-icon icon-diagnostic">
-            <i class="fas fa-stethoscope"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value">{{
-              detail.diagnostic_score.percentage
-            }}%</span>
-            <span class="stat-label">Diagnostico</span>
-            <span class="stat-detail">
-              {{ detail.diagnostic_score.total_correct }}/{{
-                detail.diagnostic_score.total_questions
-              }}
-              correctas
-            </span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon icon-hours">
-            <i class="fas fa-clock"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value">{{ student.study_hours || 0 }}h</span>
-            <span class="stat-label">Horas de estudio diarias</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon icon-rest">
-            <i class="fas fa-calendar-check"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value">{{ freeDayName }}</span>
-            <span class="stat-label">Dia de descanso</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon icon-manuals">
-            <i class="fas fa-book-open"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value">{{ detail.manuals.total_read }}</span>
-            <span class="stat-label">Manuales leidos</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon icon-exams">
-            <i class="fas fa-file-alt"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value">{{ detail.custom_exams.total }}</span>
-            <span class="stat-label">Examenes realizados</span>
-          </div>
-        </div>
-      </div>
+      <StudentDetailStats
+        :diagnostic-score="detail.diagnostic_score"
+        :study-hours="student.study_hours || 0"
+        :free-day="studentFreeDay"
+        :total-manuals-read="detail.manuals.total_read"
+        :total-exams="detail.custom_exams.total"
+        class="fade-in-up delay-2"
+      />
 
       <!-- Tabs -->
-      <div class="detail-tabs fade-in-up delay-3">
+      <div :class="['detail-tabs', 'fade-in-up', isDebugMode ? 'delay-4' : 'delay-3']">
         <b-tabs
           content-class="tab-content-wrapper"
           nav-class="custom-tabs-nav"
@@ -176,94 +91,74 @@
 </template>
 
 <script>
-import MedScoreRing from '@/components/students/med-score-ring.vue';
+import StudentProfileHeader from '@/components/students/student-profile-header.vue';
+import StudentDetailStats from '@/components/students/student-detail-stats.vue';
 import StudentManualsTab from '@/components/students/student-manuals-tab.vue';
 import StudentExamsTab from '@/components/students/student-exams-tab.vue';
-
-const DAY_NAMES = [
-  'Lunes',
-  'Martes',
-  'Miercoles',
-  'Jueves',
-  'Viernes',
-  'Sabado',
-  'Domingo',
-];
+import StudentDebugActions from '@/components/students/student-debug-actions.vue';
 
 export default {
   components: {
-    MedScoreRing,
+    StudentProfileHeader,
+    StudentDetailStats,
     StudentManualsTab,
     StudentExamsTab,
+    StudentDebugActions,
   },
   data() {
     return {
       loading: true,
       error: null,
       activeTab: 0,
+      userRole: null,
     };
   },
   computed: {
+    isSupervisor() {
+      return this.userRole === 'Supervisor';
+    },
+    isDebugMode() {
+      // return this.$route.query.debug === 'true' && !this.isSupervisor;
+      return !this.isSupervisor;
+    },
     detail() {
       return this.$store.getters['students/getStudentDetail'];
     },
     student() {
       return this.detail ? this.detail.student : {};
     },
-    studentFullName() {
-      if (!this.student) return '';
-      const parts = [];
-      if (this.student.name) parts.push(this.student.name);
-      if (this.student.last_name) parts.push(this.student.last_name);
-      if (parts.length === 0 && this.student.first_name) {
-        parts.push(this.student.first_name);
-        if (this.student.last_name) parts.push(this.student.last_name);
-      }
-      return parts.join(' ') || 'Sin nombre';
-    },
-    universityName() {
-      if (!this.student || !this.student.university) return '';
-      if (typeof this.student.university === 'string')
-        return this.student.university;
-      return this.student.university.name || '';
-    },
-    freeDayName() {
-      const day = this.student.free_day ?? this.student.rest_day ?? -1;
-      if (day < 0 || day > 6) return 'Ninguno';
-      return DAY_NAMES[day] || 'Ninguno';
+    studentFreeDay() {
+      if (this.student.free_day != null) return this.student.free_day;
+      if (this.student.rest_day != null) return this.student.rest_day;
+      return -1;
     },
   },
   methods: {
-    formatDateShort(date) {
-      if (!date) return '-';
-      const d = new Date(date);
-      return d.toLocaleDateString('es-MX', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-    },
-    formatDateRelative(date) {
-      if (!date) return '-';
-      const d = new Date(date);
-      const now = new Date();
-      const diffMs = now - d;
-      const diffMin = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMin / 60);
-      const diffDays = Math.floor(diffHours / 24);
-
-      if (diffMin < 1) return 'Justo ahora';
-      if (diffMin < 60) return `Hace ${diffMin} min`;
-      if (diffHours < 24) return `Hace ${diffHours}h`;
-      if (diffDays < 7) return `Hace ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
-      return d.toLocaleDateString('es-MX', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
+    async refreshDetail() {
+      try {
+        await this.$store.dispatch(
+          'students/fetchStudentDetail',
+          this.$route.params.id
+        );
+      } catch (err) {
+        console.error('Error refreshing student detail:', err);
+      }
     },
   },
   async mounted() {
+    // Load user role
+    if (process.browser) {
+      try {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const user = JSON.parse(userData);
+          this.userRole = user.role;
+        }
+      } catch (e) {
+        console.error('Error loading user role:', e);
+      }
+    }
+
     this.$store.dispatch('pageHeader/setHeader', {
       hasHeader: false,
     });
@@ -379,186 +274,6 @@ export default {
   }
 }
 
-/* Profile Header */
-.profile-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 32px;
-  background: #fff;
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
-  margin-bottom: 24px;
-}
-
-.profile-left {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-  padding-top: 4px;
-}
-
-.profile-center {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-top: 12px;
-}
-
-.student-name {
-  font-size: 26px;
-  font-weight: 700;
-  color: #1d1d1b;
-  margin: 0 0 12px;
-  line-height: 1.2;
-}
-
-.student-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #5b5b5b;
-  font-size: 14px;
-
-  i {
-    width: 16px;
-    text-align: center;
-    color: #bbbbb3;
-    font-size: 13px;
-  }
-}
-
-.profile-right {
-  flex-shrink: 0;
-}
-
-.info-badges {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.info-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  padding: 10px 16px;
-  background: #f8f8f8;
-  border-radius: 10px;
-  min-width: 160px;
-}
-
-.badge-label {
-  font-size: 11px;
-  color: #979797;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  font-weight: 500;
-}
-
-.badge-value {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1d1d1b;
-  margin-top: 2px;
-}
-
-/* Stats Row */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 18px 20px;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  }
-}
-
-.stat-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
-
-  &.icon-diagnostic {
-    background: rgba(255, 147, 0, 0.1);
-    color: #ff9300;
-  }
-
-  &.icon-hours {
-    background: rgba(67, 182, 244, 0.1);
-    color: #43b6f4;
-  }
-
-  &.icon-rest {
-    background: rgba(129, 143, 249, 0.1);
-    color: #818ff9;
-  }
-
-  &.icon-manuals {
-    background: rgba(116, 237, 92, 0.1);
-    color: #4fcb43;
-  }
-
-  &.icon-exams {
-    background: rgba(255, 57, 170, 0.1);
-    color: #ff39aa;
-  }
-}
-
-.stat-content {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.stat-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: #1d1d1b;
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #979797;
-  margin-top: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.stat-detail {
-  font-size: 11px;
-  color: #bbbbb3;
-  margin-top: 2px;
-}
-
 /* Tabs */
 .detail-tabs {
   background: #fff;
@@ -643,6 +358,10 @@ export default {
   animation-delay: 0.3s;
 }
 
+.delay-4 {
+  animation-delay: 0.4s;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -651,47 +370,6 @@ export default {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-  .stats-row {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 992px) {
-  .profile-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .profile-center {
-    align-items: center;
-  }
-
-  .student-meta {
-    align-items: center;
-  }
-
-  .profile-right {
-    width: 100%;
-  }
-
-  .info-badges {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .info-badge {
-    align-items: center;
-  }
-
-  .stats-row {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>

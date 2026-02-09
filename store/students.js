@@ -388,6 +388,27 @@ export const actions = {
     }
   },
 
+  async recalculateMedScore({ commit }, id) {
+    try {
+      commit('setSaving', true);
+      const response = await this.$axios.post(
+        `/students/${id}/recalculate-medscore`
+      );
+      return response.data.payload || response.data.data;
+    } catch (err) {
+      console.error('Error recalculating medscore:', err);
+      const errorMessage =
+        (err.response && err.response.data && err.response.data.error) ||
+        'Error al recalcular MedScore';
+      if (this.$toastr) {
+        this.$toastr.error(errorMessage, 'Error');
+      }
+      throw err;
+    } finally {
+      commit('setSaving', false);
+    }
+  },
+
   async fetchStudentStats({ commit }) {
     try {
       const response = await this.$axios.get('/students/stats');

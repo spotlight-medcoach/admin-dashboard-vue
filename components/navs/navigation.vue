@@ -78,7 +78,45 @@ export default {
       isHovered: false, // Para hover temporal
       expandedGroups: [],
       windowWidth: 0,
-      menuItems: [
+    };
+  },
+  computed: {
+    userRole() {
+      // Re-evaluates on route changes thanks to the dependency on $route.path
+      // eslint-disable-next-line no-unused-expressions
+      this.$route && this.$route.path;
+      if (process.browser) {
+        try {
+          const userData = localStorage.getItem('user');
+          if (userData) {
+            const user = JSON.parse(userData);
+            return user.role || null;
+          }
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
+    },
+    menuItems() {
+      if (this.userRole === 'Supervisor') {
+        return [
+          {
+            group: 'Usuarios',
+            icon: 'fas fa-users',
+            items: [
+              {
+                to: '/students',
+                icon: 'fas fa-user-graduate',
+                title: 'Estudiantes',
+              },
+            ],
+          },
+        ];
+      }
+
+      // Administrator - full menu
+      return [
         {
           group: 'Casos',
           icon: 'fas fa-folder-open',
@@ -93,21 +131,6 @@ export default {
               icon: 'fas fa-clipboard-question',
               title: 'Casos Personalizados',
             },
-            {
-              to: '/find-case',
-              icon: 'fas fa-search',
-              title: 'Búsqueda de casos',
-            },
-            {
-              to: '/review-new-questions',
-              icon: 'fas fa-folder',
-              title: 'Revisión de casos',
-            },
-            {
-              to: '/requested-cases',
-              icon: 'fas fa-list-alt',
-              title: 'Solicitud de casos',
-            },
           ],
         },
         {
@@ -117,12 +140,7 @@ export default {
             {
               to: '/statistics',
               icon: 'fas fa-chart-bar',
-              title: 'Análisis de banco',
-            },
-            {
-              to: '/reports',
-              icon: 'fas fa-exclamation-circle',
-              title: 'Reportes',
+              title: 'Analíticos',
             },
           ],
         },
@@ -131,19 +149,14 @@ export default {
           icon: 'fas fa-file-alt',
           items: [
             {
-              to: '/simulators',
-              icon: 'fas fa-book-open',
-              title: 'Simuladores',
+              to: '/manuals',
+              icon: 'fas fa-book',
+              title: 'Manuales',
             },
             {
               to: '/infographics',
               icon: 'fas fa-file-image',
               title: 'Infográficos',
-            },
-            {
-              to: '/manuals',
-              icon: 'fas fa-book',
-              title: 'Manuales',
             },
           ],
         },
@@ -152,14 +165,14 @@ export default {
           icon: 'fas fa-users',
           items: [
             {
-              to: '/spotlighters',
-              icon: 'fas fa-user-friends',
-              title: 'Spotlighters',
-            },
-            {
               to: '/administrators',
               icon: 'fas fa-user-shield',
               title: 'Administradores',
+            },
+            {
+              to: '/professors',
+              icon: 'fas fa-chalkboard-teacher',
+              title: 'Profesores',
             },
             {
               to: '/students',
@@ -168,10 +181,8 @@ export default {
             },
           ],
         },
-      ],
-    };
-  },
-  computed: {
+      ];
+    },
     shouldShowSidebar() {
       // En SSR, siempre mostrar (se ajustará en el cliente)
       if (!process.browser) return true;

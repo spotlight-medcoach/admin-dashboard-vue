@@ -86,6 +86,8 @@ export default {
 
         if (userInfo.role == 'Administrador')
           this.$router.push({ path: '/statistics' });
+        else if (userInfo.role == 'Supervisor')
+          this.$router.push({ path: '/students' });
         else
           this.$router.push({ path: '/spotlightersPages/requestedQuestions' });
       } else {
@@ -130,13 +132,14 @@ export default {
         setTimeout(() => {
           if (this.userData.role == 'Administrador') {
             this.$router.push({ path: '/statistics' });
-            this.showSuccessToast = !this.showSuccessToast;
+          } else if (this.userData.role == 'Supervisor') {
+            this.$router.push({ path: '/students' });
           } else {
             this.$router.push({
               path: '/spotlightersPages/requestedQuestions',
             });
-            this.showSuccessToast = !this.showSuccessToast;
           }
+          this.showSuccessToast = !this.showSuccessToast;
         }, 2000);
       } catch (err) {
         this.busy = !this.busy;

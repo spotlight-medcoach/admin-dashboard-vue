@@ -1,8 +1,8 @@
 <template>
   <div id="students">
-    <!-- Email Queue Status Widget -->
+    <!-- Email Queue Status Widget (admin only) -->
     <email-queue-status
-      v-if="showEmailQueueStatus"
+      v-if="showEmailQueueStatus && !isSupervisor"
       :status="emailQueueStatus"
       @close="showEmailQueueStatus = false"
     />
@@ -62,14 +62,6 @@
                   }}
                 </span>
                 <span
-                  :class="
-                    getSyllabusStatusClass(row.syllabus_regeneration_status)
-                  "
-                  class="ml-2"
-                >
-                  {{ getSyllabusStatusText(row.syllabus_regeneration_status) }}
-                </span>
-                <span
                   v-if="row.last_welcome_email_status"
                   :class="getEmailStatusClass(row.last_welcome_email_status)"
                   class="ml-2"
@@ -92,32 +84,21 @@
                   <b-dropdown-item :to="`/students/${row._id}`">
                     <i class="fas fa-eye"></i> Ver detalle
                   </b-dropdown-item>
-                  <b-dropdown-item @click="resendWelcomeEmail(row._id)">
-                    <i class="fas fa-envelope"></i> Reenviar correo
-                  </b-dropdown-item>
-                  <b-dropdown-item @click="generateDiagnosticTest(row._id)">
-                    <i class="fas fa-file-medical"></i> Generar examen de
-                    diagnóstico
-                  </b-dropdown-item>
-                  <b-dropdown-item @click="regenerateSyllabus(row._id)">
-                    <i class="fas fa-sync-alt"></i> Regenerar plan de estudios
-                  </b-dropdown-item>
-                  <b-dropdown-item @click="initializeStudentProgress(row._id)">
-                    <i class="fas fa-redo"></i> Inicializar progreso
-                  </b-dropdown-item>
-                  <b-dropdown-item @click="openTestDateModal(row)">
-                    <i class="fas fa-calendar-alt"></i> Modificar fecha de examen
-                  </b-dropdown-item>
-                  <b-dropdown-item @click="editStudent(row)">
-                    <i class="fas fa-pencil-alt"></i> Editar
-                  </b-dropdown-item>
-                  <b-dropdown-divider></b-dropdown-divider>
-                  <b-dropdown-item
-                    @click="deleteQuestionConfirm(row._id)"
-                    class="text-danger"
-                  >
-                    <i class="fas fa-trash"></i> Eliminar
-                  </b-dropdown-item>
+                  <template v-if="!isSupervisor">
+                    <b-dropdown-item @click="resendWelcomeEmail(row._id)">
+                      <i class="fas fa-envelope"></i> Reenviar correo
+                    </b-dropdown-item>
+                    <b-dropdown-item @click="editStudent(row)">
+                      <i class="fas fa-pencil-alt"></i> Editar
+                    </b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-item
+                      @click="deleteQuestionConfirm(row._id)"
+                      class="text-danger"
+                    >
+                      <i class="fas fa-trash"></i> Eliminar
+                    </b-dropdown-item>
+                  </template>
                 </b-dropdown>
               </div>
             </template>
@@ -335,50 +316,6 @@
       <p>¿Deseas enviar otro correo de bienvenida?</p>
     </b-modal>
 
-    <!-- Modify Test Date Modal -->
-    <b-modal
-      id="test-date-modal"
-      v-model="showTestDateModal"
-      title="Modificar fecha de examen"
-      @hidden="resetTestDateForm"
-    >
-      <p v-if="studentToUpdateTestDate">
-        Estudiante:
-        <strong
-          >{{ studentToUpdateTestDate.name }}
-          {{ studentToUpdateTestDate.last_name }}</strong
-        >
-      </p>
-      <b-form-group
-        label="Nueva fecha de examen"
-        label-for="test-date-input"
-      >
-        <b-form-input
-          id="test-date-input"
-          v-model="testDateForm"
-          type="date"
-          required
-          :min="minTestDate"
-        />
-        <small class="form-text text-muted">
-          La fecha debe ser futura. Se recalcularán las horas de estudio
-          restando las horas de los manuales ya leídos.
-        </small>
-      </b-form-group>
-      <template #modal-footer>
-        <b-button variant="secondary" @click="showTestDateModal = false">
-          Cancelar
-        </b-button>
-        <b-button
-          variant="primary"
-          :disabled="!testDateForm || saving"
-          @click="saveTestDate"
-        >
-          <span v-if="saving">Guardando...</span>
-          <span v-else>Guardar</span>
-        </b-button>
-      </template>
-    </b-modal>
   </div>
 </template>
 
@@ -407,13 +344,11 @@ export default {
       studentToDelete: null,
       showResendEmailModal: false,
       studentToResendEmail: null,
-      showTestDateModal: false,
-      studentToUpdateTestDate: null,
-      testDateForm: '',
       saving: false,
       universities: [],
       sortBy: 'name',
       sortOrder: 'asc',
+      userRole: null,
       manualForm: {
         name: '',
         last_name: '',
@@ -427,7 +362,6 @@ export default {
       csvContent: '',
       csvPreview: [],
       sendEmails: false,
-      syllabusStatusPolling: {},
       emailQueueStatusPolling: null,
       showEmailQueueStatus: false,
       selectedExamYear: '',
@@ -455,6 +389,9 @@ export default {
     emailQueueStatus() {
       return this.getEmailQueueStatus;
     },
+    isSupervisor() {
+      return this.userRole === 'Supervisor';
+    },
     filterValues() {
       return {
         university: this.selectedUniversity,
@@ -463,14 +400,20 @@ export default {
       };
     },
     tableFilters() {
-      return [
-        {
+      const filters = [];
+
+      // Hide university filter for supervisors (backend filters by their university)
+      if (!this.isSupervisor) {
+        filters.push({
           key: 'university',
           label: 'Universidad',
           placeholder: 'Todas las universidades',
           defaultValue: '',
           options: this.universityFilterOptions,
-        },
+        });
+      }
+
+      filters.push(
         {
           key: 'exam_year',
           label: 'Año de examen',
@@ -487,8 +430,10 @@ export default {
             { id: 'true', name: 'Registro completo' },
             { id: 'false', name: 'Pendiente' },
           ],
-        },
-      ];
+        }
+      );
+
+      return filters;
     },
     examYearOptions() {
       const currentYear = new Date().getFullYear();
@@ -519,11 +464,6 @@ export default {
         id: u._id,
         name: u.name,
       }));
-    },
-    minTestDate() {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      return tomorrow.toISOString().slice(0, 10);
     },
     tableColumns() {
       return [
@@ -622,8 +562,6 @@ export default {
         }
 
         await this.$store.dispatch('students/fetchStudents', params);
-        // Iniciar polling para estudiantes con estado pending después de cargar
-        this.startPollingForPendingStudents();
       } catch (err) {
         console.error('Error getting students:', err);
       }
@@ -800,47 +738,6 @@ export default {
       this.csvPreview = [];
       this.sendEmails = false;
     },
-    openTestDateModal(student) {
-      this.studentToUpdateTestDate = student;
-      this.testDateForm = student.test_date
-        ? new Date(student.test_date).toISOString().slice(0, 10)
-        : '';
-      this.showTestDateModal = true;
-    },
-    resetTestDateForm() {
-      this.studentToUpdateTestDate = null;
-      this.testDateForm = '';
-    },
-    async saveTestDate() {
-      if (!this.studentToUpdateTestDate || !this.testDateForm) return;
-      try {
-        await this.$store.dispatch('students/updateTestDate', {
-          studentId: this.studentToUpdateTestDate._id,
-          testDate: this.testDateForm,
-        });
-        this.showTestDateModal = false;
-        this.resetTestDateForm();
-        await this.loadStudents();
-        this.$bvToast.toast(
-          'Fecha de examen y año actualizados. Horas de estudio recalculadas.',
-          {
-            title: 'Éxito',
-            variant: 'success',
-            solid: true,
-          }
-        );
-      } catch (error) {
-        console.error('Error updating test date:', error);
-        this.$bvToast.toast(
-          error.response?.data?.error || 'Error al actualizar fecha de examen',
-          {
-            title: 'Error',
-            variant: 'danger',
-            solid: true,
-          }
-        );
-      }
-    },
     // eslint-disable-next-line no-unused-vars
     editStudent(student) {
       // TODO: Implement edit functionality
@@ -933,91 +830,6 @@ export default {
         minute: '2-digit',
       });
     },
-    async generateDiagnosticTest(studentId) {
-      try {
-        await this.$store.dispatch(
-          'students/generateDiagnosticTest',
-          studentId
-        );
-        this.$bvToast.toast(
-          'Generación de examen de diagnóstico encolada exitosamente',
-          {
-            title: 'Éxito',
-            variant: 'success',
-            solid: true,
-          }
-        );
-      } catch (error) {
-        console.error('Error generating diagnostic test:', error);
-        this.$bvToast.toast('Error al generar examen de diagnóstico', {
-          title: 'Error',
-          variant: 'danger',
-          solid: true,
-        });
-      }
-    },
-    async regenerateSyllabus(studentId) {
-      try {
-        await this.$store.dispatch('students/regenerateSyllabus', studentId);
-        this.$bvToast.toast('Regeneración de plan de estudios iniciada', {
-          title: 'Éxito',
-          variant: 'success',
-          solid: true,
-        });
-        // Recargar estudiantes para actualizar el estado
-        await this.loadStudents();
-        // Iniciar polling del estado si está en pending
-        this.startSyllabusStatusPolling(studentId);
-      } catch (error) {
-        console.error('Error regenerating syllabus:', error);
-        this.$bvToast.toast('Error al regenerar plan de estudios', {
-          title: 'Error',
-          variant: 'danger',
-          solid: true,
-        });
-      }
-    },
-    async initializeStudentProgress(studentId) {
-      try {
-        await this.$store.dispatch(
-          'students/initializeStudentProgress',
-          studentId
-        );
-        this.$bvToast.toast(
-          'Progreso del estudiante inicializado exitosamente',
-          {
-            title: 'Éxito',
-            variant: 'success',
-            solid: true,
-          }
-        );
-      } catch (error) {
-        console.error('Error initializing student progress:', error);
-        this.$bvToast.toast('Error al inicializar progreso del estudiante', {
-          title: 'Error',
-          variant: 'danger',
-          solid: true,
-        });
-      }
-    },
-    getSyllabusStatusText(status) {
-      const statusMap = {
-        idle: 'Sin regenerar',
-        pending: 'Regenerando...',
-        completed: 'Completado',
-        failed: 'Error',
-      };
-      return statusMap[status] || 'Desconocido';
-    },
-    getSyllabusStatusClass(status) {
-      const classMap = {
-        idle: 'badge badge-secondary',
-        pending: 'badge badge-info',
-        completed: 'badge badge-success',
-        failed: 'badge badge-danger',
-      };
-      return classMap[status] || 'badge badge-secondary';
-    },
     getEmailStatusText(status) {
       const statusMap = {
         pending: 'Correo pendiente',
@@ -1033,57 +845,6 @@ export default {
         failed: 'badge badge-danger',
       };
       return classMap[status] || 'badge badge-secondary';
-    },
-    async startSyllabusStatusPolling(studentId) {
-      // Limpiar polling anterior si existe
-      if (this.syllabusStatusPolling[studentId]) {
-        clearInterval(this.syllabusStatusPolling[studentId]);
-      }
-
-      // Polling cada 3 segundos
-      this.syllabusStatusPolling[studentId] = setInterval(async () => {
-        try {
-          const status = await this.$store.dispatch(
-            'students/getSyllabusRegenerationStatus',
-            studentId
-          );
-
-          // Si el estado cambió a completed o failed, detener el polling
-          if (status === 'completed' || status === 'failed') {
-            clearInterval(this.syllabusStatusPolling[studentId]);
-            delete this.syllabusStatusPolling[studentId];
-            // Recargar estudiantes para actualizar la tabla
-            await this.loadStudents();
-
-            if (status === 'completed') {
-              this.$bvToast.toast('Plan de estudios regenerado exitosamente', {
-                title: 'Éxito',
-                variant: 'success',
-                solid: true,
-              });
-            } else if (status === 'failed') {
-              this.$bvToast.toast('Error al regenerar plan de estudios', {
-                title: 'Error',
-                variant: 'danger',
-                solid: true,
-              });
-            }
-          }
-        } catch (error) {
-          console.error('Error polling syllabus status:', error);
-          // Detener polling en caso de error
-          clearInterval(this.syllabusStatusPolling[studentId]);
-          delete this.syllabusStatusPolling[studentId];
-        }
-      }, 3000);
-    },
-    startPollingForPendingStudents() {
-      // Buscar estudiantes con estado pending y iniciar polling
-      this.students.forEach((student) => {
-        if (student.syllabus_regeneration_status === 'pending') {
-          this.startSyllabusStatusPolling(student._id);
-        }
-      });
     },
     async handleBulkEmailSent() {
       // Show the component and start polling for email queue status
@@ -1126,57 +887,73 @@ export default {
   },
   async created() {
     if (process.browser) {
-      await this.fetchUniversities();
+      // Load user role
+      try {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const user = JSON.parse(userData);
+          this.userRole = user.role;
+        }
+      } catch (e) {
+        console.error('Error loading user role:', e);
+      }
+
+      // Only load universities for non-supervisor users
+      if (this.userRole !== 'Supervisor') {
+        await this.fetchUniversities();
+      }
     }
   },
   async mounted() {
-    this.$store.dispatch('pageHeader/setHeader', {
-      title: 'Estudiantes',
-      buttonConfig: {
-        type: 'dropdown',
-        text: 'Agregar estudiante',
-        icon: 'fas fa-user-plus',
-        items: [
-          {
-            text: 'Agregar estudiante',
-            action: 'addStudent',
-            icon: 'fas fa-user-plus',
-          },
-          {
-            text: 'Cargar desde CSV',
-            action: 'uploadCSV',
-            icon: 'fas fa-file-csv',
-          },
-          {
-            text: 'Enviar correos masivos',
-            action: 'sendBulkEmails',
-            icon: 'fas fa-paper-plane',
-          },
-        ],
-      },
-    });
+    // Set page header - hide action buttons for supervisors
+    if (this.isSupervisor) {
+      this.$store.dispatch('pageHeader/setHeader', {
+        title: 'Estudiantes',
+      });
+    } else {
+      this.$store.dispatch('pageHeader/setHeader', {
+        title: 'Estudiantes',
+        buttonConfig: {
+          type: 'dropdown',
+          text: 'Agregar estudiante',
+          icon: 'fas fa-user-plus',
+          items: [
+            {
+              text: 'Agregar estudiante',
+              action: 'addStudent',
+              icon: 'fas fa-user-plus',
+            },
+            {
+              text: 'Cargar desde CSV',
+              action: 'uploadCSV',
+              icon: 'fas fa-file-csv',
+            },
+            {
+              text: 'Enviar correos masivos',
+              action: 'sendBulkEmails',
+              icon: 'fas fa-paper-plane',
+            },
+          ],
+        },
+      });
 
-    this.$nuxt.$on('page-header-button-click', this.handleHeaderButtonClick);
+      this.$nuxt.$on('page-header-button-click', this.handleHeaderButtonClick);
+    }
 
     await this.loadStudents();
     this.isInitialLoad = false;
-    // Iniciar polling para estudiantes con estado pending
-    this.startPollingForPendingStudents();
-    // Load initial email queue status
-    await this.$store.dispatch('students/getEmailQueueStatus');
-    // Only show component and start polling if there are pending emails
-    if (this.emailQueueStatus.pending > 0) {
-      this.showEmailQueueStatus = true;
-      this.startEmailQueueStatusPolling();
+
+    // Load initial email queue status (admin only)
+    if (!this.isSupervisor) {
+      await this.$store.dispatch('students/getEmailQueueStatus');
+      // Only show component and start polling if there are pending emails
+      if (this.emailQueueStatus.pending > 0) {
+        this.showEmailQueueStatus = true;
+        this.startEmailQueueStatusPolling();
+      }
     }
   },
   beforeDestroy() {
-    // Limpiar todos los intervalos de polling
-    Object.keys(this.syllabusStatusPolling).forEach((studentId) => {
-      clearInterval(this.syllabusStatusPolling[studentId]);
-    });
-    this.syllabusStatusPolling = {};
-
     // Clear email queue status polling
     if (this.emailQueueStatusPolling) {
       clearInterval(this.emailQueueStatusPolling);
@@ -1184,7 +961,9 @@ export default {
     }
 
     this.$store.dispatch('pageHeader/clearHeader');
-    this.$nuxt.$off('page-header-button-click', this.handleHeaderButtonClick);
+    if (!this.isSupervisor) {
+      this.$nuxt.$off('page-header-button-click', this.handleHeaderButtonClick);
+    }
   },
 };
 </script>
