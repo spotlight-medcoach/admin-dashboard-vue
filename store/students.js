@@ -16,6 +16,7 @@ export const state = () => ({
     completed: 0,
     pending: 0,
   },
+  studentDetail: null,
 });
 
 export const actions = {
@@ -363,6 +364,30 @@ export const actions = {
     }
   },
 
+  async fetchStudentDetail({ commit }, studentId) {
+    try {
+      commit('setLoading', true);
+      const response = await this.$axios.get(
+        `/students/${studentId}/detail`
+      );
+      const detail =
+        response.data.payload || response.data.data || response.data;
+      commit('setStudentDetail', detail);
+      return detail;
+    } catch (err) {
+      console.error('Error fetching student detail:', err);
+      const errorMessage =
+        (err.response && err.response.data && err.response.data.error) ||
+        'Error al cargar detalle del estudiante';
+      if (this.$toastr) {
+        this.$toastr.error(errorMessage, 'Error');
+      }
+      throw err;
+    } finally {
+      commit('setLoading', false);
+    }
+  },
+
   async fetchStudentStats({ commit }) {
     try {
       const response = await this.$axios.get('/students/stats');
@@ -410,6 +435,9 @@ export const getters = {
   getStudentStats(state) {
     return state.studentStats;
   },
+  getStudentDetail(state) {
+    return state.studentDetail;
+  },
 };
 
 export const mutations = {
@@ -433,5 +461,8 @@ export const mutations = {
   },
   setStudentStats(state, stats) {
     state.studentStats = stats;
+  },
+  setStudentDetail(state, detail) {
+    state.studentDetail = detail;
   },
 };

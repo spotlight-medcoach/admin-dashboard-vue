@@ -38,7 +38,12 @@
             @sort-change="handleSortChange"
           >
             <template #cell-name="{ row }">
-              {{ row.name }} {{ row.last_name }}
+              <nuxt-link
+                :to="`/students/${row._id}`"
+                class="student-name-link"
+              >
+                {{ row.name }} {{ row.last_name }}
+              </nuxt-link>
             </template>
             <template #cell-university="{ row }">
               {{ (row.university && row.university.name) || '-' }}
@@ -84,6 +89,9 @@
                   <template #button-content>
                     <i class="fas fa-ellipsis-v"></i>
                   </template>
+                  <b-dropdown-item :to="`/students/${row._id}`">
+                    <i class="fas fa-eye"></i> Ver detalle
+                  </b-dropdown-item>
                   <b-dropdown-item @click="resendWelcomeEmail(row._id)">
                     <i class="fas fa-envelope"></i> Reenviar correo
                   </b-dropdown-item>
@@ -1320,6 +1328,18 @@ export default {
 
   .status-container .badge {
     white-space: nowrap;
+  }
+
+  .student-name-link {
+    color: #ff9300;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #db7500;
+      text-decoration: underline;
+    }
   }
 }
 </style>
