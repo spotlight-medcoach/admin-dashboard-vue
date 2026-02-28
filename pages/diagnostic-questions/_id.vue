@@ -247,6 +247,38 @@ export default {
           'removeformat | help | image | code',
         content_style:
           'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+        images_upload_handler: (blobInfo, success, failure) => {
+          const questionId = this.$route.params.id;
+          if (!questionId) {
+            failure('No se encontró el ID de la pregunta');
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+          this.$axios
+            .post(`/diagnostic-questions/${questionId}/upload-image`, formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            })
+            .then((response) => {
+              const imageUrl = response.data.location;
+              if (imageUrl) {
+                success(imageUrl);
+              } else {
+                failure('No se recibió la URL de la imagen');
+              }
+            })
+            .catch((error) => {
+              console.error('Error uploading image:', error);
+              failure(
+                'Error al subir imagen: ' +
+                  (error.response?.data?.error || error.message)
+              );
+            });
+        },
       },
       testNumberOptions: [
         { text: 'Diagnóstico 1', value: 1 },

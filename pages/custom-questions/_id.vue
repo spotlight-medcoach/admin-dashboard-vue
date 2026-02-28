@@ -283,6 +283,38 @@ export default {
           'removeformat | help | image | code',
         content_style:
           'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+        images_upload_handler: (blobInfo, success, failure) => {
+          const caseId = this.$route.params.id;
+          if (!caseId) {
+            failure('No se encontró el ID del caso');
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+          this.$axios
+            .post(`/custom-questions/${caseId}/upload-image`, formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            })
+            .then((response) => {
+              const imageUrl = response.data.location;
+              if (imageUrl) {
+                success(imageUrl);
+              } else {
+                failure('No se recibió la URL de la imagen');
+              }
+            })
+            .catch((error) => {
+              console.error('Error uploading image:', error);
+              failure(
+                'Error al subir imagen: ' +
+                  (error.response?.data?.error || error.message)
+              );
+            });
+        },
       },
       difficultyOptions: [
         { text: 'Baja', value: 'Baja' },
