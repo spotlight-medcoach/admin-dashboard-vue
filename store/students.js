@@ -367,9 +367,7 @@ export const actions = {
   async fetchStudentDetail({ commit }, studentId) {
     try {
       commit('setLoading', true);
-      const response = await this.$axios.get(
-        `/students/${studentId}/detail`
-      );
+      const response = await this.$axios.get(`/students/${studentId}/detail`);
       const detail =
         response.data.payload || response.data.data || response.data;
       commit('setStudentDetail', detail);
@@ -430,6 +428,37 @@ export const actions = {
       };
       commit('setStudentStats', defaultStats);
       return defaultStats;
+    }
+  },
+
+  async downloadStudentsReportPdf({ commit }) {
+    try {
+      commit('setSaving', true);
+      const response = await this.$axios.get('/students/report/pdf', {
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const date = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.setAttribute('download', `Reporte Estudiantes ${date}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading students report PDF:', err);
+      const errorMessage =
+        (err.response && err.response.data && err.response.data.error) ||
+        'Error al descargar reporte de estudiantes';
+      if (this.$toastr) {
+        this.$toastr.error(errorMessage, 'Error');
+      }
+      throw err;
+    } finally {
+      commit('setSaving', false);
     }
   },
 };

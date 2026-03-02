@@ -181,6 +181,17 @@ export default {
             },
           ],
         },
+        {
+          group: 'Sistema',
+          icon: 'fas fa-server',
+          items: [
+            {
+              to: '/logs',
+              icon: 'fas fa-file-alt',
+              title: 'Logs',
+            },
+          ],
+        },
       ];
     },
     shouldShowSidebar() {

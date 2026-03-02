@@ -24,6 +24,7 @@
             buttonConfig.type === 'dropdown'
           "
           :text="buttonConfig.text"
+          :right="Boolean(buttonConfig.alignRight)"
           variant="success"
           class="page-header-dropdown"
         >

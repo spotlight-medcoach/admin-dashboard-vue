@@ -367,6 +367,7 @@ export default {
       selectedExamYear: '',
       selectedProfileStatus: '',
       showBulkEmailModal: false,
+      generatingReport: false,
     };
   },
   computed: {
@@ -610,6 +611,25 @@ export default {
         this.showCSVModal = true;
       } else if (action === 'sendBulkEmails') {
         this.showBulkEmailModal = true;
+      } else if (action === 'generateReport') {
+        try {
+          this.generatingReport = true;
+          await this.$store.dispatch('students/downloadStudentsReportPdf');
+          this.$bvToast.toast('Reporte generado exitosamente', {
+            title: 'Éxito',
+            variant: 'success',
+            solid: true,
+          });
+        } catch (error) {
+          console.error('Error generating students report:', error);
+          this.$bvToast.toast('Error al generar el reporte de estudiantes', {
+            title: 'Error',
+            variant: 'danger',
+            solid: true,
+          });
+        } finally {
+          this.generatingReport = false;
+        }
       }
     },
     async createStudent() {
@@ -915,8 +935,8 @@ export default {
         title: 'Estudiantes',
         buttonConfig: {
           type: 'dropdown',
-          text: 'Agregar estudiante',
-          icon: 'fas fa-user-plus',
+          text: 'Acciones',
+          alignRight: true,
           items: [
             {
               text: 'Agregar estudiante',
@@ -926,12 +946,17 @@ export default {
             {
               text: 'Cargar desde CSV',
               action: 'uploadCSV',
-              icon: 'fas fa-file-csv',
+              icon: 'fas fa-file-upload',
             },
             {
               text: 'Enviar correos masivos',
               action: 'sendBulkEmails',
               icon: 'fas fa-paper-plane',
+            },
+            {
+              text: 'Generar reporte PDF',
+              action: 'generateReport',
+              icon: 'fas fa-file-pdf',
             },
           ],
         },
