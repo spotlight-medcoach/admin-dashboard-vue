@@ -431,6 +431,54 @@ export const actions = {
     }
   },
 
+  async downloadStudentsCsv({ commit }, params = {}) {
+    try {
+      commit('setSaving', true);
+      const requestParams = {};
+      if (params.university) requestParams.university = params.university;
+      if (params.search) requestParams.search = params.search;
+      if (params.exam_year !== undefined) {
+        requestParams.exam_year = params.exam_year;
+      }
+      if (params.profile_completed !== undefined) {
+        requestParams.profile_completed = params.profile_completed;
+      }
+      if (params.search_phone) requestParams.search_phone = params.search_phone;
+      if (params.search_student_id) {
+        requestParams.search_student_id = params.search_student_id;
+      }
+
+      const response = await this.$axios.get('/students/export/csv', {
+        params: requestParams,
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([response.data], {
+        type: 'text/csv;charset=utf-8',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const date = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.setAttribute('download', `Estudiantes ${date}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading students CSV:', err);
+      const errorMessage =
+        (err.response && err.response.data && err.response.data.error) ||
+        'Error al exportar estudiantes a CSV';
+      if (this.$toastr) {
+        this.$toastr.error(errorMessage, 'Error');
+      }
+      throw err;
+    } finally {
+      commit('setSaving', false);
+    }
+  },
+
   async downloadStudentsReportPdf({ commit }) {
     try {
       commit('setSaving', true);

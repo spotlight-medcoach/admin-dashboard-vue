@@ -70,6 +70,20 @@
                 </span>
               </div>
             </template>
+            <template #cell-phase_two="{ row }">
+              <div v-if="row.phase_two_date" class="phase-two-cell">
+                <div class="phase-two-date">
+                  {{ formatPhaseTwoDate(row.phase_two_date) }}
+                </div>
+                <div
+                  class="phase-two-countdown"
+                  :class="getPhaseTwoCountdownClass(row)"
+                >
+                  {{ getPhaseTwoCountdownText(row) }}
+                </div>
+              </div>
+              <span v-else>-</span>
+            </template>
             <template #cell-actions="{ row }">
               <div class="td-actions">
                 <b-dropdown
@@ -508,6 +522,12 @@ export default {
           value: (row) => row.exam_year || '-',
         },
         {
+          key: 'phase_two',
+          label: 'Fase 2',
+          scope: 'col',
+          width: 180,
+        },
+        {
           key: 'status',
           label: 'Estado',
           scope: 'col',
@@ -630,6 +650,41 @@ export default {
         } finally {
           this.generatingReport = false;
         }
+      } else if (action === 'exportCsv') {
+        await this.exportStudentsCsv();
+      }
+    },
+    async exportStudentsCsv() {
+      try {
+        const params = {};
+        if (this.search && this.search.trim() !== '') {
+          params.search = this.search.trim();
+        }
+        if (this.selectedUniversity && this.selectedUniversity.trim() !== '') {
+          params.university = this.selectedUniversity.trim();
+        }
+        if (this.selectedExamYear && this.selectedExamYear.trim() !== '') {
+          params.exam_year = parseInt(this.selectedExamYear);
+        }
+        if (
+          this.selectedProfileStatus &&
+          this.selectedProfileStatus.trim() !== ''
+        ) {
+          params.profile_completed = this.selectedProfileStatus === 'true';
+        }
+        await this.$store.dispatch('students/downloadStudentsCsv', params);
+        this.$bvToast.toast('CSV exportado exitosamente', {
+          title: 'Éxito',
+          variant: 'success',
+          solid: true,
+        });
+      } catch (error) {
+        console.error('Error exporting students CSV:', error);
+        this.$bvToast.toast('Error al exportar estudiantes a CSV', {
+          title: 'Error',
+          variant: 'danger',
+          solid: true,
+        });
       }
     },
     async createStudent() {
@@ -850,6 +905,38 @@ export default {
         minute: '2-digit',
       });
     },
+    formatPhaseTwoDate(date) {
+      if (!date) return '-';
+      const d = new Date(date);
+      return d.toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    },
+    getPhaseTwoCountdownText(row) {
+      if (row.phase_two_started) {
+        const days = row.days_until_phase_two;
+        if (days === null || days === undefined) return 'Iniciada';
+        const daysAgo = Math.abs(days);
+        if (daysAgo === 0) return 'Iniciada hoy';
+        return `Iniciada hace ${daysAgo} día${daysAgo === 1 ? '' : 's'}`;
+      }
+      const days = row.days_until_phase_two;
+      if (days === null || days === undefined) return '';
+      if (days === 0) return 'Inicia hoy';
+      if (days > 0) return `Faltan ${days} día${days === 1 ? '' : 's'}`;
+      const past = Math.abs(days);
+      return `Atrasada ${past} día${past === 1 ? '' : 's'}`;
+    },
+    getPhaseTwoCountdownClass(row) {
+      if (row.phase_two_started) return 'countdown-started';
+      const days = row.days_until_phase_two;
+      if (days === null || days === undefined) return '';
+      if (days < 0) return 'countdown-overdue';
+      if (days <= 15) return 'countdown-soon';
+      return 'countdown-upcoming';
+    },
     getEmailStatusText(status) {
       const statusMap = {
         pending: 'Correo pendiente',
@@ -957,6 +1044,11 @@ export default {
               text: 'Generar reporte PDF',
               action: 'generateReport',
               icon: 'fas fa-file-pdf',
+            },
+            {
+              text: 'Exportar tabla a CSV',
+              action: 'exportCsv',
+              icon: 'fas fa-file-csv',
             },
           ],
         },
@@ -1144,6 +1236,40 @@ export default {
       color: #db7500;
       text-decoration: underline;
     }
+  }
+
+  .phase-two-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.2;
+  }
+
+  .phase-two-date {
+    font-weight: 500;
+    color: #212529;
+    font-size: 13px;
+  }
+
+  .phase-two-countdown {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .countdown-started {
+    color: #20b000;
+  }
+
+  .countdown-soon {
+    color: #ff9300;
+  }
+
+  .countdown-overdue {
+    color: #dc3545;
+  }
+
+  .countdown-upcoming {
+    color: #6c757d;
   }
 }
 </style>
