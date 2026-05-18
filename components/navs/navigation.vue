@@ -190,6 +190,22 @@ export default {
               icon: 'fas fa-file-alt',
               title: 'Logs',
             },
+            {
+              to: '/user-reports',
+              icon: 'fas fa-bug',
+              title: 'Reportes de usuarios',
+            },
+          ],
+        },
+        {
+          group: 'Configuración',
+          icon: 'fas fa-cog',
+          items: [
+            {
+              to: '/configuracion',
+              icon: 'fas fa-cog',
+              title: 'Configuración general',
+            },
           ],
         },
       ];
